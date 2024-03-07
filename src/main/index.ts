@@ -1,21 +1,11 @@
-import fs from 'node:fs';
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { getRootDirectory, mkDir } from './lib'
 
 function createWindow(): void {
-  function monitor() {
-    console.log('watch')
-    fs.watchFile('C:/ClientPix/req/001.dos', (curr, prev) => {
-    console.log(typeof curr.nlink)
-
-      if(curr.nlink == 1) {
-        console.log(fs.readFileSync('C:/ClientPix/req/001.dos', 'utf8'))
-      }
-    })
-  }
-  monitor()
+ mkDir()
 
   const mainWindow = new BrowserWindow({
     width: 900,
