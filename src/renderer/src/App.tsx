@@ -1,14 +1,10 @@
 import electronLogo from './assets/logo.png'
 import Home from './page/Home'
 
-
 function App(): JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
-
   return (
     <>
       <img alt="logo" className="logo" src={electronLogo} />
-
       <Home/>
 
       {/* <div className="creator">Powered by electron-vite</div>

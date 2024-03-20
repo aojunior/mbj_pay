@@ -3,7 +3,8 @@
 declare global {
   interface Window {
     // electron: ElectronAPI
-    context: {}
+    context: unknown
+    electronAPI: any
     api: unknown
   }
 }

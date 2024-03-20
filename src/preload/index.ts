@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 // import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
@@ -10,10 +10,15 @@ const api = {}
 
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('context', {
-      
+    // contextBridge.exposeInMainWorld('context', {
+    //   locale: navigator.language,
+    //   firstRender: () => ipcRenderer.invoke('mkdir', 'mensagem')
+    // })
+    contextBridge.exposeInMainWorld('electronAPI', {
+      setTitle: (title) => ipcRenderer.send('set-title', title),
+      render: () => ipcRenderer.send('mkdir', 'mensagem')
     })
-    contextBridge.exposeInMainWorld('api', api)
+    // contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
     console.error(error)
   }

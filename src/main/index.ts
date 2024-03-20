@@ -2,11 +2,9 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { getRootDirectory, mkDir } from './lib'
+import { createPath } from './lib'
 
 function createWindow(): void {
- mkDir()
-
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -16,12 +14,17 @@ function createWindow(): void {
     fullscreenable: false,
     closable: false,
     center: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
-    webPreferences: {
+    title: 'MBJ PAY',
+    frame: false,
+    trafficLightPosition: {x:15, y:15},
+    ...(process.platform === 'linux' ? { icon } : {icon}),
+      webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: true,
-      contextIsolation: true
-    }
+      contextIsolation: true,
+      nodeIntegration: true,
+    },
+    
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -33,6 +36,8 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  // ipcMain.on('mkdir', (_,...args) => createPath(args))
+
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -41,6 +46,13 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
+
+function handleSetTitle (event, title) {
+  const webContents = event.sender
+  const win = BrowserWindow.fromWebContents(webContents)
+  win?.setTitle(title)
+}
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -57,8 +69,10 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
+  // ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('set-title', handleSetTitle)
+  ipcMain.on('mkdir', createPath)
+ 
   createWindow()
 
   app.on('activate', function () {
