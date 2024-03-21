@@ -1,0 +1,64 @@
+{
+    "data": {
+        "accountHolderId": "1241A999-BC8C-4AAF-B8D7-DFFD5CDCACD9",
+        "mediatorId": "1241A999-BC8C-4AAF-B8D7-DFFD5CDCACD9",
+        "account": {
+            "accountId": "27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C",
+            "account": 316849,
+            "branch": 427,
+            "mobilePhone": {
+                "country": "BRA",
+                "phoneNumber": "1136816283"
+            }
+        },
+        "client": {
+            "name": "MBJD INFORMATICA & ASSESSORIA LTDA",
+            "taxIdentifier": {
+                "taxId": "14787479000162",
+                "country": "BRA"
+            },
+            "email": "PROSPECONT@HOTMAIL.COM",
+            "birthDate": "2011-12-02",
+            "mailAddress": {
+                "logradouro": "R GALAXIA",
+                "numero": "272",
+                "bairro": "GRANJA VIANA",
+                "cidade": "COTIA",
+                "estado": "SP",
+                "cep": "6711155",
+                "pais": "BRA"
+            },
+            "mobilePhone": {
+                "country": "BRA",
+                "phoneNumber": "11999990000"
+            }
+        },
+        "billingAddress": {
+            "logradouro": "R GALAXIA",
+            "numero": "272",
+            "bairro": "GRANJA VIANA",
+            "cidade": "COTIA",
+            "estado": "SP",
+            "cep": "6711155",
+            "pais": "BRA"
+        },
+        "clientType": "CORPORATE",
+        "additionalDetailsCorporate": {
+            "companyName": "MBJD INFORMATICA & ASSESSORIA LTDA",
+            "businessLine": 47,
+            "establishmentForm": "1",
+            "establishmentDate": "2011-12-02",
+            "financialStatistic": 4500,
+            "representatives": [
+                {
+                    "name": "Representente MBJD",
+                    "taxIdentifier": {
+                        "taxId": "12002471088",
+                        "country": "BRA"
+                    }
+                }
+            ]
+        },
+        "accountStatus": "REGULAR"
+    }
+}
