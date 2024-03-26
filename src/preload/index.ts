@@ -1,24 +1,11 @@
-// import { contextBridge, ipcRenderer } from 'electron'
-// import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron'
+import { totalmem, cpus } from 'os';
 
-// const api = {}
+const API = {
+  a: 'apii',
+  sendMsg: (msg) => ipcRenderer.send('message', msg),
+  // onCount: (callback) => ipcRenderer.on("count", (_, args) => callback(args)),
+  sendFile: (callback) => ipcRenderer.on("file", (_, args) => callback(args))
+};
 
-// if (process.contextIsolated) {
-//   try {
-//     // contextBridge.exposeInMainWorld('context', {
-//     //   locale: navigator.language,
-//     // })
-//     contextBridge.exposeInMainWorld('electronAPI', {
-//       render: () => ipcRenderer.send('mkdir', 'mensagem'),
-//       readFile: () => ipcRenderer.on('file-content', (_, data) => _),
-
-//     })
-//   } catch (error) {
-//     console.error(error)
-//   }
-// } else {
-//   // @ts-ignore (define in dts)
-//   // window.electron = electronAPI
-//   // @ts-ignore (define in dts)
-//   window.api = api
-// }
+contextBridge.exposeInMainWorld("api", API);

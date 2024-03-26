@@ -1,9 +1,9 @@
 import React from 'react';
-import QRCODE from '../../src/assets/images.png'
+import QRCODE from '../../src/assets/images.png';
 // import { Container } from './styles';
-import { ipcRenderer } from 'electron';
+import { fileProps } from '@shared/constants';
 
-const PaymentScreen: React.FC = () => {
+function PaymentScreen (file) {
 
     return (
     <>
@@ -32,14 +32,14 @@ const PaymentScreen: React.FC = () => {
             </div>
         </div>
     </div>
+
     <div className="content-bottom">
         <button className="btn-action" ><code>F1</code> - Copiar Chave PIX</button>
         <button className="btn-action"><code>F2</code> - Imprimir QR Code</button>
         <button className="btn-action"><code>F3</code> - Consultar Pagamento</button>
     </div>
     </>
-    )
-}
-
+    );
+};
 
 export default PaymentScreen;

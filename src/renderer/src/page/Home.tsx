@@ -1,33 +1,45 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo,} from 'react';
 import PaymentScreen from '@renderer/components/PaymentScreen';
 import StandBy from '@renderer/components/StandBy';
-import { ipcRenderer } from 'electron';
+import { fileProps } from '@shared/constants';
+
 const Home: React.FC = () => {
-  const [file, setFile] = useState<{}> ({})
+  const [msg, setMesg] = useState<string> ('');
+  const [count, setCount] = useState<number> (0);
+  const [file, setFile] = useState (null);
 
   async function render () {
-    // const a = window.electronAPI.render()
+    console.log(window.api)
+  };
 
-    // ipcRenderer.on('file-content', (_, data) => {
-    //   console.log(data);
-    // });
-    
-  }
+  async function sendMessage () {
+    const obj = {
+      msg: msg,
+      count: 0,
+    }
+    const a = window.api.sendMsg(obj);
+    setMesg('');
+    // window.api.onCount(data => setCount(data))
+  };
+  
 
-  useEffect(() => {
-    ipcRenderer.on('file-content', (event, data) => {
-      console.log(data)
-    })
-    return () =>{ ipcRenderer.removeAllListeners('file-content')}
-  }, []);
+  window.api.sendFile(data => {
+    setFile(data)
+    console.log(data)
+  });
 
   return(
     <>
-      <StandBy/>
-      {/* <pre>{file.orderValue}</pre> */}
+      {
+        file === null ?
+        <StandBy/>
+        :
+        <PaymentScreen file={file} />
+      }
+      <button onClick={sendMessage}> Send </button>
       <button onClick={render}> Teste </button>
     </>
-  )
-}
+  );
+};
 
 export default Home;
