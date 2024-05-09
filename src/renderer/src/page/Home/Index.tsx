@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useMemo,} from 'react';
-import PaymentScreen from '@renderer/components/PaymentScreen';
-import StandBy from '@renderer/components/StandBy';
+import PaymentScreen from '@renderer/page/Home/_components/PaymentScreen';
+import StandBy from '@renderer/page/Home/_components/StandBy';
 import { fileProps } from '@shared/constants';
 
 const Home: React.FC = () => {
@@ -29,7 +29,7 @@ const Home: React.FC = () => {
   });
 
   return(
-    <>
+    <div >
       {
         file === null ?
         <StandBy/>
@@ -38,7 +38,7 @@ const Home: React.FC = () => {
       }
       <button onClick={sendMessage}> Send </button>
       <button onClick={render}> Teste </button>
-    </>
+    </div>
   );
 };
 

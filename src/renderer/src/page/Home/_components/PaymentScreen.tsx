@@ -1,7 +1,6 @@
 import React from 'react';
-import QRCODE from '../../src/assets/images.png';
+import QRCODE from '../../../assets/images.png';
 // import { Container } from './styles';
-import { fileProps } from '@shared/constants';
 
 function PaymentScreen (file) {
 
@@ -15,7 +14,7 @@ function PaymentScreen (file) {
 
         <div className="info-display">
             <div className="contain-qrcode">
-                <img className='qrcode'  src={QRCODE} alt="" />
+                <img className='qrcode' src={QRCODE} alt="" />
                 {/* <img className="qrcode" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSojqE7ztWUYLgAOLfIp8OrWRqDI-43JplTC8XdCZ8L9g&s" alt="" > */}
             </div>
 

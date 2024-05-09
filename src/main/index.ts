@@ -10,7 +10,7 @@ let count = 0;
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
-    height: 670,
+    height: 800,
     show: false,
     // autoHideMenuBar: true,
     resizable: false,

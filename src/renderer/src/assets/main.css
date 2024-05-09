@@ -1,5 +1,5 @@
 @import './base.css';
-@import '../components/style.css';
+@import '../page/Home/_components/style.css';
 
 body {
   display: flex;
@@ -33,6 +33,10 @@ code {
   justify-content: center;
   flex-direction: column;
   margin-bottom: 80px;
+}
+
+.header {
+  padding: 10px;
 }
 
 .logo {

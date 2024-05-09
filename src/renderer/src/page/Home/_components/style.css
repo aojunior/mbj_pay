@@ -1,4 +1,4 @@
-@import '../../src/assets/base.css';
+@import '../../../assets/base.css';
 
 .contain-standby {
     display: flex;
