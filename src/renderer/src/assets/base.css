@@ -52,7 +52,8 @@ body {
   color: var(--color-text);
   background: var(--color-background-mute);
   line-height: 1.6;
-  font-family:
+  font-family:    
+    Cantarell,  
     Inter,
     -apple-system,
     BlinkMacSystemFont,
@@ -60,7 +61,6 @@ body {
     Roboto,
     Oxygen,
     Ubuntu,
-    Cantarell,
     'Fira Sans',
     'Droid Sans',
     'Helvetica Neue',

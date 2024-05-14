@@ -1,0 +1,102 @@
+import { styled } from 'styled-components'
+
+export const ProgressHeader = styled.div`
+    border: 1 solid black;
+    width: 100%;
+
+`; 
+
+export const ProgressBar = styled.div` 
+    border-radius: 20px;
+    background-color: gray;
+`;
+
+export const ProgressBarFill = styled.div`
+    width: 33.33%;
+    height: 10px;
+    border-radius: 20px;
+    background-color: blue;
+
+`
+
+export const Container = styled.div`
+    width: 100%;
+    height: 500px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: rgba(255,255,255,0.8);
+    border-radius: 20px;
+`;
+
+export const ContentInRow = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+`;
+
+export const Card = styled.div`
+    width: fit-content;
+    max-width: 90%;
+    height: auto;
+    padding: 16px;
+    border: 1px solid #e4e4e7;
+    border-radius: 10px;
+    background-color: #fff;
+`;
+
+export const CardHeader = styled.div`
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+`;
+
+export const CardTitle = styled.h3`
+    text-align: start;
+    font-weight: bold;
+`;
+
+export const CardContent = styled.div`
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+`;
+
+export const FormInput = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 80%;
+`;
+
+export const Label = styled.label`
+
+`;
+
+export const Input = styled.input`
+    padding: 10px;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+`;
+
+export const Separator = styled.hr`
+    margin-top: 10px;
+    margin-bottom: 10px;
+    /* border: 0.1px solid rgba(0,0,0, 0.5); */
+`;
+
+export const Button = styled.button`
+    padding: 10px;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
+    background-color: #3178c6;
+    color: #fff;
+    width: 120px;
+    font-weight: 700;
+`;

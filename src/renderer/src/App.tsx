@@ -4,11 +4,12 @@ import UserRegister from './page/UserRegister'
 
 function App(): JSX.Element {
   return (
-    <div style={{flex: 1, justifyContent: 'space-between', alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
+    <div style={{width: '90vw', alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
       <Header />
       <UserRegister/>
 
-      <div className="creator">Powered by MBJ Informatica</div>
+      {/* <div className="creator" style={{marginTop: 40}}>Powered by MBJ Informatica</div> */}
+      
     {/* 
       <p className="tip">
       Powered by MBJ Informatica
