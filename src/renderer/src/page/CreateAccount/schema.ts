@@ -33,3 +33,9 @@ export const ownerSchema = z.object({
     ownerState: z.string(),
     ownerCodeZip: z.string(),
 })
+
+export const bankSchema = z.object({
+    imgSelfie: z.string(),
+    imgRgFrente: z.string(),
+    imgRgverso: z.string()
+})

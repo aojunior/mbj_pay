@@ -1,23 +1,4 @@
-/* eslint-disable prettier/prettier */
 import { styled } from 'styled-components'
-
-export const ProgressHeader = styled.div`
-    border: 1 solid black;
-    width: 100%;
-
-`; 
-
-export const ProgressBar = styled.div` 
-    border-radius: 20px;
-    background-color: gray;
-`;
-
-export const ProgressBarFill = styled.div`
-    width: 33.33%;
-    height: 10px;
-    border-radius: 20px;
-    background-color: #3178c6;
-`
 
 export const Container = styled.div`
     width: 100%;
@@ -32,7 +13,7 @@ export const Container = styled.div`
 
     &::-webkit-scrollbar {
      -webkit-appearance: none;
-     width: 5px;
+     width: 10px;
      border:1px solid #e4e4e7;
      border-radius: 0.28rem;
     }
@@ -51,6 +32,7 @@ export const ContentInRow = styled.div`
     flex-direction: row;
     justify-content: space-between;
 `;
+
 
 export const Card = styled.div`
     width: fit-content;
@@ -84,6 +66,12 @@ export const CardContent = styled.div`
     gap: 15px;
 `;
 
+export const Separator = styled.hr`
+    margin-top: 10px;
+    margin-bottom: 10px;
+    /* border: 0.1px solid rgba(0,0,0, 0.5); */
+`;
+
 export const FormInput = styled.div`
     display: flex;
     flex-direction: column;
@@ -99,12 +87,6 @@ export const Input = styled.input`
     padding: 10px;
     border: 1px solid #e4e4e7;
     border-radius: 8px;
-`;
-
-export const Separator = styled.hr`
-    margin-top: 10px;
-    margin-bottom: 10px;
-    /* border: 0.1px solid rgba(0,0,0, 0.5); */
 `;
 
 export const Button = styled.button`

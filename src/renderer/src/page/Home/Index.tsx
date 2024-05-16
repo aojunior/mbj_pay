@@ -22,7 +22,6 @@ const Home: React.FC = () => {
     // window.api.onCount(data => setCount(data))
   };
   
-
   window.api.sendFile(data => {
     setFile(data)
     console.log(data)
@@ -32,12 +31,14 @@ const Home: React.FC = () => {
     <div >
       {
         file === null ?
-        <StandBy/>
+        <div style={{position: 'absolute', top: '50%', left: '30%'}}>
+          <StandBy />
+        </div>
         :
         <PaymentScreen file={file} />
       }
-      <button onClick={sendMessage}> Send </button>
-      <button onClick={render}> Teste </button>
+      {/* <button onClick={sendMessage}> Send </button>
+      <button onClick={render}> Teste </button> */}
     </div>
   );
 };

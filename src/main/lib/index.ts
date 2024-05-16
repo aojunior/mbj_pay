@@ -14,14 +14,14 @@ export const createPath = () => {
     const ReqPath = rootDir+'/Req';
     const ResPath = rootDir+'/Res'
     const PrintPath = rootDir+'/Print'
-    if(!existsSync(rootDir)|| !existsSync(ReqPath) || !existsSync(ResPath) || !existsSync(PrintPath) ){
-        console.log(`Creating path ...`);
+    console.log(`Creating path ...`);
+    if(!existsSync(ReqPath) || !existsSync(ResPath) || !existsSync(PrintPath) ){
         Promise.all(
-            [mkdir(rootDir),
+            [
             mkdir(ReqPath),
             mkdir(ResPath),
             mkdir(PrintPath)]
-        ).catch((err) => console.error(err));
+        ).then(() => console.log(`Succssesfull `)).catch((err) => console.error('Error: ', err));
     }   
 } 
 
