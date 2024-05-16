@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { styled } from 'styled-components'
 
 export const ProgressHeader = styled.div`
@@ -15,19 +16,34 @@ export const ProgressBarFill = styled.div`
     width: 33.33%;
     height: 10px;
     border-radius: 20px;
-    background-color: blue;
-
+    background-color: #3178c6;
 `
 
 export const Container = styled.div`
     width: 100%;
-    height: 500px;
+    height: 620px;
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255,255,255,0.3);
     border-radius: 20px;
+    overflow-y: scroll;
+
+    &::-webkit-scrollbar {
+     -webkit-appearance: none;
+     width: 5px;
+     border:1px solid #e4e4e7;
+     border-radius: 0.28rem;
+    }
+
+    &::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 0.37rem rgba(0,0,0,0.00);
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: #3178c6;
+        border-radius: 0.28rem;
+    }
 `;
 
 export const ContentInRow = styled.div`
@@ -99,4 +115,8 @@ export const Button = styled.button`
     color: #fff;
     width: 120px;
     font-weight: 700;
+    &:hover {
+        background-color: #2b67aa;
+        cursor: pointer;
+    }
 `;

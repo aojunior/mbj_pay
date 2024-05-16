@@ -30,27 +30,9 @@ code {
 #root {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
   margin-bottom: 80px;
-}
-
-.header {
-  padding: 10px;
-}
-
-.logo {
-  -webkit-user-drag: none;
-  height: 80px;
-  width: 180px;
-  will-change: filter;
-  transition: filter 300ms;
-  /* position: fixed;
-  top: 0px; */
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 1.2em #6988e6aa);
 }
 
 .creator {

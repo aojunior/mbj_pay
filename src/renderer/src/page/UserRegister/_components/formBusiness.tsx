@@ -1,11 +1,25 @@
+/* eslint-disable prettier/prettier */
 import React from 'react';
 
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { Button, Card, CardContent, CardHeader, CardTitle, ContentInRow, FormInput, Input, Label, Separator } from '../styles';
+import { companySchema } from '../schema';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { companyData } from '../action';
 
 export function FormBusiness() {
+    const {register, handleSubmit} = useForm <z.infer<typeof companySchema>>({
+        resolver: zodResolver(companySchema),
+    })    
+    
+
+    const onSubmit = handleSubmit((data) => {
+        companyData(data)
+    })
 
     return (
-        <form action="" >
+        <form onSubmit={onSubmit} >
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 20, marginTop: 30 }}>
 
                 <Card>
@@ -16,40 +30,39 @@ export function FormBusiness() {
                     <CardContent>
                         <ContentInRow style={{gap: 10}}>
                             <FormInput style={{width: 400}}>
-                                <Label htmlFor="nomeFant">Nome Fantasia</Label>
-                                <Input name="nomeFant" type='text' placeholder="Ex: Empresa LTDA" />
+                                <Label>Nome Fantasia</Label>
+                                <Input {...register("companyName")} type='text' placeholder="Digite aqui"  />
                             </FormInput>
 
                             <FormInput style={{width: '40%'}}>
-                                <Label htmlFor="cnpj">CNPJ</Label>
-                                <Input name="cnpj" type='text' placeholder="Ex: 12.345.678/0001-00" />
+                                <Label>CNPJ</Label>
+                                <Input {...register("companyDocument")} type='text' placeholder="Ex: 12.345.678/0001-00" />
                             </FormInput>
                         </ContentInRow>
 
                         <ContentInRow style={{gap: 10}}>
                             <FormInput style={{width: 400}}>
-                                <Label htmlFor="email">Email</Label>
-                                <Input name="email" type='text' placeholder="Ex: empresa@mail.com" />
+                                <Label>Email</Label>
+                                <Input {...register("companyEmailAddress")} type='text' placeholder="Ex: empresa@mail.com" />
                             </FormInput>
 
                             <FormInput style={{width: '30%'}}>
-                                <Label htmlFor="dtFund">Data Fundacao</Label>
-                                <Input name="dtFund" type='text' placeholder="01/01/2024" />
+                                <Label>Data Fundacao</Label>
+                                <Input {...register("companyDateCreated")} type='text' placeholder="01/01/2024" />
                             </FormInput>
                         </ContentInRow>
 
                         <ContentInRow style={{gap: 25, justifyContent: 'flex-start', width: '100%'}}>
                             <FormInput style={{width: 200}}>
-                                <Label htmlFor="tel1">Telefone</Label>
-                                <Input name="tel1" type='text' placeholder="(xx) 9999-9999" />
+                                <Label>Telefone</Label>
+                                <Input {...register("companyPhoneNumber")} type='text' placeholder="(xx) 9999-9999" />
                             </FormInput>
 
                             <FormInput style={{width: 200}}>
-                                <Label htmlFor="tel2">Telefone 2</Label>
-                                <Input name="tel2" type='text' placeholder="(xx) 99999-9999" />
+                                <Label>Telefone 2</Label>
+                                <Input {...register("companyPhoneNumber2")} type='text' placeholder="(xx) 99999-9999" />
                             </FormInput>
                         </ContentInRow>
-                        
                     </CardContent>
                 </Card> 
 
@@ -61,45 +74,47 @@ export function FormBusiness() {
                     <CardContent>
                         <ContentInRow style={{gap: 10}}>
                             <FormInput style={{width: 400}}>
-                                <Label htmlFor="logradouro">Logradouro</Label>
-                                <Input name="logradouro" type='text' placeholder="Ex: Av. Brasil" />
+                                <Label>Logradouro</Label>
+                                <Input {...register("companyAddress")} type='text' placeholder="Ex: Av. Brasil" />
                             </FormInput>
                             <FormInput style={{width: '30%'}}>
-                                <Label htmlFor="nroEnd">Numero Endereco</Label>
-                                <Input name="nroEnd" type='text' placeholder="Ex: 123" />
+                                <Label>Numero Endereco</Label>
+                                <Input {...register("companyAddressNumber")} type='text' placeholder="Ex: 123" />
                             </FormInput>
                         </ContentInRow>
 
                         <ContentInRow style={{gap: 25, justifyContent: 'flex-start', width: '100%'}}>
                             <FormInput>
-                                <Label htmlFor="tel">Complemento</Label>
-                                <Input name="tel" type='text' placeholder="Ex: Galpao 2" />
+                                <Label>Complemento</Label>
+                                <Input  {...register("companyAddressComplement")} type='text' placeholder="Ex: Galpao 2" />
                             </FormInput>
 
                             <FormInput>
-                                <Label htmlFor="tel">Bairro</Label>
-                                <Input name="tel" type='text' placeholder="Ex: Bela Vista" />
+                                <Label>Bairro</Label>
+                                <Input  {...register("companyNeighborhood")} type='text' placeholder="Ex: Bela Vista" />
                             </FormInput>
                         </ContentInRow>
 
                         <ContentInRow style={{gap: 10}}>
                             <FormInput>
-                                <Label htmlFor="tel">CEP</Label>
-                                <Input name="tel" type='text' placeholder="Ex 01234-567" />
+                                <Label>CEP</Label>
+                                <Input  {...register("companyCodezip")} type='text' placeholder="Ex 01234-567" />
                             </FormInput>
 
                             <FormInput style={{width: '10%'}}>
-                                <Label htmlFor="tel2">UF</Label>
-                                <Input name="tel2" type='text' placeholder="UF" />
+                                <Label>UF</Label>
+                                <Input  {...register("companyState")} type='text' placeholder="UF" />
                             </FormInput>
 
                             <FormInput>
-                                <Label htmlFor="tel2">Cidade</Label>
-                                <Input name="tel2" type='text' placeholder="Ex: Sao Paulo"/>
+                                <Label>Cidade</Label>
+                                <Input  {...register("companyCity")} type='text' placeholder="Ex: Sao Paulo"/>
                             </FormInput>
                         </ContentInRow>
                     </CardContent>
                 </Card> 
+
+                <Button type='submit'> Avançar </Button>
             </div>
         </form>
     )
