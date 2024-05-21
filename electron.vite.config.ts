@@ -3,6 +3,7 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  
   main: {
     resolve: {
       alias: {
@@ -10,9 +11,15 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
+    define: {
+      'process.env': {}
+    },
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
+    define: {
+      'process.env': {}
+    },
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
@@ -28,6 +35,10 @@ export default defineConfig({
         '@/util': resolve('src/shared'),
       }
     },
+    define: {
+      'process.env': {}
+    },
     plugins: [react()]
-  }
+  },
+  
 })

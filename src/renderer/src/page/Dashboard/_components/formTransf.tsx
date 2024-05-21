@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { useState } from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
 import { TextArea } from "../styles";
@@ -5,8 +6,10 @@ import { DialogTransf } from "./DialogTransf";
 
 export function FormTransf() {
     const [dialogOpen, setDialogOpen] = useState(false)
+
     function toggleDialog() {
-        setDialogOpen(!dialogOpen)
+        console.log(dialogOpen)
+       setDialogOpen(!dialogOpen)
     }
 
     return(
@@ -30,7 +33,7 @@ export function FormTransf() {
 
                         <FormInput>
                             <Label>Informe o Valor:</Label>
-                            <Input  />
+                            <Input type="number" style={{textAlign: 'end', paddingRight: 20, background: "https://static.thenounproject.com/png/101791-200.png"}}  />
                         </FormInput>
 
                         <FormInput>
@@ -58,13 +61,14 @@ export function FormTransf() {
 
                         <FormInput style={{width: '100%'}}>
                             <Label>Saldo Atual</Label>
-                            <Input readOnly />
+                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={`R$  40,00`}/>
                         </FormInput>
                     </CardContent>
                 </Card>
             </ContentInRow>
-
-            <DialogTransf/>
+            {dialogOpen &&
+                <DialogTransf toggle={toggleDialog} />
+            }
         </Container>
     )
 }

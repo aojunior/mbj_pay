@@ -10,13 +10,14 @@ export const TextArea = styled.textarea`
 export const Dialog = styled.dialog`
     width: 80%;
     height: 70%;
-    padding: 10px 0;
+    padding: 10px 15px;
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    justify-content: center;    
+    justify-content: flex-start;    
     position: absolute;
-    left: 10%;
-    top: 10%;
+    left: 100px;
+    top: 100px;
     border: 1px solid #e4e4e7;
     &::backdrop {
         background-color: #000;

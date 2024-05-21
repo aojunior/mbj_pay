@@ -36,7 +36,7 @@ export const ContentInRow = styled.div`
 
 export const Card = styled.div`
     width: fit-content;
-    max-width: 90%;
+    max-width: 100%;
     height: auto;
     padding: 16px;
     border: 1px solid #e4e4e7;
@@ -80,13 +80,17 @@ export const FormInput = styled.div`
 `;
 
 export const Label = styled.label`
-
+     font-weight: 600;
 `;
 
 export const Input = styled.input`
     padding: 10px;
     border: 1px solid #e4e4e7;
     border-radius: 8px;
+    &&::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    }
 `;
 
 export const Button = styled.button`

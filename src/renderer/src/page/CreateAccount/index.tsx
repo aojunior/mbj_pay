@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+
 import { useState } from 'react'
 import { Progress } from './_components/Progress'
 import { FormBusiness } from './_components/formBusiness'
