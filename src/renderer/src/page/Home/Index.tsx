@@ -22,7 +22,7 @@ const Home: React.FC = () => {
     // window.api.onCount(data => setCount(data))
   };
   
-  window.api.sendFile(data => {
+  window.api.reciveFile(data => {
     setFile(data)
     console.log(data)
   });

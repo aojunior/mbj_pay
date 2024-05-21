@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
+import { tokenGenerator } from '@shared/api'
 
 let mainWindow: BrowserWindow;
 let count = 0;
@@ -28,7 +29,6 @@ function createWindow(): void {
 
   // mainWindow.webContents.send('file', watchFileAndFormat)
   });
-
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -57,7 +57,7 @@ app.whenReady().then(() => {
   watchFileAndFormat( (formatData) => {
     mainWindow.webContents.send('file', formatData);
   });
-  
+
   ipcMain.handle('create-paths', (event) => {
     createPath();
     return true;
@@ -66,6 +66,13 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   });
+
+
+  ipcMain.on('tokenGenerator', () => {
+    let token = tokenGenerator()
+    mainWindow.webContents.send('access_token', token)
+  });
+
 });
 
 app.on('window-all-closed', () => {
@@ -78,5 +85,7 @@ ipcMain.on('message', (_, args) => {
   count = args.count
   console.log(args.msg)
 });
+
+// mainWindow.webContents.send('', '')
 
 // setInterval(() => {mainWindow.webContents.send("count", count++)}, 1000);

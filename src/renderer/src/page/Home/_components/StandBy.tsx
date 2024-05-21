@@ -1,6 +1,7 @@
 import React from 'react';
 
 const StandBy: React.FC = () => {
+      
   return (
     <>
       <div className='contain-standby'>

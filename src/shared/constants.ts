@@ -1,8 +1,6 @@
 import { is } from '@electron-toolkit/utils'
-import axios from 'axios'
-import 'dotenv/config'
 
-const URL = import.meta.env.URL
+// const URL = import.meta.env.URL
 let DirectoryName: string = ''
 
 if (is.dev) {
@@ -13,16 +11,6 @@ if (is.dev) {
 
 export const appDirectoryName = 'clientPix'
 export const fileEncoding: BufferEncoding = 'utf8'
-export const api = axios.create({
-  baseURL: URL,
-  headers: {
-    'Accept-Encoding': 'gzip, deflate, br',
-    connection: 'keep-alive',
-    Accept: '*/*',
-    'Content-Type': 'application/x-www-form-urlencoded',
-    Host: 'mtls-mp.hml.flagship.maas.link'
-  }
-})
 
 export type fileProps = {
   fileType: string

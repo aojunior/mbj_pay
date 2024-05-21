@@ -1,34 +1,38 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect } from 'react';
 import QRCODE from '../../../assets/images.png';
-import { tokenGenerator } from '@shared/api';
+
 // import { Container } from './styles';
+
+const chavePix = 'chave aleatoria'
 
 function PaymentScreen (file) {
     const handleEsc = async (event) => {
         if (event.key === 'Escape') {
-           await tokenGenerator()
-            // console.log('Close')
+            window.api.tokenGenerator()
+            
+            window.api.accessToken(data => console.log(data))
        }
-     };
-     const handleF1 = (event) => {
-         if (event.key === 'F1') {
-             console.log('Copy to clipboard')
-         }
-     };
-     const handleF2 = (event) => {
-         if (event.key === 'F2') {
-             console.log('Print QRCODE')
-         }
-     };
-     const handleF3 = (event) => {
-         if (event.key === 'F3') {
-             console.log('Check again')
-         }
-     };
+    };
+    const handleF1 = (event) => {
+        if (event.key === 'F1' || event === 'F1') {
+            localStorage.setItem('clip', chavePix)
+            console.log('Copy to clipboard')
+        }
+    };
+    const handleF2 = (event) => {
+        if (event.key === 'F2' || event === 'F2') {
+            console.log('Print QRCODE')
+        }
+    };
+    const handleF3 = (event) => {
+        if (event.key === 'F3' || event === 'F3') {
+            localStorage.getItem('clip')
+            console.log(localStorage.getItem('clip'))
+        }
+    };
+
     useEffect(() => {
-
-
         window.addEventListener('keydown', handleEsc);
         window.addEventListener('keydown', handleF1);
         window.addEventListener('keydown', handleF2);
@@ -40,7 +44,6 @@ function PaymentScreen (file) {
           window.removeEventListener('keydown', handleF2);
           window.removeEventListener('keydown', handleF3);
         };
-
     }, []);
 
     return (
@@ -72,9 +75,9 @@ function PaymentScreen (file) {
         </div>
 
         <div className="content-bottom">
-            <button className="btn-action" ><code>F1</code> - Copiar Chave PIX</button>
-            <button className="btn-action"><code>F2</code> - Imprimir QR Code</button>
-            <button className="btn-action"><code>F3</code> - Consultar Pagamento</button>
+            <button className="btn-action" onClick={() => handleF1('F1')} ><code>F1</code> - Copiar Chave PIX</button>
+            <button className="btn-action" onClick={() => handleF2('F2')} ><code>F2</code> - Imprimir QR Code</button>
+            <button className="btn-action" onClick={() => handleF3('F3')} ><code>F3</code> - Consultar Pagamento</button>
         </div>
     </>
     );

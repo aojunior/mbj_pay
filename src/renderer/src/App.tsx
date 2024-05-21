@@ -9,8 +9,8 @@ function App(): JSX.Element {
   return (
     <div style={{width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column',}}>
       <Header />
-      {/* <Home /> */}
-      <Dashboard />
+      <Home />
+      {/* <Dashboard /> */}
     </div>
   )
 }

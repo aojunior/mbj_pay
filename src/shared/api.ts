@@ -1,25 +1,21 @@
-import axios from 'axios'
-import 'dotenv/config'
 import hmac from 'js-crypto-hmac'
-import { api } from './constants'
+import axios from 'axios'
+import https from 'https';
 import { join } from 'path'
 import { StringDecoder } from 'string_decoder'
+import { readFileSync } from 'fs';
+import { appDirectoryName, fileEncoding } from "./constants";
 
-const client_id = import.meta.env.CLIENTEID
-const client_secret = import.meta.env.CLIENTSECRET
-const SecretKey = import.meta.env.SECRETKEY
-const accountid = import.meta.env.ACCOUNTID
+const client_id = import.meta.env.MAIN_VITE_CLIENTEID
+const client_secret = import.meta.env.MAIN_VITE_CLIENTSECRET
+const SecretKey = import.meta.env.MAIN_VITE_SECRETKEY
+const accountid = import.meta.env.MAIN_VITE_ACCOUNTID
 
-function getTuple() {
-  const certificate_pem = join(__dirname, '../') + import.meta.env.CERTIFICATECRT
-  const certificate_key = join(__dirname, '../') + import.meta.env.CERTIFICATEKEY
+const certificate_pem = readFileSync(join(__dirname, '../')+'CERTIFICATES/client.crt')
+const certificate_key = readFileSync(join(__dirname, '../')+'CERTIFICATES/client.key')
+const certificate_ca = readFileSync(join(__dirname, '../')+'CERTIFICATES/rootCA.crt')
 
-  return [certificate_pem, certificate_key]
-}
-
-const [certificate_pem, certificate_key] = getTuple()
-
-const header = {
+const headers = {
   'Accept-Encoding': 'gzip, deflate, br',
   connection: 'keep-alive',
   Accept: '*/*',
@@ -36,21 +32,32 @@ function encrypt_string(hash_string: string) {
     return hmac
   })
   return console.log(sha_signature)
-  // eslint-disable-next-line prettier/prettier
 };
 
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+  cert: certificate_pem,
+  key: certificate_key,
+  ca: certificate_ca,
+  host: 'mtls-mp.hml.flagship.maas.link',
+
+});
+
+const api = axios.create({
+  baseURL: 'https://mtls-mp.hml.flagship.maas.link',
+  headers,
+  httpsAgent
+})
+
 export async function tokenGenerator() {
-  await api.post(
-    '/auth/realms/Matera/protocol/penid-connect/token',
+  await api.post('/auth/realms/Matera/protocol/openid-connect/token',
     {
       grant_type: 'client_credentials',
       client_id: client_id,
-      client_secret: client_secret
+      client_secret: client_secret,
     },
-    {
-      headers: header
-    }
   ).then((response) => {
-    return console.log(response)
+    if(response.status === 200)
+      return response.data.access_token
   }).catch(e => console.log(e))
 }

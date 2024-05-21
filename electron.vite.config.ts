@@ -11,15 +11,9 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
-    define: {
-      'process.env': {}
-    },
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
-    define: {
-      'process.env': {}
-    },
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
@@ -34,9 +28,6 @@ export default defineConfig({
         '@/components': resolve('src/components'),
         '@/util': resolve('src/shared'),
       }
-    },
-    define: {
-      'process.env': {}
     },
     plugins: [react()]
   },
