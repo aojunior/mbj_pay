@@ -6,7 +6,7 @@ import { homedir } from "os";
 let file = {}
 
 export const getRootDirectory = () => {
-    return `C:/${appDirectoryName}`
+    return `${appDirectoryName}`
 };
 
 export const createPath = () => {
@@ -14,8 +14,8 @@ export const createPath = () => {
     const ReqPath = rootDir+'/Req';
     const ResPath = rootDir+'/Res'
     const PrintPath = rootDir+'/Print'
-    console.log(`Creating path ...`);
     if(!existsSync(ReqPath) || !existsSync(ResPath) || !existsSync(PrintPath) ){
+        console.log(`Creating path ...`);
         Promise.all(
             [
             mkdir(ReqPath),

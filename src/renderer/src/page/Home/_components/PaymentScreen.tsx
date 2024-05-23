@@ -4,19 +4,17 @@ import QRCODE from '../../../assets/images.png';
 
 // import { Container } from './styles';
 
-const chavePix = 'chave aleatoria'
+let chavePix = 'chave aleatoria'
 
 function PaymentScreen (file) {
     const handleEsc = async (event) => {
         if (event.key === 'Escape') {
             window.api.tokenGenerator()
-            
-            window.api.accessToken(data => console.log(data))
+            window.api.accessToken(data => sessionStorage.setItem('token', data))
        }
     };
     const handleF1 = (event) => {
         if (event.key === 'F1' || event === 'F1') {
-            localStorage.setItem('clip', chavePix)
             console.log('Copy to clipboard')
         }
     };
@@ -27,7 +25,7 @@ function PaymentScreen (file) {
     };
     const handleF3 = (event) => {
         if (event.key === 'F3' || event === 'F3') {
-            localStorage.getItem('clip')
+            localStorage.clear()
             console.log(localStorage.getItem('clip'))
         }
     };

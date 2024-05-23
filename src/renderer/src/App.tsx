@@ -10,6 +10,7 @@ function App(): JSX.Element {
     <div style={{width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column',}}>
       <Header />
       <Home />
+      {/* <CreateAccount/> */}
       {/* <Dashboard /> */}
     </div>
   )

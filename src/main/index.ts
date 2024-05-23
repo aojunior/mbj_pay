@@ -6,7 +6,6 @@ import { createPath, watchFileAndFormat  } from './lib'
 import { tokenGenerator } from '@shared/api'
 
 let mainWindow: BrowserWindow;
-let count = 0;
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -26,8 +25,6 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       // contextIsolation: true,
     },
-
-  // mainWindow.webContents.send('file', watchFileAndFormat)
   });
 
   mainWindow.on('ready-to-show', () => {
@@ -49,7 +46,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.mbjpay');
   createWindow();
- 
+  createPath();
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
@@ -57,19 +54,13 @@ app.whenReady().then(() => {
   watchFileAndFormat( (formatData) => {
     mainWindow.webContents.send('file', formatData);
   });
-
-  ipcMain.handle('create-paths', (event) => {
-    createPath();
-    return true;
-  });
-
+ 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   });
 
-
-  ipcMain.on('tokenGenerator', () => {
-    let token = tokenGenerator()
+  ipcMain.on('token_generator',  async () => {
+    let token = await tokenGenerator()
     mainWindow.webContents.send('access_token', token)
   });
 
@@ -81,11 +72,7 @@ app.on('window-all-closed', () => {
   }
 });
 
+// IPC Preloader creates
 ipcMain.on('message', (_, args) => {
-  count = args.count
   console.log(args.msg)
 });
-
-// mainWindow.webContents.send('', '')
-
-// setInterval(() => {mainWindow.webContents.send("count", count++)}, 1000);

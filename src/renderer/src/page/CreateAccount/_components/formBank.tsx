@@ -2,22 +2,20 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from "zod";
-
 import { bankSchema } from "../schema";
-import { bankData } from "../action";
 import { ContantImg, ImgPreview, InputImg, PlaceholderImage, UploadImg } from "../styles";
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../styles/global';
 
-export function FormBank() {
-    const {register, handleSubmit, control} = useForm <z.infer<typeof bankSchema>>({
-        resolver: zodResolver(bankSchema),
-    })    
-    
-    const onSubmit = handleSubmit((data) => {
-        console.log(file)
-    })
+type bankProps = {
+    bankData: z.infer<typeof bankSchema>
+    setBankData: any
+}
 
-    const [file, setFile] = useState({} as z.infer<typeof bankSchema>)
+export function FormBank({bankData, setBankData}: bankProps) {
+    const {handleSubmit, control} = useForm <z.infer<typeof bankSchema>>({
+        resolver: zodResolver(bankSchema),
+        defaultValues: bankData
+    })    
 
     function getImg(e) {
         if(e.files[0]) {
@@ -26,13 +24,13 @@ export function FormBank() {
             lerImg.onload = () => {
                 switch(e.name) {
                     case 'imgSelfie':
-                        setFile({...file, imgSelfie: JSON.parse(JSON.stringify(lerImg.result))})
+                        setBankData({...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result))})
                         break;
                     case 'imgRgFrente':
-                        setFile({...file, imgRgFrente: JSON.parse(JSON.stringify(lerImg.result))})
+                        setBankData({...bankData, imgRgFrente: JSON.parse(JSON.stringify(lerImg.result))})
                         break;
                     case 'imgRgverso':
-                        setFile({...file, imgRgverso: JSON.parse(JSON.stringify(lerImg.result))})
+                        setBankData({...bankData, imgRgverso: JSON.parse(JSON.stringify(lerImg.result))})
                         break
                 }
             }
@@ -40,7 +38,7 @@ export function FormBank() {
     }
 
     return (
-        <form onSubmit={onSubmit}>
+        <form >
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 20, marginTop: 30 }}>
               <Card style={{width: '80%'}}>
                 <CardHeader>
@@ -53,7 +51,7 @@ export function FormBank() {
                         render={({field: {value, onChange, ...field}}) => (
                             <ContantImg>
                                 <UploadImg>
-                                    {file && <ImgPreview src={file.imgSelfie}/>}
+                                    <ImgPreview src={bankData.imgSelfie}/>
                                 </UploadImg>
                                 <PlaceholderImage>
                                     <InputImg
@@ -61,6 +59,7 @@ export function FormBank() {
                                     name="imgSelfie"
                                     id="imgSelfie" type="file"  
                                     accept="image/x-png, image/jpeg, image/jpg" 
+                                    
                                     onChange={e => {onChange(e.target); getImg(e.target)}}
                                     />
                                     <span>Selecionar Selfie</span>
@@ -71,7 +70,7 @@ export function FormBank() {
 
                     <ContantImg>
                         <UploadImg>
-                            {file && <ImgPreview src={file.imgRgFrente}/>}
+                           <ImgPreview src={bankData.imgRgFrente}/>
                         </UploadImg>
                         <PlaceholderImage>
                             <InputImg 
@@ -85,7 +84,7 @@ export function FormBank() {
 
                     <ContantImg>
                         <UploadImg>
-                            {file && <ImgPreview src={file.imgRgverso}/>}
+                            <ImgPreview src={bankData.imgRgverso}/>
                         </UploadImg>
                         <PlaceholderImage>
                             <InputImg
@@ -98,7 +97,6 @@ export function FormBank() {
                     </ContantImg>
                 </CardContent>
               </Card>
-              <Button type="submit"> Finalizar </Button>
             </div>
         </form>
     )

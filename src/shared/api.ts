@@ -50,6 +50,7 @@ const api = axios.create({
 })
 
 export async function tokenGenerator() {
+  let token = ''
   await api.post('/auth/realms/Matera/protocol/openid-connect/token',
     {
       grant_type: 'client_credentials',
@@ -57,7 +58,10 @@ export async function tokenGenerator() {
       client_secret: client_secret,
     },
   ).then((response) => {
-    if(response.status === 200)
-      return response.data.access_token
-  }).catch(e => console.log(e))
+    token = response.data.access_token
+  }).catch(e => console.log(e))  
+}
+
+export async function createAccount() {
+  
 }
