@@ -26,11 +26,11 @@ export function FormBank({bankData, setBankData}: bankProps) {
                     case 'imgSelfie':
                         setBankData({...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result))})
                         break;
-                    case 'imgRgFrente':
-                        setBankData({...bankData, imgRgFrente: JSON.parse(JSON.stringify(lerImg.result))})
+                    case 'imgRgFront':
+                        setBankData({...bankData, imgRgFront: JSON.parse(JSON.stringify(lerImg.result))})
                         break;
-                    case 'imgRgverso':
-                        setBankData({...bankData, imgRgverso: JSON.parse(JSON.stringify(lerImg.result))})
+                    case 'imgRgBack':
+                        setBankData({...bankData, imgRgBack: JSON.parse(JSON.stringify(lerImg.result))})
                         break
                 }
             }
@@ -70,11 +70,11 @@ export function FormBank({bankData, setBankData}: bankProps) {
 
                     <ContantImg>
                         <UploadImg>
-                           <ImgPreview src={bankData.imgRgFrente}/>
+                           <ImgPreview src={bankData.imgRgFront}/>
                         </UploadImg>
                         <PlaceholderImage>
                             <InputImg 
-                            name='imgRgFrente' type="file" 
+                            name='imgRgFront' type="file" 
                             accept="image/x-png, image/jpeg, image/jpg"
                             onChange={e => getImg(e.target)}
                             />
@@ -84,11 +84,11 @@ export function FormBank({bankData, setBankData}: bankProps) {
 
                     <ContantImg>
                         <UploadImg>
-                            <ImgPreview src={bankData.imgRgverso}/>
+                            <ImgPreview src={bankData.imgRgBack}/>
                         </UploadImg>
                         <PlaceholderImage>
                             <InputImg
-                            name='imgRgverso' type="file"
+                            name='imgRgBack' type="file"
                             accept="image/x-png, image/jpeg, image/jpg"
                             onChange={e => getImg(e.target)}
                             />

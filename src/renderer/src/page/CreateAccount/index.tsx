@@ -6,7 +6,7 @@ import { FormCompany } from './_components/formCompany'
 import { FormOwner } from './_components/formOwner'
 import { FormBank } from './_components/formBank'
 import { bankSchema, companySchema, ownerSchema } from './schema'
-import { onSubmit } from './action'
+
 import { Button, Container, ContentInRow } from '../../styles/global'
 
 export default function UserRegister() {
@@ -17,8 +17,9 @@ export default function UserRegister() {
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
 
   function sendData() {
-    const accountConcat = {...companyData, ...ownerData, ...bankData}
-    onSubmit(accountConcat)
+    const concatAccount = {...companyData, ...ownerData, ...bankData}
+    const getToken = sessionStorage.getItem('token')
+    window.api.createAccount(concatAccount, getToken)
   }
 
   return (
@@ -39,7 +40,7 @@ export default function UserRegister() {
             pages[select] < 2 ?
             <Button  onClick={() => setSelect(select + 1)}> Continuar </Button> 
             :
-            <Button  onClick={sendData}> Finalizar </Button>
+            <Button  onClick={() => sendData()}> Finalizar </Button>
           }
         </ContentInRow>
     </>

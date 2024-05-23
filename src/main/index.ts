@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
-import { tokenGenerator } from '@shared/api'
+import { tokenGenerator, createAccount } from '@shared/api'
 
 let mainWindow: BrowserWindow;
 
@@ -16,6 +16,7 @@ function createWindow(): void {
     resizable: false,
     fullscreenable: false,
     // closable: false,
+    
     center: true,
     title: 'MBJ PAY',
     frame: true,
@@ -23,6 +24,7 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {icon}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
+      devTools: true
       // contextIsolation: true,
     },
   });
@@ -42,7 +44,6 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   };
 };
-
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.mbjpay');
   createWindow();
@@ -58,11 +59,13 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   });
-
-  ipcMain.on('token_generator',  async () => {
-    let token = await tokenGenerator()
-    mainWindow.webContents.send('access_token', token)
-  });
+  
+  if (app.isReady()) {
+    ipcMain.on('token_generator',  async () => {
+      let token = await tokenGenerator()
+      mainWindow.webContents.send('access_token', token)
+    });
+  }
 
 });
 
@@ -76,3 +79,10 @@ app.on('window-all-closed', () => {
 ipcMain.on('message', (_, args) => {
   console.log(args.msg)
 });
+
+ipcMain.on('create_account', async(_, args) => {
+  let newAccount = await createAccount(args.data, args.token)
+  console.log(newAccount)
+});
+
+
