@@ -12,8 +12,36 @@ import { Button, Container, ContentInRow } from '../../styles/global'
 export default function UserRegister() {
   const pages = [0, 1, 2]
   const [select, setSelect] = useState(0)
-  const [companyData, setCompanyData] = useState({} as z.infer<typeof companySchema>)
-  const [ownerData, setOwnerData] = useState({} as z.infer<typeof ownerSchema>)
+  const [companyData, setCompanyData] = useState({
+    companyAddress: 'rua galaxia',
+    companyAddressComplement: '',
+    companyAddressNumber: '272',
+    companyNeighborhood: 'Jardim da Gloria',
+    companyCodezip: '03254770',
+    companyState: 'SP',
+    companyCity: 'Cotia',
+    companyDateCreated: '2020-05-01',
+    companyDocument: '81667817000110',
+    companyEmailAddress: 'empresa@email.com',
+    companyName: 'Empresa Teste',
+    companyPhoneNumber: '1127024478',
+
+  } as z.infer<typeof companySchema>)
+  const [ownerData, setOwnerData] = useState({
+    ownerAddress: 'rua galaxia',
+    ownerAddressComplement: '',
+    ownerAddressNumber: '272',
+    ownerNeighborhood: 'Jardim da Gloria',
+    ownerCodezip: '03254770',
+    ownerState: 'SP',
+    ownerCity: 'Cotia',
+    ownerBirthday: '1995-05-01',
+    ownerDocument: '81667817000110',
+    ownerEmailAddress: 'cliente@email.com',
+    ownerName: 'Cliente Teste',
+    ownerMotherName: 'Mae Cliente',
+    ownerPhoneNumber: '1127024478'
+  } as z.infer<typeof ownerSchema>)
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
 
   function sendData() {

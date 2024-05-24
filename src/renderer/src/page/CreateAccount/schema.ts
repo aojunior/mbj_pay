@@ -31,7 +31,7 @@ export const ownerSchema = z.object({
     ownerNeighborhood: z.string(),
     ownerCity: z.string(),
     ownerState: z.string(),
-    ownerCodeZip: z.string(),
+    ownerCodezip: z.string(),
 })
 
 export const bankSchema = z.object({

@@ -10,11 +10,11 @@ import { z } from 'zod'
 import { appDirectoryName, fileEncoding } from "./constants";
 import { accountSchema } from './schemas'
 
+const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID
 const client_secret = import.meta.env.MAIN_VITE_CLIENTSECRET
 const SecretKey = import.meta.env.MAIN_VITE_SECRETKEY
 const accountid = import.meta.env.MAIN_VITE_ACCOUNTID
-
 const certificate_pem = readFileSync(join(__dirname, '../')+'CERTIFICATES/client.crt')
 const certificate_key = readFileSync(join(__dirname, '../')+'CERTIFICATES/client.key')
 const certificate_ca = readFileSync(join(__dirname, '../')+'CERTIFICATES/rootCA.crt')
@@ -27,15 +27,12 @@ const headers = {
   'Host': 'mtls-mp.hml.flagship.maas.link'
 }
 
-const now = new Date().toISOString()
-
 async function encrypt_string(hash_string: string) {
-  const msg = `${uuidv4()}-${hash_string}`
+  const msg = hash_string
   const key = SecretKey
   const hmac = createHmac('sha256', key)
   hmac.update(msg) 
   const sha_signature = hmac.digest('hex')
-
   return sha_signature
 };
 
@@ -49,12 +46,12 @@ const httpsAgent = new https.Agent({
 
 const api = axios.create({
   baseURL: 'https://mtls-mp.hml.flagship.maas.link',
-  
   httpsAgent
 })
 
 export async function tokenGenerator() {
   let token
+  
   await api.post('/auth/realms/Matera/protocol/openid-connect/token',
     {
       grant_type: 'client_credentials',
@@ -81,10 +78,8 @@ export async function tokenGenerator() {
 
 export async function createAccount(accountData: z.infer<typeof accountSchema>, token) {
   let response 
-  const sha_signature = await encrypt_string(accountData.companyDocument)
-
   const data = {
-    externalIdentifier: `${uuidv4()}-${now}` ,
+    externalIdentifier: `${uuidv4()}${now}` ,
     clientType: "CORPORATE",
     accountType: "UNLIMITED_ORDINARY",
     client: {
@@ -135,7 +130,7 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
               bairro: accountData.ownerNeighborhood,
               cidade: accountData.ownerCity,
               estado: accountData.ownerState,
-              cep: accountData.ownerCodeZip,
+              cep: accountData.ownerCodezip,
               pais: "BRA"
           },
           documents: [
@@ -154,93 +149,29 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
       ]
     }
   }
-
-  response = await api.post('/v1/accounts', {
-    "externalIdentifier": "{{UUID}}",  
-    "clientType": "CORPORATE",  
-    "accountType": "UNLIMITED_ORDINARY", 
-    "client": { 
-      "name": "Pessoa Juridica",  
-      "taxIdentifier": {    
-        "taxId": "{{CNPJ}}",
-        "country": "BRA"   
-      },
-      "mobilePhone": {
-        "country": "BRA",
-        "phoneNumber": "129{{seq_telefone}}"
-      },
-      "email": "pessoajuridica.{{CNPJ}}@mp.com.br"
-    },
-    "billingAddress": {
-      "logradouro": "Rua Sacramento",
-      "numero": "15",
-      "complemento": "Casa",
-      "bairro": "Centro",
-      "cidade": "São Paulo",
-      "estado": "SP",
-      "cep": "13720000",
-      "pais": "BRA"
-    },
-    "additionalDetailsCorporate": {
-      "establishmentDate": "1990-05-29",
-      "companyName": "Nome da Empresa",
-      "businessLine": 47,
-      "establishmentForm": 1,
-      "representatives": [ 
-        {
-          "name": "Representante {{CPF}} da PJ {{CNPJ}}",
-          "mother": "Nome da mae",
-          "birthDate": "1990-05-29",
-          "taxIdentifier": {
-            "taxId": "{{CPF}}",
-            "country": "BRA"
-          },
-          "mobilePhone": {
-            "country": "BRA",
-            "phoneNumber": "129{{seq_telefone}}"
-          },
-          "email": "representante.pj.{{CNPJ}}@mp.com.br",
-          "mailAddress": {
-            "logradouro": "Rua Sacramento",
-            "numero": "15",
-            "complemento": "Casa",
-            "bairro": "Centro",
-            "cidade": "São Paulo",
-            "estado": "SP",
-            "cep": "13720000",
-            "pais": "BRA"
-          },
-        "documents": [
-          {
-            "content": "iVBORw0KGgoAAAANSUhEUgAAAXEAAACXCAIAAABsj/zYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAASySURBVHhe7d1rcqJAGIbRWZcLYj2uxs24mIx4SSWKdIMvGOlzfmaiHayvn/IG8+8LIEdTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUhquSnH42G/77pd79+D/qddt98fjsfr7wNlLTbllJJuICKjdt0pLtfbP3fcT73fKt3hev/fSgvt9q+FMHwgA39OaYXHYz5b7RFmttaacpyekx9KW1VThmlKS1pqSmYex8ZvtYkvLaQp02hKUDtNOXTX+XnZ8w2rKcM0pSWtNCVXlN6zLaspwzSlJW00pTiJu/4DnrP9vhv6FOje8BCuNvGlhTRlGk0JaqIp44M4tP+Oxec1g1O42sSXFtKUaTQlqIWmjM7h0903Z+hXm/jSQpoyjaYEtdCU0eccI7tv/LnK0A2X3urf3t2U1w9koabEHmFma74pI2N4m9/zF2173c35vZeB79euNvFLL7T8gZRW0JSP1fxrn4tTL/ov4S+9UTTlW2kFTflYTbxHO+2D5L4vM8/y0ZRqmrJZTTRl/rdTLnm53ktZaeJnGN5b725Kred/x0JNmeHJSszVRlPmR+XmbecQasovmvL3NdKUQFV6pbJoyh1NaVAzTQnuk+5pV1ab+NJCmlJPU8IaasrJ8fDKlQ5+ePfEa0qOpoS11ZSzTFgGd4um3NGUBjXYlIs5F3v7bWC/aModTWlQs0256S9KW3Um8qPHDaMpdzSlQc035YdTXqb15WHHLL3Vv727Ka8fyEJNiT3CzKYpgypfGd0PvqZU05TN2nxTTs89ev1/unFxPR/wMpqjz3vLF1G5n2BNqaYpm7X1phRmsDSCharc33y1iV96oeUPpLSCpnyszT9PmViFO4UR9tpnttIKmvKxtv/a56UhHC/Sw21Xm/ilF1r+QEoraMrH2v57tKUpfDq+M+a+vNY8k+M13e9jWX7rTn5sL1Z7hJlt+02pOn1w93Bu4PFQmt6BMdSUapqyWS00pf6c5OtHQlVjOzT0mlJNUzariaZMqEqt4RnUlGqaslmNNCVclScDryn1NGWzmmnKaRwzWRm5fIqm1NOUzWqoKSflN17HjfWkpynVNGWz2mrK2ayrHLzterRnmnKjKX9fg035dj4N+XoC0HW0fuh/evrX/aGiJcBNy00B8jQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIElTgCRNAZI0BUjSFCBJU4AkTQGSNAVI0hQgSVOAJE0BkjQFSNIUIOfr6z8cMM6YMGZbBwAAAABJRU5ErkJggg==",
-            "type": "PICTURE"
-          },
-          {
-            "content": "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",
-            "type": "IDENTITY_FRONT"
-          },
-          {
-            "content": "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",
-            "type": "IDENTITY_BACK"
-          }
-        ]
-      }
-    ]
-  }
-
-
-  }, {
+  const sha_signature = await encrypt_string(data.externalIdentifier + accountData.companyDocument)
+  
+  response = await api.post('/v1/accounts',
+  data,
+  {
     headers: {
-      'Accept-Encoding': 'gzip, deflate, br',
-      'connection': 'keep-alive',
-      'Authorization' : `Bearer ${token}`,
+      ...headers,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Host': 'mtls-mp.hml.flagship.maas.link'
-    }
-  }).then(response => {
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent,
+  }
+  ).then(response => {
     return response
-  }).catch(e => console.error(e))
+  }).catch(error => {
+    if (error.response) {
+      console.log(error.response.data);
+    } else {
+      console.log('Error', error.message);
+    }
+  })
 
   return response
 }

@@ -27,7 +27,7 @@ export const accountSchema = z.object({
     ownerNeighborhood: z.string(),
     ownerCity: z.string(),
     ownerState: z.string(),
-    ownerCodeZip: z.string(),
+    ownerCodezip: z.string(),
     imgSelfie: z.string(),
     imgRgFront: z.string(),
     imgRgBack: z.string(),

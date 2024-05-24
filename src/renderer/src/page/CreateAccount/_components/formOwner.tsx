@@ -103,7 +103,7 @@ export function FormOwner({ownerData, setOwnerData}: ownerProps) {
                         <ContentInRow style={{gap: 10}}>
                             <FormInput>
                                 <Label>CEP</Label>
-                                <Input {...register("ownerCodeZip")} type='text' placeholder="Ex 01234-567" />
+                                <Input {...register("ownerCodezip")} type='text' placeholder="Ex 01234-567" />
                             </FormInput>
 
                             <FormInput style={{width: '10%'}}>
