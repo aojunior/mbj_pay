@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, ipcMain } from 'electron'
 import { totalmem, cpus } from 'os';
 
+
 const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
@@ -10,5 +11,7 @@ const API = {
   tokenGenerator: () => ipcRenderer.send("token_generator"),
   accessToken: (callback) => ipcRenderer.on("access_token", (_, args) => callback(args)),
 };
+
+
 
 contextBridge.exposeInMainWorld("api", API);

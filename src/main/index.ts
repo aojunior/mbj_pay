@@ -4,6 +4,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
 import { tokenGenerator, createAccount } from '@shared/api'
+import { dbCreate, dbInsert, dbRead } from '@shared/database'
+
 
 let mainWindow: BrowserWindow;
 
@@ -44,10 +46,12 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   };
 };
-app.whenReady().then(() => {
+
+app.whenReady().then( () => {
   electronApp.setAppUserModelId('com.mbjpay');
   createWindow();
   createPath();
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
@@ -59,10 +63,16 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   });
+
+  console.log(process.env.NODE_ENV)
   
   if (app.isReady()) {
+    // ipcMain.on('token_generator',  async () => {
+    //   let token = await tokenGenerator()
+    //   mainWindow.webContents.send('access_token', token)
+    // });
     ipcMain.on('token_generator',  async () => {
-      let token = await tokenGenerator()
+      let token = await dbRead()
       mainWindow.webContents.send('access_token', token)
     });
   }
@@ -78,11 +88,10 @@ app.on('window-all-closed', () => {
 // IPC Preloader creates
 ipcMain.on('message', (_, args) => {
   console.log(args.msg)
+
 });
 
 ipcMain.on('create_account', async(_, args) => {
   let newAccount = await createAccount(args.data, args.token)
   console.log(newAccount)
 });
-
-

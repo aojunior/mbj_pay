@@ -6,6 +6,7 @@
   "author": "example.com",
   "homepage": "https://electron-vite.org",
   "scripts": {
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
@@ -18,7 +19,23 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "package-windows": "rm -rf build && rm -rf dist && npm run build && electron-builder -w -c.extraMetadata.main=build/electron.js"
+  },
+  "build": {
+    "appId": "sqlite.electron-test.app",
+    "productName": "MBJ Pay",
+    "files": [
+        "build/**/*",
+        "node_modules/**/*",
+        "resources/**/*"
+    ],
+    "directories": {
+        "buildResources": "resources"
+    },
+    "extraResources": [
+        "./database.db"
+    ]
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
@@ -26,6 +43,7 @@
     "@hookform/resolvers": "^3.4.0",
     "@react-icons/all-files": "^4.1.0",
     "axios": "^1.6.8",
+    "better-sqlite3": "^10.0.0",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "fs-extra": "^11.2.0",
@@ -33,8 +51,7 @@
     "lodash": "^4.17.21",
     "react-hook-form": "^7.51.4",
     "react-icons": "^5.2.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
+    "react-router-dom": "^6.23.1",
     "styled-components": "^6.1.11",
     "uuid": "^9.0.1",
     "zod": "^3.23.8"
@@ -43,6 +60,7 @@
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "@electron-toolkit/eslint-config-ts": "^1.0.1",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@electron/rebuild": "^3.6.0",
     "@testing-library/react": "^15.0.7",
     "@types/node": "^18.19.9",
     "@types/react": "^18.2.48",

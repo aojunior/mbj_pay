@@ -12,6 +12,9 @@ export function FormTransf() {
        setDialogOpen(!dialogOpen)
     }
 
+    function saveInDb() {
+    }
+
     return(
         <Container>
             <ContentInRow >
@@ -42,7 +45,7 @@ export function FormTransf() {
                         </FormInput>
                         
                         <ContentInRow>
-                            <Button> Confirmar </Button>
+                            <Button onClick={saveInDb} > Confirmar </Button>
                             <Button onClick={toggleDialog}> Extrato </Button>
                         </ContentInRow>
                     </CardContent>
