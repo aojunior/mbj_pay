@@ -9,6 +9,7 @@ import { readFileSync } from 'fs';
 import { z } from 'zod'
 import { appDirectoryName, fileEncoding } from "./constants";
 import { accountSchema } from './schemas'
+import { dbRead } from './database';
 
 const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID
@@ -164,7 +165,8 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
     httpsAgent,
   }
   ).then(response => {
-    return response
+    if (response.status == 200) 
+    return response.data
   }).catch(error => {
     if (error.response) {
       console.log(error.response.data);
@@ -176,3 +178,63 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
   return response
 }
 
+export async function VerifyAccount(token) {
+  let response
+  const data = await dbRead()  
+  const AccountID = data.AccountId
+  
+  const sha_signature = await encrypt_string(AccountID)
+
+  response = await api.get(`/v1/accounts/${AccountID}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent,
+  }).then(res => {
+    if (res.status === 200)
+    return res.data
+  }).catch(error => {
+    if (error.response) {
+      console.log(error.response.data);
+    } else {
+      console.log('Error', error.message);
+    }
+  })
+
+  return response
+}
+
+export async function createAliases(token: string) {
+  const data = await dbRead()
+  const AccountID = data.AccountId
+  const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountID}/aliases:`)
+
+  let response = await api.post(`/v1/accounts/${AccountID}/aliases`,{
+    data: {
+      externalIdentifier: `${uuidv4()}${now}`,
+      alias: {
+        type: 'EVP'
+      }
+    },
+    headers:{
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    httpsAgent
+  }).then(res => {
+    if(res.status == 200)
+    return res.data
+  }).catch(error => {
+    if (error.response) {
+      console.log(error.response.data);
+    } else {
+      console.log('Error', error.message);
+    }
+  })
+}

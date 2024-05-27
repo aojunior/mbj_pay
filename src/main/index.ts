@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount } from '@shared/api'
+import { tokenGenerator, createAccount, VerifyAccount } from '@shared/api'
 import { dbCreate, dbInsert, dbRead } from '@shared/database'
 
 
@@ -63,20 +63,6 @@ app.whenReady().then( () => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   });
-
-  console.log(process.env.NODE_ENV)
-  
-  if (app.isReady()) {
-    // ipcMain.on('token_generator',  async () => {
-    //   let token = await tokenGenerator()
-    //   mainWindow.webContents.send('access_token', token)
-    // });
-    ipcMain.on('token_generator',  async () => {
-      let token = await dbRead()
-      mainWindow.webContents.send('access_token', token)
-    });
-  }
-
 });
 
 app.on('window-all-closed', () => {
@@ -86,6 +72,12 @@ app.on('window-all-closed', () => {
 });
 
 // IPC Preloader creates
+
+ipcMain.on('token_generator',  async () => {
+  let token = await tokenGenerator()
+  mainWindow.webContents.send('access_token', token)
+});
+
 ipcMain.on('message', (_, args) => {
   console.log(args.msg)
 
@@ -93,5 +85,18 @@ ipcMain.on('message', (_, args) => {
 
 ipcMain.on('create_account', async(_, args) => {
   let newAccount = await createAccount(args.data, args.token)
-  console.log(newAccount)
+
+  let data = {
+    AccId: newAccount.data.account.accountId,
+    AccHID: newAccount.data.accountHolderId,
+    Cnpj: args.data.companyDocument,
+    Tel: args.data.companyPhoneNumber
+  }
+  await dbInsert(data)
 });
+
+ipcMain.on('verify_account', async(_, args) => {
+  let consulta = await VerifyAccount(args)
+
+  console.log(consulta)
+})

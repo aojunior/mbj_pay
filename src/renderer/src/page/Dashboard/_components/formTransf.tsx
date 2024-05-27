@@ -12,8 +12,14 @@ export function FormTransf() {
        setDialogOpen(!dialogOpen)
     }
 
-    function saveInDb() {
+    async function saveInDb() {
+
     }
+
+    // async function verifyAccount() {
+    //     const token = sessionStorage.getItem('token')
+    //     await  window.api.verifyAccount(token)
+    // }
 
     return(
         <Container>

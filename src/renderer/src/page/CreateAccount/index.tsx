@@ -48,6 +48,7 @@ export default function UserRegister() {
     const concatAccount = {...companyData, ...ownerData, ...bankData}
     const getToken = sessionStorage.getItem('token')
     window.api.createAccount(concatAccount, getToken)
+
   }
 
   return (

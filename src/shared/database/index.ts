@@ -27,17 +27,17 @@ export const dbRead = () => {
         const query = `SELECT * FROM cliente`
         const readQuery = db.prepare(query)
         const rowList = readQuery.all()
-        return console.log(rowList)
+        return rowList[0]
     } catch (err) {
         console.error(err)
         throw err
     }
 }
 
-export const dbInsert = (AccId, AccHID, Cnpj, Tel) => {
+export const dbInsert = ({AccId, AccHID, Cnpj, Tel}) => {
     try {
         const insertQuery = db.prepare(
-            `INSERT INTO cliente (AccountId, AccountHolderId, Cnpj, Telefone) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}')`
+            `INSERT INTO cliente (AccountId, AccountHolderId, Cnpj, Telefone) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}') LIMIT 1`
         )
 
         const transaction = db.transaction(() => {
@@ -48,6 +48,7 @@ export const dbInsert = (AccId, AccHID, Cnpj, Tel) => {
             )
         })
         transaction()
+        console.log('Created')
     } catch (err) {
         console.error(err)
         throw err
