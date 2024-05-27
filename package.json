@@ -20,6 +20,7 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
+    "preinstall": "npm install better-sqlite3@'^10.0.0' --no-save --build-from-source --sqlite3=\"$(pwd)/sqlite-amalgamation\"",
     "package-windows": "rm -rf build && rm -rf dist && npm run build && electron-builder -w -c.extraMetadata.main=build/electron.js"
   },
   "build": {
