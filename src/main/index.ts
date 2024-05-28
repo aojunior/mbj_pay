@@ -3,8 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount, VerifyAccount } from '@shared/api'
-import { dbCreate, dbInsert, dbRead } from '@shared/database'
+import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases } from '@shared/api'
+import { dbAlter, dbCreate, dbInsert, dbRead } from '@shared/database'
 
 
 let mainWindow: BrowserWindow;
@@ -74,13 +74,13 @@ app.on('window-all-closed', () => {
 // IPC Preloader creates
 
 ipcMain.on('token_generator',  async () => {
+  console.log()
   let token = await tokenGenerator()
   mainWindow.webContents.send('access_token', token)
 });
 
 ipcMain.on('message', (_, args) => {
   console.log(args.msg)
-
 });
 
 ipcMain.on('create_account', async(_, args) => {
@@ -99,4 +99,16 @@ ipcMain.on('verify_account', async(_, args) => {
   let consulta = await VerifyAccount(args)
 
   console.log(consulta)
+})
+
+ipcMain.on('create_alias', async(_, args) => {
+  let alias = await createAliases(args)
+  console.log(alias)
+})
+
+ipcMain.on('verify_alias', async(_, args) => {
+  const data = await dbRead()
+  console.log(data)
+  // let consulta = await verifyAliases(args)
+  // await dbAlter(consulta.response.data.aliases[0].name, consulta.AccountID)
 })

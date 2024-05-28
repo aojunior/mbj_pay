@@ -55,11 +55,11 @@ export const dbInsert = ({AccId, AccHID, Cnpj, Tel}) => {
     }
 }
 
-export const dbAlter = (aliases) => {
+export const dbAlter = (aliases, AccId) => {
     try {
         const insertQuery = db.prepare(
-            `Update cliente set Aliases = '${aliases}'`
-        )
+            `Update cliente set Aliases = '${aliases}' WHERE AccountId = '${AccId}'`
+        );
 
         const transaction = db.transaction(() => {
             const info = insertQuery.run()
@@ -73,4 +73,8 @@ export const dbAlter = (aliases) => {
         console.error(err)
         throw err
     }
+}
+
+export const dbAddAliases = () => {
+
 }

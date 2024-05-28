@@ -60,13 +60,7 @@ export async function tokenGenerator() {
       client_secret: client_secret,
     },
     {
-      headers: {
-        'Accept-Encoding': 'gzip, deflate, br',
-        'connection': 'keep-alive',
-        'Accept': '*/*',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Host':'mtls-mp.hml.flagship.maas.link'
-      }
+      headers
     }
   )
   .then((response) => {
@@ -209,27 +203,29 @@ export async function VerifyAccount(token) {
 }
 
 export async function createAliases(token: string) {
-  const data = await dbRead()
-  const AccountID = data.AccountId
+  const db = await dbRead()
+  const AccountID = db.AccountId
   const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountID}/aliases:`)
-
-  let response = await api.post(`/v1/accounts/${AccountID}/aliases`,{
-    data: {
-      externalIdentifier: `${uuidv4()}${now}`,
-      alias: {
-        type: 'EVP'
-      }
-    },
+  const data = {
+    externalIdentifier: `${uuidv4()}${now}`,
+    alias: {
+      type: 'EVP'
+    }
+  }
+  let response = await api.post(`/v1/accounts/${AccountID}/aliases`,
+  data,
+  {
     headers:{
       ...headers,
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      'Accept': '*/*',
+      'Transaction-Hash': sha_signature
     },
     httpsAgent
   }).then(res => {
-    if(res.status == 200)
-    return res.data
+    if(res.status == 200 || res.status == 202)
+    return [res.status, res.data]
   }).catch(error => {
     if (error.response) {
       console.log(error.response.data);
@@ -237,4 +233,62 @@ export async function createAliases(token: string) {
       console.log('Error', error.message);
     }
   })
+
+  return {response, AccountID}
+}
+
+export async function verifyAliases(token: string) {
+  const data = await dbRead()
+  const AccountID = data.AccountId
+  //const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountiD}/aliases`)
+
+  let response = await api.get(`/v1/accounts/${AccountID}/aliases`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+    },
+    httpsAgent
+  }).then( res => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error', error.message);
+    }
+  })
+
+  return {response, AccountID}
+}
+
+export async function createPayment(paymentFile: any, token: string) {
+  const db = await dbRead()
+  const AccountID = db.AccountId
+  const Aliases = db.Aliases
+
+  const sha_signature = await encrypt_string(`${Aliases}${paymentFile.totalAmount}${AccountID}${paymentFile.recipientAmount}`)
+
+  const paymentData = {
+    ...paymentFile,
+    externalIdentifier: `${uuidv4()}${now}`,
+  }
+
+  let response = await api.post(`/v1/payments`,
+  paymentData,
+  {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }
+  ).then( res => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => console.error(error.message))
+
+  return response
 }

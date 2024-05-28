@@ -11,6 +11,9 @@ const API = {
   accessToken: (callback) => ipcRenderer.on("access_token", (_, args) => callback(args)),
   createAccount: (data, token) => ipcRenderer.send('create_account', {data, token}),
   verifyAccount: (token) => ipcRenderer.send("verify_account", token),
+  createAlias: (token) => ipcRenderer.send("create_alias", token),
+  verifyAlias: (token) => ipcRenderer.send("verify_alias", token),
+  
 };
 
 contextBridge.exposeInMainWorld("api", API);

@@ -9,7 +9,6 @@ import { useCallback, useEffect } from 'react'
 function App(): JSX.Element {
 
   const refreshAndStorageToken = useCallback(() => {
-    console.log('refresh Token')
     window.api.tokenGenerator()
     window.api.accessToken(data => sessionStorage.setItem('token', data))      
   }, [])
