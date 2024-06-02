@@ -1,9 +1,6 @@
 import { appDirectoryName, fileEncoding } from "@shared/constants";
-import { readdir, readFile, unwatchFile, watchFile } from "fs";
+import { readFile, unwatchFile, watchFile } from "fs";
 import { ensureDir, existsSync, mkdir } from "fs-extra";
-import { homedir } from "os";
-
-let file = {}
 
 export const getRootDirectory = () => {
     return `${appDirectoryName}`
@@ -30,25 +27,27 @@ export const watchFileAndFormat = async (callback:(formatData: any) => void) => 
     await ensureDir(rootDir);
     const ReqFile = rootDir+'/Req/001.int';
 
-    const watcher = await watchFile(ReqFile, async (curr) => {
+    await watchFile(ReqFile, async (curr) => {
         // console.log(`Read File: ${curr.isFile()}`);
         if(curr.isFile()) {
             await readFile(ReqFile, fileEncoding, (err, data) => {
                 if(err) throw err;
                 const linesUnformatted = data.split('\n');
                 // if send order correctly
-                const line0 = linesUnformatted[0].split('='); //type file
-                const line1 = linesUnformatted[1].split('=') //order Number
-                const line2 = linesUnformatted[2].split('=') //order value
-                const line3 = linesUnformatted[3].split('=') //pix format
-                const line4 = linesUnformatted[4] //file end
+                const line0 = linesUnformatted[0].split('=') // type file
+                const line1 = linesUnformatted[1].split('=') // order id
+                const line2 = linesUnformatted[2].split('=') // total amount
+                const line3 = linesUnformatted[3].split('=') // customer id
+                const line4 = linesUnformatted[4].split('=') // comments
+                const line5 = linesUnformatted[5] //file end
 
                 const filePath = {
                     fileType: line0[1].trim(),
-                    orderNumber: line1[1].trim(),
-                    orderValue: line2[1].trim(),
-                    pixFormat: line3[1].trim(),
-                    filEnd: line4,
+                    orderID: line1[1].trim(),
+                    totalAmount: line2[1].trim(),
+                    customerID: line3[1].trim(),
+                    recipientComment: line4[1].trim(),
+                    filEnd: line5,
                 };
 
                 if(filePath.fileType === '1') {

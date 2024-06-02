@@ -1,125 +1,88 @@
-@import '../../../assets/base.css';
+import { styled } from 'styled-components'
 
-.contain-standby {
+export const Container = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 25px;
-    flex-direction: row;
-    position: relative;
-    top: 25%;
-}
-.dot-wave {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: #3498db;
-    border-radius: 50%;
-    margin: 0 4px;
-    position: relative;
-    animation: dot-wave-animation 1.5s ease-in-out infinite;
-}
+    flex-direction: column;
+`
 
-.dot-wave:nth-child(2) {
-    animation-delay: 1s;
-}
-
-.dot-wave:nth-child(3) {
-    animation-delay: .5s;
-}
-@keyframes dot-wave-animation {
-0%, 100% {
-    transform: translateY(0);
-}
-50% {
-    transform: translateY(-10px);
-}
-}
-
-
-.painel {
+export const Display = styled.div`
     background-color: var(--color-background);
     padding: 20px 40px;
     color: black;
     border-radius: 5px;
     text-align: center;
     width: 90vw;
-    height: 450px;
+    height: 90%;
     overflow: hidden;
-}
-
-.shadow {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.2);
-}
+`
 
-.value-display {
+export const ValueDisplay = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
     padding: 10px 0;
     justify-content: space-between;
-}
+`
 
-.value-label {
+export const ValueLabel = styled.h4`
     font-size: 22px;
     font-weight: 600;
-}
+`
 
-#value-mount {
+export const ValueAmount = styled.h4`
     font-size: 34px;
     font-weight: 700;
-}
+`
 
-.info-display {
+export const InfoDisplay = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     padding: 5px 0;
-}
+`
 
-.contain-qrcode {
+export const ContainQRCode = styled.div`
+`
 
-}
-
-.qrcode {
+export const QRcode = styled.img`
     width: 300px;
     height: 300px;
-}
+`
 
-.contain-info {
+export const ContainInfo = styled.div`
     width: 50%;
     text-align: left;
-}
-.contain-info>.load-info {
+`
+
+export const  LoadInfo = styled.div`
     display: flex;
     align-items: center;
     gap: 15px;
-}
+`
 
-.content-bottom {
+export const Footer = styled.div`
     margin-top: 4%;
     align-self: center;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
     width: 90vw;
-}
+`
 
-.btn-action {
+export const Button = styled.button`
     padding: 10px 5px;
     border: none;
     border-radius: 5px;
     background-color: rgb(38, 125, 201);
     color: #fff;
     font-family: Arial, Helvetica, sans-serif;
-    
-}
-code {
-color: var(--ev-c-gray-3);
-
-}
-
-.btn-action:hover {
-    cursor: pointer;
-    background-color: #3498db;
-}
+    transition: 300ms;
+    &:hover {
+        cursor: pointer;
+        background-color: #3498db;
+    }
+`

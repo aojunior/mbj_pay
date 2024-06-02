@@ -2,7 +2,7 @@ import { styled } from 'styled-components'
 
 export const Container = styled.div`
     width: 100%;
-    height: 600px;
+    height: 580px;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -87,9 +87,13 @@ export const Input = styled.input`
     padding: 10px;
     border: 1px solid #e4e4e7;
     border-radius: 8px;
-    &&::-webkit-inner-spin-button {
+    /* &&::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+    } */
+    &:focus {
+        outline: none;
+
     }
 `;
 

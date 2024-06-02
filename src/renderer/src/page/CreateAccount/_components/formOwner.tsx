@@ -1,10 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { ownerSchema } from '../schema';
-import { Card, CardHeader, FormInput, Label, CardTitle, Separator, CardContent, ContentInRow, Input, Button } from '../../../styles/global';
+import { Card, CardHeader, FormInput, Label, CardTitle, Separator, CardContent, ContentInRow, Input } from '../../../styles/global';
 
 type ownerProps = {
     ownerData: z.infer<typeof ownerSchema>
@@ -12,7 +11,7 @@ type ownerProps = {
 }
 
 export function FormOwner({ownerData, setOwnerData}: ownerProps) {
-    const {register, handleSubmit, watch} = useForm <z.infer<typeof ownerSchema>>({
+    const {register, watch} = useForm <z.infer<typeof ownerSchema>>({
         resolver: zodResolver(ownerSchema),
         defaultValues: ownerData
     })    

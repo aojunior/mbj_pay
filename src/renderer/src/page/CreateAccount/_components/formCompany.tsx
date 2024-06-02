@@ -1,10 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { companySchema } from '../schema';
-import { Card, CardHeader, FormInput, Label, CardTitle, Separator, CardContent, ContentInRow, Input, Button } from '../../../styles/global';
+import { Card, CardHeader, FormInput, Label, CardTitle, Separator, CardContent, ContentInRow, Input } from '../../../styles/global';
 
 type companyProps = {
     companyData:  z.infer<typeof companySchema>,
@@ -12,7 +11,7 @@ type companyProps = {
 }
 
 export function FormCompany({companyData, setCompanyData}: companyProps) {
-    const {register, handleSubmit, watch} = useForm <z.infer<typeof companySchema>>({
+    const {register, watch} = useForm <z.infer<typeof companySchema>>({
         resolver: zodResolver(companySchema),
         defaultValues: companyData
     })      

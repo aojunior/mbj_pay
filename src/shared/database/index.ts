@@ -5,7 +5,7 @@ const db = database
 export const dbCreate = () => {
     try {
         const insertQuery = db.prepare(
-            `CREATE TABLE IF NOT EXISTS cliente (Aliases VARCHAR(50), AccountId VARCHAR(50), AccountHolderId VARCHAR(50), Cnpj VARCHAR(12), Telefone VARCHAR(12)) `
+            `CREATE TABLE IF NOT EXISTS cliente (Aliases VARCHAR(50), AccountId VARCHAR(50), AccountHolderId VARCHAR(50), Account VARCHAR(50), Branch VARCHAR(50), Cnpj VARCHAR(12), Telefone VARCHAR(12)) `
         )
 
         const transaction = db.transaction(() => {
@@ -34,10 +34,10 @@ export const dbRead = () => {
     }
 }
 
-export const dbInsert = ({AccId, AccHID, Cnpj, Tel}) => {
+export const dbInsert = ({AccId, AccHID, Acc, Branch, Cnpj, Tel}) => {
     try {
         const insertQuery = db.prepare(
-            `INSERT INTO cliente (AccountId, AccountHolderId, Cnpj, Telefone) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}') LIMIT 1`
+            `INSERT INTO cliente (AccountId, AccountHolderId, Cnpj, Telefone) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}', '${Branch}', '${Acc}') LIMIT 1`
         )
 
         const transaction = db.transaction(() => {

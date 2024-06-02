@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from "zod";
 import { bankSchema } from "../schema";
 import { ContantImg, ImgPreview, InputImg, PlaceholderImage, UploadImg } from "../styles";
-import { Card, CardHeader, CardTitle, CardContent, Button } from '../../../styles/global';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../styles/global';
 
 type bankProps = {
     bankData: z.infer<typeof bankSchema>
@@ -12,7 +11,7 @@ type bankProps = {
 }
 
 export function FormBank({bankData, setBankData}: bankProps) {
-    const {handleSubmit, control} = useForm <z.infer<typeof bankSchema>>({
+    const { control } = useForm <z.infer<typeof bankSchema>>({
         resolver: zodResolver(bankSchema),
         defaultValues: bankData
     })    

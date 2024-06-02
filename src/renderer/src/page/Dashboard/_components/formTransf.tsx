@@ -13,51 +13,63 @@ export function FormTransf() {
     }
 
     async function saveInDb() {
-        
+        await  (window as any).api.verifyAccount()
+        // const token = sessionStorage.getItem('token')
+        // await  (window as any).api.verifyAlias(token)
     }
 
     // async function verifyAccount() {
     //     const token = sessionStorage.getItem('token')
-    //     await  window.api.verifyAccount(token)
+    //     await  (window as any).api.verifyAccount(token)
     // }
 
     return(
-        <Container>
+        <Container style={{paddingLeft: 15, paddingRight: 15}}>
             <ContentInRow >
-                <Card style ={{width: '58%', height: 400}}>
-                    <CardHeader>
-                        <CardTitle> Transferir </CardTitle>
-                        <Separator/>
-                    </CardHeader>
-                    <CardContent>
-                        <FormInput>
-                            <Label>Selecione a Conta:</Label>
-                            <select>
-                                <option value="">- SELECT -</option>
-                                <option value=""> ITAU S.A</option>
-                                <option value=""> BANCO INTER</option>
-                                <option value=""> NUBANK</option>
-                            </select>
-                        </FormInput>
+                <div style={{display: 'flex', flexDirection: 'column', width: '50%', gap: 25}}>
+                    <Card style ={{width: '100%', height: 430}}>
+                        <CardHeader>
+                            <CardTitle> Transferir </CardTitle>
+                            <Separator/>
+                        </CardHeader>
+                        <CardContent>
+                            <FormInput>
+                                <Label>Selecione a Conta:</Label>
+                                <select>
+                                    <option value="">- SELECT -</option>
+                                    <option value=""> ITAU S.A</option>
+                                    <option value=""> BANCO INTER</option>
+                                    <option value=""> NUBANK</option>
+                                </select>
+                            </FormInput>
 
-                        <FormInput>
-                            <Label>Informe o Valor:</Label>
-                            <Input type="number" style={{textAlign: 'end', paddingRight: 20, background: "https://static.thenounproject.com/png/101791-200.png"}}  />
-                        </FormInput>
+                            <FormInput>
+                                <Label>Informe o Valor:</Label>
+                                <Input type="number" style={{textAlign: 'end', paddingRight: 20, background: "https://static.thenounproject.com/png/101791-200.png"}}  />
+                            </FormInput>
 
-                        <FormInput>
-                            <Label>Informacoes para o Recebedor (opcional)</Label>
-                            <TextArea />
+                            <FormInput>
+                                <Label>Informacoes para o Recebedor (opcional)</Label>
+                                <TextArea />
+                            </FormInput>
+                            
+                            <ContentInRow>
+                                <Button onClick={saveInDb} > Confirmar </Button>
+                                <Button onClick={toggleDialog}> Extrato </Button>
+                            </ContentInRow>
+                        </CardContent>
+                    </Card>
+
+                    <Card style={{width: '100%',}}>
+
+                        <FormInput style={{width: '100%'}}>
+                            <Label>Saldo Atual</Label>
+                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={`R$  40,00`}/>
                         </FormInput>
-                        
-                        <ContentInRow>
-                            <Button onClick={saveInDb} > Confirmar </Button>
-                            <Button onClick={toggleDialog}> Extrato </Button>
-                        </ContentInRow>
-                    </CardContent>
-                </Card>
+                    </Card>
+                </div>
                 
-                <Card style ={{width: '40%', height: 600}}>
+                <Card style ={{width: '40%', height: 560}}>
                     <CardHeader>
                         <CardTitle> Contas </CardTitle>
                         <Separator/>
@@ -67,11 +79,6 @@ export function FormTransf() {
                         <div style={{height: '80%', width: '100%',}}>
                             <p>Credito - R$ 2,00</p>
                         </div>
-
-                        <FormInput style={{width: '100%'}}>
-                            <Label>Saldo Atual</Label>
-                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={`R$  40,00`}/>
-                        </FormInput>
                     </CardContent>
                 </Card>
             </ContentInRow>

@@ -69,3 +69,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+code {
+  color: var(--ev-c-gray-3);
+}
+

@@ -1,10 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases } from '@shared/api'
-import { dbAlter, dbCreate, dbInsert, dbRead } from '@shared/database'
+import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment } from '@shared/api'
+import { dbAlter, dbInsert } from '@shared/database'
 
 
 let mainWindow: BrowserWindow;
@@ -18,7 +18,7 @@ function createWindow(): void {
     resizable: false,
     fullscreenable: false,
     // closable: false,
-    
+    autoHideMenuBar: true,
     center: true,
     title: 'MBJ PAY',
     frame: true,
@@ -26,25 +26,29 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {icon}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      devTools: true
+      devTools: true,
+      // contextIsolation: true,
       // contextIsolation: true,
     },
+  
   });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
   });
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: 'deny' };
-  });
+  // mainWindow.webContents.setWindowOpenHandler((details) => {
+  //   shell.openExternal(details.url);
+  //   return { action: 'deny' };
+  // });
 
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
-  };
+  // if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+  //   mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+  // } else {
+  //   mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+  // };
+  mainWindow.loadURL('http://localhost:5173');
+
 };
 
 app.whenReady().then( () => {
@@ -56,8 +60,14 @@ app.whenReady().then( () => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  watchFileAndFormat( (formatData) => {
-    mainWindow.webContents.send('file', formatData);
+  watchFileAndFormat( async (formatData) => {
+    let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+
+    let data = await createInstantPayment(formatData, token)
+
+    console.log(data)
+    mainWindow.webContents.send('file', data);
+
   });
  
   app.on('activate', function () {
@@ -73,6 +83,11 @@ app.on('window-all-closed', () => {
 
 // IPC Preloader creates
 
+// cross-screen navigation
+ipcMain.on('navigate', (_, route) => {
+  mainWindow.loadURL(`http://localhost:5173${route}`);
+});
+
 ipcMain.on('token_generator',  async () => {
   console.log()
   let token = await tokenGenerator()
@@ -84,31 +99,39 @@ ipcMain.on('message', (_, args) => {
 });
 
 ipcMain.on('create_account', async(_, args) => {
-  let newAccount = await createAccount(args.data, args.token)
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  let newAccount = await createAccount(args.data, token)
 
   let data = {
     AccId: newAccount.data.account.accountId,
     AccHID: newAccount.data.accountHolderId,
+    Acc: newAccount.data.account.account,
+    Branch: newAccount.data.account.branch,
     Cnpj: args.data.companyDocument,
     Tel: args.data.companyPhoneNumber
   }
   await dbInsert(data)
 });
 
-ipcMain.on('verify_account', async(_, args) => {
-  let consulta = await VerifyAccount(args)
+ipcMain.on('verify_account', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  let consulta = await VerifyAccount(token)
 
   console.log(consulta)
 })
 
-ipcMain.on('create_alias', async(_, args) => {
-  let alias = await createAliases(args)
+ipcMain.on('create_alias', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+
+  let alias = await createAliases(token)
   console.log(alias)
 })
 
-ipcMain.on('verify_alias', async(_, args) => {
-  const data = await dbRead()
-  console.log(data)
-  // let consulta = await verifyAliases(args)
-  // await dbAlter(consulta.response.data.aliases[0].name, consulta.AccountID)
-})
+ipcMain.on('verify_alias', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  // const data = await dbRead()
+  // console.log(data)
+  let consulta = await verifyAliases(token)
+  console.log(consulta.response.data)
+  await dbAlter(consulta.response.data.aliases[0].name, consulta.AccountID)
+}) 

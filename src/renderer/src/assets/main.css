@@ -1,5 +1,4 @@
 @import './base.css';
-@import '../page/Home/_components/style.css';
 
 body {
   display: flex;

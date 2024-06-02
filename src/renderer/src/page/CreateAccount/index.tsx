@@ -9,7 +9,7 @@ import { bankSchema, companySchema, ownerSchema } from './schema'
 
 import { Button, Container, ContentInRow } from '../../styles/global'
 
-export default function UserRegister() {
+export default function CreateAccount() {
   const pages = [0, 1, 2]
   const [select, setSelect] = useState(0)
   const [companyData, setCompanyData] = useState({
@@ -45,6 +45,8 @@ export default function UserRegister() {
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
 
   function sendData() {
+    const window = Window as any
+ 
     const concatAccount = {...companyData, ...ownerData, ...bankData}
     const getToken = sessionStorage.getItem('token')
     window.api.createAccount(concatAccount, getToken)

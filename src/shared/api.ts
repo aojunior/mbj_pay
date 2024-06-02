@@ -1,13 +1,10 @@
 import { createHmac } from 'crypto'
-import Base64 from 'crypto-js/enc-base64';
 import axios from 'axios'
 import https from 'https';
 import { join } from 'path'
 import {v4 as uuidv4} from 'uuid'
-import { StringDecoder } from 'string_decoder'
 import { readFileSync } from 'fs';
 import { z } from 'zod'
-import { appDirectoryName, fileEncoding } from "./constants";
 import { accountSchema } from './schemas'
 import { dbRead } from './database';
 
@@ -15,7 +12,6 @@ const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID
 const client_secret = import.meta.env.MAIN_VITE_CLIENTSECRET
 const SecretKey = import.meta.env.MAIN_VITE_SECRETKEY
-const accountid = import.meta.env.MAIN_VITE_ACCOUNTID
 const certificate_pem = readFileSync(join(__dirname, '../')+'CERTIFICATES/client.crt')
 const certificate_key = readFileSync(join(__dirname, '../')+'CERTIFICATES/client.key')
 const certificate_ca = readFileSync(join(__dirname, '../')+'CERTIFICATES/rootCA.crt')
@@ -223,7 +219,7 @@ export async function createAliases(token: string) {
       'Transaction-Hash': sha_signature
     },
     httpsAgent
-  }).then(res => {
+  }).then((res): any => {
     if(res.status == 200 || res.status == 202)
     return [res.status, res.data]
   }).catch(error => {
@@ -262,19 +258,126 @@ export async function verifyAliases(token: string) {
   return {response, AccountID}
 }
 
-export async function createPayment(paymentFile: any, token: string) {
-  const db = await dbRead()
-  const AccountID = db.AccountId
-  const Aliases = db.Aliases
+export async function verifyAliasesComplete(token: string) {
+  const data = await dbRead()
+  const AccountID = data.AccountId
+  const Alias = data.Aliases
 
-  const sha_signature = await encrypt_string(`${Aliases}${paymentFile.totalAmount}${AccountID}${paymentFile.recipientAmount}`)
+  //const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountiD}/aliases`)
+
+  let response = await api.get(`/v1/accounts/${AccountID}/aliases/BRA/${Alias}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+    },
+    httpsAgent
+  }).then( res => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error', error.message);
+    }
+  })
+
+  return {response, AccountID}
+}
+
+export async function createInstantPayment(paymentFile: any, token: string) {
+  let response
+  const db = await dbRead()
+  const valorHash = db.Aliases + paymentFile.totalAmount + db.AccountId + paymentFile.totalAmount
+  const sha_signature = await encrypt_string(valorHash)
 
   const paymentData = {
-    ...paymentFile,
     externalIdentifier: `${uuidv4()}${now}`,
+    totalAmount: paymentFile.totalAmount, // valor total
+    currency: "BRL",
+    paymentInfo: {
+      transactionType: 'InstantPayment',
+      instantPayment: {
+        alias: db.Aliases,
+        dynamicQRCodeType: 'IMMEDIATE',
+        qrCodeImageGenerationSpecification: {
+          errorCorrectionLevel: 'M',
+          imageWidth: 400,
+          generateImageRendering: true
+        },
+        expiration: 600,
+        additionalInformation: [
+          {
+            name: paymentFile.orderID, // ID Pedido
+            content: paymentFile.orderID +' - '+ paymentFile.customerID, // Comentario Npedido + Cód. Cliente
+            showToPayer: true
+          }
+        ]
+      }
+    },
+    recipients: [
+      {
+        account: {
+          accountId: db.AccountId,
+        },
+        amount: paymentFile.totalAmount, // valor na qual sera retirado a taxa totol mbj + flagship
+        currency: 'BRL',
+        mediatorFee: 2, // taxa
+        recipientComment: paymentFile.recipientComment // comentarios interno
+      }
+    ],
+    callbackAddress: 'https://testemockqr.requestcatcher.com/'
   }
 
-  let response = await api.post(`/v1/payments`,
+  // const teste = {
+  //   "totalAmount": paymentFile.totalAmount,
+  //   "currency": "BRL",
+  //   "paymentInfo": {
+  //     "instantPayment": {
+  //       "dynamicQRCodeType": "IMMEDIATE",
+  //       "expiration": 400,
+  //       "showPaymentValueInQrCode": true,
+  //       "qrCodeImageGenerationSpecification": {
+  //         "errorCorrectionLevel": "M",
+  //         "imageWidth": 400,
+  //         "generateImageRendering": true
+  //       },
+  //       "additionalInformation": [
+  //         {
+  //           "name": paymentFile.orderID, 
+  //           "content": paymentFile.orderID +' - '+ paymentFile.customerID,
+  //           "showToPayer": true
+  //         }
+  //       ],
+  //       "payerRequestInformation": "INFORMATION"
+  //     },
+  //     "transactionType": 'InstantPayment',
+  //   },
+  //   "myAccount": {
+  //     "accountId": db.AccountId,
+  //     "branch": db.Branch,
+  //     "account": db.Account,
+  //     "accountType": "ORDINARY"
+  //   },
+  //   "recipients": [
+  //     {
+  //       "account": {
+  //         "accountId": db.AccountId,
+  //         "branch": db.Branch,
+  //         "account": db.Account,
+  //         "accountType": "ORDINARY"
+  //       },
+  //       "amount": paymentFile.totalAmount,
+  //       "currency": "BRL",
+  //       "mediatorFee": 1.99,
+  //       "recipientComment": "Any recipient comment"      
+  //     }
+  //   ],
+  //   "externalIdentifier": `${uuidv4()}${now}`,
+  //   "callbackAddress":  'https://testemockqr.requestcatcher.com/'
+  // }
+
+  response = await api.post(`/v1/payments`,
   paymentData,
   {
     headers: {
@@ -285,10 +388,16 @@ export async function createPayment(paymentFile: any, token: string) {
     },
     httpsAgent
   }
-  ).then( res => {
+  ).then((res): any => {
     if(res.status == 200 || res.status == 202) 
       return res.data
-  }).catch(error => console.error(error.message))
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
 
   return response
 }
