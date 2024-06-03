@@ -1,12 +1,12 @@
 import { createHmac } from 'crypto'
 import axios from 'axios'
-import https from 'https';
+import https from 'https'
 import { join } from 'path'
 import {v4 as uuidv4} from 'uuid'
-import { readFileSync } from 'fs';
+import { readFileSync } from 'fs'
 import { z } from 'zod'
 import { accountSchema } from './schemas'
-import { dbRead } from './database';
+import { dbRead } from './database'
 
 const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID

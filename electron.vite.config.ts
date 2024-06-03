@@ -5,6 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   
   main: {
+    build: {
+      rollupOptions: {
+        external: ['better-sqlite3']
+      }
+    },
     resolve: {
       alias: {
         '@/lib': resolve('src/main/lib'),

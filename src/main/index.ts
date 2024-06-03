@@ -9,6 +9,7 @@ import AutoLaunch from 'auto-launch'
 
 let mainWindow: BrowserWindow;
 let tray: Tray;
+let isQuiting: boolean = false
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -57,11 +58,10 @@ function createWindow(): void {
   });
 
   mainWindow.on('close', function (event) {
-    if (!app.isQuiting) {
+    if (!isQuiting) {
       event.preventDefault();
       mainWindow.hide();
     }
-
     return false;
   });
 };
@@ -101,7 +101,7 @@ app.whenReady().then( () => {
     {
       label: 'Sair',
       click: function () {
-        app.isQuiting = true;
+        isQuiting = true;
         app.quit();
       },
     },
@@ -120,11 +120,9 @@ app.whenReady().then( () => {
 
   watchFileAndFormat( async (formatData) => {
     let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
-    
     mainWindow.show();
-
     let data = await createInstantPayment(formatData, token)
-    console.log(data)
+    // console.log(data)
     mainWindow.webContents.send('file', data);
   });
  

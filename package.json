@@ -6,7 +6,7 @@
   "author": "example.com",
   "homepage": "https://electron-vite.org",
   "scripts": {
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "rebuild": "npm run build && electron-rebuild -f -w better-sqlite3",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
@@ -24,7 +24,7 @@
     "package-windows": "rm -rf build && rm -rf dist && npm run build && electron-builder -w -c.extraMetadata.main=build/electron.js"
   },
   "build": {
-    "appId": "sqlite.electron-test.app",
+    "appId": "mbjpay.matera.app",
     "productName": "MBJ Pay",
     "files": [
       "build/**/*",
@@ -36,7 +36,8 @@
     },
     "extraResources": [
       "./database.db"
-    ]
+    ],
+    "extends": null
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",

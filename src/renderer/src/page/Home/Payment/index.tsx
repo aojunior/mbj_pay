@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { useEffect } from 'react';
 import { Container } from '@renderer/styles/global';
+import QRCode from '../../../assets/images.png'
 import { Button, ContainInfo, ContainQRCode, Display, Footer, InfoDisplay, LoadInfo, QRcode, ValueAmount, ValueDisplay, ValueLabel } from './styles';
 import { ContantRow, DotWave } from '../StandBy/styles';
 
@@ -41,7 +42,7 @@ function PaymentScreen (file) {
 
             <InfoDisplay>
                 <ContainQRCode>
-                    <QRcode src='../../../assets/images.png' alt="" />
+                    <QRcode src={QRCode} alt="" />
                     {/* <QRcode src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSojqE7ztWUYLgAOLfIp8OrWRqDI-43JplTC8XdCZ8L9g&s" alt="" > */}
                 </ContainQRCode>
 
