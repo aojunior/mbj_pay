@@ -66,6 +66,13 @@ export const CardContent = styled.div`
     gap: 15px;
 `;
 
+export const CardFooter = styled.div`
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+`;
+
 export const Separator = styled.hr`
     margin-top: 10px;
     margin-bottom: 10px;
@@ -87,10 +94,10 @@ export const Input = styled.input`
     padding: 10px;
     border: 1px solid #e4e4e7;
     border-radius: 8px;
-    /* &&::-webkit-inner-spin-button {
+    &&::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
-    } */
+    }
     &:focus {
         outline: none;
 

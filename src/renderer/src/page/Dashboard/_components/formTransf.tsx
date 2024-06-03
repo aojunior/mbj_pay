@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { useState } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
+import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
 import { TextArea } from "../styles";
 import { DialogTransf } from "./DialogTransf";
 
@@ -9,7 +9,7 @@ export function FormTransf() {
 
     function toggleDialog() {
         console.log(dialogOpen)
-       setDialogOpen(!dialogOpen)
+        setDialogOpen(!dialogOpen)
     }
 
     async function saveInDb() {
@@ -29,7 +29,7 @@ export function FormTransf() {
                 <div style={{display: 'flex', flexDirection: 'column', width: '50%', gap: 25}}>
                     <Card style ={{width: '100%', height: 430}}>
                         <CardHeader>
-                            <CardTitle> Transferir </CardTitle>
+                            <CardTitle> Area de Transferência </CardTitle>
                             <Separator/>
                         </CardHeader>
                         <CardContent>
@@ -45,18 +45,18 @@ export function FormTransf() {
 
                             <FormInput>
                                 <Label>Informe o Valor:</Label>
-                                <Input type="number" style={{textAlign: 'end', paddingRight: 20, background: "https://static.thenounproject.com/png/101791-200.png"}}  />
+                                <ContentInRow style={{justifyContent: 'flex-start', alignItems: 'center', gap: 5}}>
+                                    <span style={{fontSize: 20, fontWeight: 600}}>R$</span>
+                                    <Input type="number" style={{textAlign: 'end', paddingRight: 20, fontSize: 20}} />
+                                </ContentInRow>
                             </FormInput>
 
                             <FormInput>
-                                <Label>Informacoes para o Recebedor (opcional)</Label>
+                                <Label>Informações para o Recebedor (opcional)</Label>
                                 <TextArea />
                             </FormInput>
-                            
-                            <ContentInRow>
-                                <Button onClick={saveInDb} > Confirmar </Button>
-                                <Button onClick={toggleDialog}> Extrato </Button>
-                            </ContentInRow>
+
+                            <Button onClick={saveInDb} > Confirmar </Button>          
                         </CardContent>
                     </Card>
 
@@ -64,27 +64,29 @@ export function FormTransf() {
 
                         <FormInput style={{width: '100%'}}>
                             <Label>Saldo Atual</Label>
-                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={`R$  40,00`}/>
+                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={`R$  ${(40).toFixed(2)}`}/>
                         </FormInput>
                     </Card>
                 </div>
                 
-                <Card style ={{width: '40%', height: 560}}>
+                <Card style ={{width: '45%', height: 560}}>
                     <CardHeader>
-                        <CardTitle> Contas </CardTitle>
+                        <CardTitle> Movimentações Recentes </CardTitle>
                         <Separator/>
                     </CardHeader>
-                    <CardContent style={{height: '85%', justifyContent: 'flex-end',}}>
-                        <Label>Transferencias Recentes</Label>
-                        <div style={{height: '80%', width: '100%',}}>
+                    <CardContent style={{ justifyContent: 'flex-start', height: '80%' }}>
+                        <Label>Transferências</Label>
+                        <div style={{ width: '100%',}}>
                             <p>Credito - R$ 2,00</p>
                         </div>
                     </CardContent>
+
+                    <CardFooter>
+                        <Button onClick={toggleDialog}> Extrato </Button>
+                    </CardFooter>
                 </Card>
             </ContentInRow>
-            {dialogOpen &&
-                <DialogTransf toggle={toggleDialog} />
-            }
+            { dialogOpen && <DialogTransf toggle={toggleDialog} /> }
         </Container>
     )
 }

@@ -1,13 +1,14 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
 import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment } from '@shared/api'
 import { dbAlter, dbInsert } from '@shared/database'
-
+import AutoLaunch from 'auto-launch'
 
 let mainWindow: BrowserWindow;
+let tray: Tray;
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -47,8 +48,22 @@ function createWindow(): void {
   // } else {
   //   mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   // };
+
   mainWindow.loadURL('http://localhost:5173');
 
+  mainWindow.on('minimize', function (event) {
+    event.preventDefault();
+    mainWindow.hide();
+  });
+
+  mainWindow.on('close', function (event) {
+    if (!app.isQuiting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+
+    return false;
+  });
 };
 
 app.whenReady().then( () => {
@@ -56,18 +71,61 @@ app.whenReady().then( () => {
   createWindow();
   createPath();
 
+  // Configuração do auto launch
+  let electronAutoLauncher = new AutoLaunch({
+    name: 'MBJPay',
+    path: app.getPath('exe'),
+  });
+
+  // Verifica se já está configurado para auto launch
+  electronAutoLauncher.isEnabled()
+  .then((isEnabled) => {
+    if (!isEnabled) {
+      electronAutoLauncher.enable();
+    }
+  })
+  .catch((err) => {
+    console.error(err);
+  });
+
+  const iconPath = join(__dirname,'../assets', 'icon.png'); // Caminho do ícone
+
+  tray = new Tray(iconPath);
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Mostrar Aplicação',
+      click: function () {
+        mainWindow.show();
+      },
+    },
+    {
+      label: 'Sair',
+      click: function () {
+        app.isQuiting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip('MBJ-Pay');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('double-click', () => {
+    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+  });
+
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
 
   watchFileAndFormat( async (formatData) => {
     let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+    
+    mainWindow.show();
 
     let data = await createInstantPayment(formatData, token)
-
     console.log(data)
     mainWindow.webContents.send('file', data);
-
   });
  
   app.on('activate', function () {
