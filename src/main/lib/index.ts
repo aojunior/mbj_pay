@@ -59,7 +59,7 @@ export const watchFileAndFormat = async (callback:(formatData: any) => void) => 
                 };
             });
         } else {
-            return callback(null);
+            return
         }
     });
 

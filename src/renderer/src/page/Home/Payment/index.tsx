@@ -1,17 +1,25 @@
 /* eslint-disable prettier/prettier */
 import { useEffect } from 'react';
 import { Container } from '@renderer/styles/global';
-import QRCode from '../../../assets/images.png'
+// import QRCode from '../../../assets/images.png'
 import { Button, ContainInfo, ContainQRCode, Display, Footer, InfoDisplay, LoadInfo, QRcode, ValueAmount, ValueDisplay, ValueLabel } from './styles';
 import { ContantRow, DotWave } from '../StandBy/styles';
 
-function PaymentScreen (file) {
+function PaymentScreen ({file}) {
     const handleKeyButton = async (event) => {
         switch(event.key || event) {
             case 'Escape':
                 console.log('CANCEL')
             break;
             case 'F1':
+               (async () => {
+                    try {
+                      await navigator.clipboard.writeText(file.instantPayment.textContent);
+                      alert('Texto copiado para a área de transferência!');
+                    } catch (err) {
+                      console.error('Falha ao copiar o texto: ', err);
+                    }
+                })() 
                 console.log('Copy to clipboard')
             break;
             case 'F2':
@@ -31,6 +39,10 @@ function PaymentScreen (file) {
           window.removeEventListener('keydown', handleKeyButton);
         };
     }, []);
+
+
+    const QRCode = 'data:image/png;base64,'+file.instantPayment.generateImage.imageContent
+
 
     return (
     <Container style={{alignItems: 'center', justifyContent: 'center'}}>

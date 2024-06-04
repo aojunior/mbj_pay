@@ -8,11 +8,10 @@ const API = {
   reciveFile: (callback) => ipcRenderer.on("file", (_, args) => callback(args)),
   tokenGenerator: () => ipcRenderer.send("token_generator"),
   accessToken: (callback) => ipcRenderer.on("access_token", (_, args) => callback(args)),
-  createAccount: (data, token) => ipcRenderer.send('create_account', {data, token}),
+  createAccount: (data) => ipcRenderer.send('create_account', data ),
   verifyAccount: () => ipcRenderer.send("verify_account"),
-  createAlias: (token) => ipcRenderer.send("create_alias", token),
-  verifyAlias: (token) => ipcRenderer.send("verify_alias", token),
-  
+  createAlias: () => ipcRenderer.send("create_alias", ),
+  verifyAlias: () => ipcRenderer.send("verify_alias", ),
 };
 
 contextBridge.exposeInMainWorld("api", API);

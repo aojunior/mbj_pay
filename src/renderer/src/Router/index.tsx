@@ -1,21 +1,21 @@
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+// import { Route, Router } from 'electron-router-dom';
+import { Route, Routes } from 'react-router-dom'
 
 import Home from '@renderer/page/Home/Index';
 import Dashboard from '@renderer/page/Dashboard';
 import CreateAccount from '@renderer/page/CreateAccount';
 import Settings from '@renderer/page/Settings';
+// import { Navbar } from '@renderer/components/Navbar';
 
-const Routes = () => {
+const Routers = () => {
   return (
-    <Router>
-      <Switch>
-        <Route path="/" exact component={Home} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/createaccount" component={CreateAccount} />
-        <Route path="/settings" component={Settings} />
-      </Switch>
-    </Router>
+    <Routes>
+      <Route path="/" element={<Home/>} />
+      <Route path="/dashboard" element={<Dashboard/>} />
+      <Route path="/createaccount" element={<CreateAccount/>} />
+      <Route path="/settings" element={<Settings/>} />
+    </Routes>
   );
 };
 
-export default Routes;
+export default Routers

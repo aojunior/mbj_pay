@@ -12,6 +12,7 @@
 export const appDirectoryName = 'clientPix'
 export const fileEncoding: BufferEncoding = 'utf8'
 
+
 export type fileProps = {
   fileType: string
   orderID: string

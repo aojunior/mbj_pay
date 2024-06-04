@@ -1,11 +1,14 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
+import { app, BrowserWindow,  ipcMain, Tray, Menu } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, watchFileAndFormat  } from './lib'
 import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment } from '@shared/api'
 import { dbAlter, dbInsert } from '@shared/database'
 import AutoLaunch from 'auto-launch'
+
+
+// import { createFileRoute, createURLRoute } from 'electron-router-dom'
 
 let mainWindow: BrowserWindow;
 let tray: Tray;
@@ -44,13 +47,15 @@ function createWindow(): void {
   //   return { action: 'deny' };
   // });
 
-  // if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-  //   mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
-  // } else {
-  //   mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
-  // };
-
-  mainWindow.loadURL('http://localhost:5173');
+  // const devServerURL = createURLRoute(process.env['ELECTRON_RENDERER_URL']!, id)
+  // const fileRoute = createFileRoute(
+  //   join(__dirname, '../renderer/index.html'),
+  //   id
+  // )
+  // is.dev
+  // ? mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!)
+  // : mainWindow.loadFile(...fileRoute)
+  mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
 
   mainWindow.on('minimize', function (event) {
     event.preventDefault();
@@ -121,9 +126,8 @@ app.whenReady().then( () => {
   watchFileAndFormat( async (formatData) => {
     let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
     mainWindow.show();
-    let data = await createInstantPayment(formatData, token)
-    // console.log(data)
-    mainWindow.webContents.send('file', data);
+    let response = await createInstantPayment(formatData, token)
+    mainWindow.webContents.send('file', response);
   });
  
   app.on('activate', function () {
@@ -145,7 +149,6 @@ ipcMain.on('navigate', (_, route) => {
 });
 
 ipcMain.on('token_generator',  async () => {
-  console.log()
   let token = await tokenGenerator()
   mainWindow.webContents.send('access_token', token)
 });

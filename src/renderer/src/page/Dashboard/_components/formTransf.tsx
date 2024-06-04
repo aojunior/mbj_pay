@@ -3,19 +3,16 @@ import { useState } from "react";
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
 import { TextArea } from "../styles";
 import { DialogTransf } from "./DialogTransf";
-
+const win: any = window
 export function FormTransf() {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     function toggleDialog() {
-        console.log(dialogOpen)
         setDialogOpen(!dialogOpen)
     }
 
-    async function saveInDb() {
-        await  (window as any).api.verifyAccount()
-        // const token = sessionStorage.getItem('token')
-        // await  (window as any).api.verifyAlias(token)
+    function saveInDb() {
+        win.api.verifyAccount()
     }
 
     // async function verifyAccount() {

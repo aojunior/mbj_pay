@@ -288,94 +288,49 @@ export async function verifyAliasesComplete(token: string) {
 export async function createInstantPayment(paymentFile: any, token: string) {
   let response
   const db = await dbRead()
-  const valorHash = db.Aliases + paymentFile.totalAmount + db.AccountId + paymentFile.totalAmount
+
+  let totalAmount = paymentFile.totalAmount | 0
+  let recipientAmount = paymentFile.totalAmount | 0
+  const valorHash = db.Aliases + totalAmount + db.AccountId + recipientAmount
+
   const sha_signature = await encrypt_string(valorHash)
 
   const paymentData = {
-    externalIdentifier: `${uuidv4()}${now}`,
-    totalAmount: paymentFile.totalAmount, // valor total
-    currency: "BRL",
-    paymentInfo: {
-      transactionType: 'InstantPayment',
-      instantPayment: {
-        alias: db.Aliases,
-        dynamicQRCodeType: 'IMMEDIATE',
-        qrCodeImageGenerationSpecification: {
-          errorCorrectionLevel: 'M',
-          imageWidth: 400,
-          generateImageRendering: true
+    "externalIdentifier": uuidv4() + now,
+    "totalAmount": totalAmount,
+    "currency": "BRL",
+    "paymentInfo": {
+      "transactionType": "InstantPayment",
+      "instantPayment": {
+        "alias": db.Aliases,
+        "qrCodeImageGenerationSpecification": {
+          "errorCorrectionLevel": "M",
+          "imageWidth": 400,
+          "generateImageRendering": true
         },
-        expiration: 600,
-        additionalInformation: [
+        "expiration": 86400,
+        "additionalInformation": [
           {
-            name: paymentFile.orderID, // ID Pedido
-            content: paymentFile.orderID +' - '+ paymentFile.customerID, // Comentario Npedido + Cód. Cliente
-            showToPayer: true
+            "name": paymentFile.orderID,
+            "content": paymentFile.customerID + '-' + paymentFile.orderID,
+            "showToPayer": true
           }
         ]
       }
     },
-    recipients: [
+    "recipients": [
       {
-        account: {
-          accountId: db.AccountId,
+        "account": {
+          "accountId": db.AccountId
         },
-        amount: paymentFile.totalAmount, // valor na qual sera retirado a taxa totol mbj + flagship
-        currency: 'BRL',
-        mediatorFee: 2, // taxa
-        recipientComment: paymentFile.recipientComment // comentarios interno
+        "amount": recipientAmount,
+        "currency": "BRL",
+        "mediatorFee": 2,
+        "recipientComment": paymentFile.recipientComment
       }
     ],
-    callbackAddress: 'https://testemockqr.requestcatcher.com/'
+    "callbackAddress": "https://testemockqr.requestcatcher.com/"
   }
-
-  // const teste = {
-  //   "totalAmount": paymentFile.totalAmount,
-  //   "currency": "BRL",
-  //   "paymentInfo": {
-  //     "instantPayment": {
-  //       "dynamicQRCodeType": "IMMEDIATE",
-  //       "expiration": 400,
-  //       "showPaymentValueInQrCode": true,
-  //       "qrCodeImageGenerationSpecification": {
-  //         "errorCorrectionLevel": "M",
-  //         "imageWidth": 400,
-  //         "generateImageRendering": true
-  //       },
-  //       "additionalInformation": [
-  //         {
-  //           "name": paymentFile.orderID, 
-  //           "content": paymentFile.orderID +' - '+ paymentFile.customerID,
-  //           "showToPayer": true
-  //         }
-  //       ],
-  //       "payerRequestInformation": "INFORMATION"
-  //     },
-  //     "transactionType": 'InstantPayment',
-  //   },
-  //   "myAccount": {
-  //     "accountId": db.AccountId,
-  //     "branch": db.Branch,
-  //     "account": db.Account,
-  //     "accountType": "ORDINARY"
-  //   },
-  //   "recipients": [
-  //     {
-  //       "account": {
-  //         "accountId": db.AccountId,
-  //         "branch": db.Branch,
-  //         "account": db.Account,
-  //         "accountType": "ORDINARY"
-  //       },
-  //       "amount": paymentFile.totalAmount,
-  //       "currency": "BRL",
-  //       "mediatorFee": 1.99,
-  //       "recipientComment": "Any recipient comment"      
-  //     }
-  //   ],
-  //   "externalIdentifier": `${uuidv4()}${now}`,
-  //   "callbackAddress":  'https://testemockqr.requestcatcher.com/'
-  // }
 
   response = await api.post(`/v1/payments`,
   paymentData,
@@ -399,5 +354,5 @@ export async function createInstantPayment(paymentFile: any, token: string) {
     }
   })
 
-  return response
+  return response  
 }

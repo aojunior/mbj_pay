@@ -6,8 +6,9 @@ import { FormCompany } from './_components/formCompany'
 import { FormOwner } from './_components/formOwner'
 import { FormBank } from './_components/formBank'
 import { bankSchema, companySchema, ownerSchema } from './schema'
-
 import { Button, Container, ContentInRow } from '../../styles/global'
+
+const win: any = window
 
 export default function CreateAccount() {
   const pages = [0, 1, 2]
@@ -45,12 +46,8 @@ export default function CreateAccount() {
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
 
   function sendData() {
-    const window = Window as any
- 
     const concatAccount = {...companyData, ...ownerData, ...bankData}
-    const getToken = sessionStorage.getItem('token')
-    window.api.createAccount(concatAccount, getToken)
-
+    win.api.createAccount(concatAccount)
   }
 
   return (

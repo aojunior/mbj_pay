@@ -34,7 +34,17 @@ export default defineConfig({
         '@/util': resolve('src/shared'),
       }
     },
-    plugins: [react()]
+    plugins: [react()],
+    build: {
+      outDir: 'dist',
+      rollupOptions: {
+        input: {
+          main: 'out/main/index.js',
+          preload: 'out/preload/index.js'
+        }
+      },
+    },
+  
   },
   
 })

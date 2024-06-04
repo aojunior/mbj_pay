@@ -33,7 +33,6 @@ export const ContentInRow = styled.div`
     justify-content: space-between;
 `;
 
-
 export const Card = styled.div`
     width: fit-content;
     max-width: 100%;

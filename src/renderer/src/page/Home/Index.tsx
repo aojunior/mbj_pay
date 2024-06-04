@@ -1,14 +1,18 @@
-import {useState, } from 'react';
+import {useEffect, useState, } from 'react';
 import PaymentScreen from '@renderer/page/Home/Payment';
 import StandBy from '@renderer/page/Home/StandBy';
 
+const win: any = window
+
 function Home () {
-  const [file, setFile] = useState (null );
+  const [file, setFile] = useState (null);
   
-  (window as any).api.reciveFile(data => {
-    setFile(data)
-    console.log(data)
-  });
+
+  useEffect(() => {
+    win.api.reciveFile( data => {
+      setFile(data.data)
+    })
+  },[])
 
   return(
     file === null ?

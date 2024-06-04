@@ -1,12 +1,11 @@
 {
   "name": "mbj-pay",
   "version": "1.0.0",
-  "description": "An Electron application with React and TypeScript",
+  "description": "An application for instant payment",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "mbjinformatica",
   "scripts": {
-    "rebuild": "npm run build && electron-rebuild -f -w better-sqlite3",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
@@ -14,6 +13,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
+    "preelectron-pack": "npm run-script build",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
@@ -25,10 +25,12 @@
   },
   "build": {
     "appId": "mbjpay.matera.app",
-    "productName": "MBJ Pay",
+    "productName": "MBJ-Pay",
     "files": [
       "build/**/*",
       "node_modules/**/*",
+      "dist/**/*",
+      "out/**/*",
       "resources/**/*"
     ],
     "directories": {
@@ -49,12 +51,13 @@
     "better-sqlite3": "^10.0.0",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
+    "electron-router-dom": "^1.0.5",
     "fs-extra": "^11.2.0",
     "https": "^1.0.0",
     "lodash": "^4.17.21",
     "react-hook-form": "^7.51.4",
     "react-icons": "^5.2.1",
-    "react-router-dom": "5.2.0",
+    "react-router-dom": "^6.23.1",
     "styled-components": "^6.1.11",
     "uuid": "^9.0.1",
     "zod": "^3.23.8"
