@@ -24,8 +24,10 @@ export const ValueDisplay = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 10px 0;
+    padding: 10px 10px;
     justify-content: space-between;
+    border: 1px solid #e7e7e4;
+    border-radius: 5px;
 `
 
 export const ValueLabel = styled.h4`

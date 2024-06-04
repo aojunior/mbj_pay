@@ -2,8 +2,8 @@ import { app, BrowserWindow,  ipcMain, Tray, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { createPath, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment } from '@shared/api'
+import { createPath, removeReqAndCreateRes, watchFileAndFormat  } from './lib'
+import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday } from '@shared/api'
 import { dbAlter, dbInsert } from '@shared/database'
 import AutoLaunch from 'auto-launch'
 
@@ -124,9 +124,15 @@ app.whenReady().then( () => {
   });
 
   watchFileAndFormat( async (formatData) => {
+
+    if(!formatData)
+      mainWindow.webContents.send('file', null);
+
     let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
     mainWindow.show();
     let response = await createInstantPayment(formatData, token)
+    
+
     mainWindow.webContents.send('file', response);
   });
  
@@ -190,7 +196,37 @@ ipcMain.on('verify_alias', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
   // const data = await dbRead()
   // console.log(data)
-  let consulta = await verifyAliases(token)
-  console.log(consulta.response.data)
-  await dbAlter(consulta.response.data.aliases[0].name, consulta.AccountID)
-}) 
+  const verify = await verifyAliases(token)
+  console.log(verify.response.data)
+  await dbAlter(verify.response.data.aliases[0].name, verify.AccountID)
+})
+
+ipcMain.on('verify_instantpayment', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  let transactionid = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('transactionid')`).then( (response) => response);
+
+  const verify = await verifyInstantPayment(transactionid, token);
+  
+  mainWindow.webContents.send('status_instantpayment', verify.transactions[0]);
+})
+
+ipcMain.on('verify_balance', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+
+  const response = await verifyBalance(token);
+  
+  mainWindow.webContents.send('response_balance', response);
+})
+
+ipcMain.on('extract_balance_today', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+
+  const response = await extractBalanceToday(token);
+  
+  mainWindow.webContents.send('response_extract_today', response);
+})
+
+ipcMain.on('cancel_payment', async() => {
+  removeReqAndCreateRes()
+  mainWindow.webContents.send('file', null);
+})

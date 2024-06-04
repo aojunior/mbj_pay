@@ -1,15 +1,68 @@
 /* eslint-disable prettier/prettier */
-import { useEffect } from 'react';
-import { Container } from '@renderer/styles/global';
+import { useEffect, useState } from 'react';
+import { Container, FormInput, Label, Separator, TextArea } from '@renderer/styles/global';
 // import QRCode from '../../../assets/images.png'
 import { Button, ContainInfo, ContainQRCode, Display, Footer, InfoDisplay, LoadInfo, QRcode, ValueAmount, ValueDisplay, ValueLabel } from './styles';
 import { ContantRow, DotWave } from '../StandBy/styles';
 
+
+const win: any = window
+
 function PaymentScreen ({file}) {
+    const [transactionStatus, setTransactionStatus] = useState('')
+
+    function checkTransactionStatus(status: string) {
+        setTransactionStatus('')
+        switch (status) {
+            case 'CREATED':
+                setTransactionStatus('Aguardando...')
+            break;
+            case 'APPROVED':
+                setTransactionStatus('Aprovado')
+            break;
+            case 'CANCELING':
+                setTransactionStatus('Cancelando')
+            break;
+            case 'CANCELED':
+                setTransactionStatus('Cancelada')
+            break;
+            case 'AUTHORIZED':
+                setTransactionStatus('Autorizado')
+            break;
+            case 'CAPTURED':
+                setTransactionStatus('Capturado')
+            break;
+            case 'OVERFILLED':
+                setTransactionStatus('Cheio')
+            break;
+            case 'FATAL_ERROR':
+                setTransactionStatus('Erro Fatal')
+            break;
+            case 'REJECTED':
+                setTransactionStatus('Rejeitada')
+            break;
+            case 'EXPIRED':
+                setTransactionStatus('Expirado')
+            break;
+            case 'PARTIAL':
+                setTransactionStatus('Parcial')
+            break;
+            case 'UNFINISHED':
+                setTransactionStatus('Inacabado')
+            break;
+            case 'ERROR':
+                setTransactionStatus('Erro')
+            break;
+            default:
+                setTransactionStatus('')
+            break;
+        }
+    }
+
     const handleKeyButton = async (event) => {
         switch(event.key || event) {
             case 'Escape':
-                console.log('CANCEL')
+                win.api.cancelPayment()
             break;
             case 'F1':
                (async () => {
@@ -26,8 +79,25 @@ function PaymentScreen ({file}) {
                 console.log('Print QRCODE')
             break;
             case 'F3':
-                localStorage.clear()
-                console.log(localStorage.getItem('clip'))
+                /*
+                    [
+                        {
+                        accountHolderId: '1241A999-BC8C-4AAF-B8D7-DFFD5CDCACD9',
+                        accountId: '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C',
+                        transactionId: '6E33911E-AF77-3872-9368-F697792A256D',
+                        mobilePhone: [Object],
+                        transactionType: 'PaymentInstantPayment',
+                        transactionStatus: 'CREATED',
+                        totalAmount: 50,
+                        transactionDate: '2024-06-04T14:55:56.315-03:00'
+                        }
+                    ]
+
+                */
+                win.api.verifyInstantPayment()
+                win.api.statusInstantPayment(data => {
+                    checkTransactionStatus(data.transactionStatus)
+                })
             break;
         }
     };
@@ -40,12 +110,11 @@ function PaymentScreen ({file}) {
         };
     }, []);
 
-
     const QRCode = 'data:image/png;base64,'+file.instantPayment.generateImage.imageContent
-
 
     return (
     <Container style={{alignItems: 'center', justifyContent: 'center'}}>
+
         <Display>
             <ValueDisplay>
                 <ValueLabel>Valor a Pagar:</ValueLabel>
@@ -59,15 +128,28 @@ function PaymentScreen ({file}) {
                 </ContainQRCode>
 
                 <ContainInfo>
-                    <LoadInfo>
-                        <h3>Aguardando Pagamento </h3>
-                        <ContantRow>
-                            <DotWave/>
-                            <DotWave/>
-                            <DotWave/>
-                        </ContantRow>
-                    </LoadInfo>
+                    {
+                        transactionStatus.toUpperCase() !== 'Aguardando' && transactionStatus.toUpperCase() !== '' ?
+                            <h3>{transactionStatus.toUpperCase()}</h3>
+                        :
+                        <>
+                            <h3>{transactionStatus.toUpperCase()}</h3>
+                            <LoadInfo style={{marginBottom: 25}}>
+                                <h3>Aguardando Pagamento </h3>
+                                <ContantRow>
+                                    <DotWave/>
+                                    <DotWave/>
+                                    <DotWave/>
+                                </ContantRow>
+                            </LoadInfo>
+                        </>
+                    }
                     <h4><code>ESC</code> - Cancelar</h4>
+
+                    <FormInput style={{width: '100%', marginTop: 40}}>
+                        <Label>Chave Aleatoria:</Label>
+                        <TextArea readOnly value={file.instantPayment.textContent} />
+                    </FormInput>
                 </ContainInfo>
             </InfoDisplay>
         </Display>

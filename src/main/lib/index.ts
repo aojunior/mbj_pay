@@ -1,5 +1,5 @@
 import { appDirectoryName, fileEncoding } from "@shared/constants";
-import { readFile, unwatchFile, watchFile } from "fs";
+import { readFile, unwatchFile, watchFile, writeFile, unlink } from "fs";
 import { ensureDir, existsSync, mkdir } from "fs-extra";
 
 export const getRootDirectory = () => {
@@ -68,3 +68,21 @@ export const watchFileAndFormat = async (callback:(formatData: any) => void) => 
         // watcher.close();
     }
 };
+
+
+export const removeReqAndCreateRes = async () => {
+    const rootDir = getRootDirectory();
+    await ensureDir(rootDir);
+    const ReqFile = rootDir+'/Req/001.int';
+    const ResFile = rootDir+'/Res/001.pos';
+    const data = '000 = 0\n001=OPERACAO CANCELADA\n999'
+
+    await unlink(ReqFile, err => {
+        if(err) throw err;
+        console.log(`Remove file Succssesfull `);
+    })
+    await writeFile(ResFile, data, (err) => {
+        if(err) throw err;
+        console.log(`Create file Succssesfull `);
+    })
+}

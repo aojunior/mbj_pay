@@ -1,12 +1,21 @@
 /* eslint-disable prettier/prettier */
-import { useState } from "react";
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
-import { TextArea } from "../styles";
+import { useEffect, useState } from "react";
+import { Button, TextArea, Card, CardContent, CardFooter, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
 import { DialogTransf } from "./DialogTransf";
-const win: any = window
-export function FormTransf() {
-    const [dialogOpen, setDialogOpen] = useState(false)
+import { DetailContent, RowDetails } from "../styles";
 
+const win: any = window
+
+type BalanceProps = {
+    balance: any,
+    extract: any[]
+}
+
+export function FormTransf({balance, extract}: BalanceProps) {
+
+    const [dialogOpen, setDialogOpen] = useState(false)
+    console.log(extract)
+  
     function toggleDialog() {
         setDialogOpen(!dialogOpen)
     }
@@ -19,6 +28,13 @@ export function FormTransf() {
     //     const token = sessionStorage.getItem('token')
     //     await  (window as any).api.verifyAccount(token)
     // }
+
+    function showBalance() {
+        return balance.available ?
+        `R$  ${Number(balance.available).toFixed(2) || 0 }`
+        :
+        'Carregando ...'
+    }
 
     return(
         <Container style={{paddingLeft: 15, paddingRight: 15}}>
@@ -58,10 +74,9 @@ export function FormTransf() {
                     </Card>
 
                     <Card style={{width: '100%',}}>
-
                         <FormInput style={{width: '100%'}}>
                             <Label>Saldo Atual</Label>
-                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={`R$  ${(40).toFixed(2)}`}/>
+                            <Input style={{textAlign: 'end', fontWeight: '900'}} readOnly value={showBalance()}/>
                         </FormInput>
                     </Card>
                 </div>
@@ -71,10 +86,21 @@ export function FormTransf() {
                         <CardTitle> Movimentações Recentes </CardTitle>
                         <Separator/>
                     </CardHeader>
+
                     <CardContent style={{ justifyContent: 'flex-start', height: '80%' }}>
                         <Label>Transferências</Label>
                         <div style={{ width: '100%',}}>
-                            <p>Credito - R$ 2,00</p>
+                            {
+                                extract.map((data: any) => (
+                                    <RowDetails>
+                                        <p>{data.description}</p>
+                                        <DetailContent style={{ color: data.type == 'C' ? 'red' : 'green'}}>
+                                            <p>{data.type == 'C' ? '-' : '+'}</p>
+                                            <p>R$ {data.amount.toFixed(2)}</p>
+                                        </DetailContent>
+                                    </RowDetails>
+                                ))
+                            }
                         </div>
                     </CardContent>
 

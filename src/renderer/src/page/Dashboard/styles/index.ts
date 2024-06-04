@@ -1,12 +1,5 @@
 import { styled } from 'styled-components'
 
-export const TextArea = styled.textarea`
-    height: 100px;
-    resize: none;
-    border: 1px solid #e4e4e7;
-    padding: 10px;
-    border-radius: 8px;
-`;
 
 export const DialogContext = styled.div`
     width: 80%;
@@ -42,4 +35,19 @@ export const FilterPanel = styled.div`
     padding: 5px;
     border: 1px solid #2d2d2d;
     border-radius: 8px;
+`;
+
+export const RowDetails = styled.div`
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #e7e7e4;
+    border-radius: 8px;
+`;
+
+export const DetailContent = styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-left: 25px;
+    align-items: flex-end;
 `;

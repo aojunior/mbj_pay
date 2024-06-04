@@ -8,12 +8,14 @@ export const Container = styled.div`
     padding: 5px;
 `;
 
-export const link = {
-    padding: 3,
-    backgroundColor: '#3178c6',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    color: '#fff',
-
-}
-
+export const Link = styled.button`
+    border: none;
+    padding: 5px;
+    background-color: #3178c6;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #fff;
+    &:hover {
+        cursor: pointer;
+    }
+`

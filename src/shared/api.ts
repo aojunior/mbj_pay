@@ -354,5 +354,102 @@ export async function createInstantPayment(paymentFile: any, token: string) {
     }
   })
 
-  return response  
+  return response.data
+}
+
+export async function verifyInstantPayment(transactionid: string, token: string) {
+  let response
+  const db = await dbRead()
+
+  const valorHash = `get:/v2/accounts/${db.AccountId}/transactions/${transactionid}`
+
+  const sha_signature = await encrypt_string(valorHash)
+
+  response = await api.get(`/v2/accounts/${db.AccountId}/transactions/${transactionid}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response.data
+}
+
+export async function verifyBalance(token: string) {
+  let response
+  const db = await dbRead()
+
+  const valorHash = db.AccountId
+
+  const sha_signature = await encrypt_string(valorHash)
+
+  response = await api.get(`/v2/accounts/${db.AccountId}/balance`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response.data
+}
+
+export async function extractBalanceToday(token: string) {
+  let response
+  let date = new Date().toISOString()
+  // let formateDate = date.split('T')
+  let formateDate = '2023-06-15'
+
+  const db = await dbRead()
+
+  const valorHash = db.AccountId
+
+  const sha_signature = await encrypt_string(valorHash)
+
+  response = await api.get(`/v1/accounts/${db.AccountId}/statement?end=${formateDate}&start${formateDate}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response.data
 }

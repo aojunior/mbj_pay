@@ -73,8 +73,7 @@ export const CardFooter = styled.div`
 `;
 
 export const Separator = styled.hr`
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 10px 0;
     /* border: 0.1px solid rgba(0,0,0, 0.5); */
 `;
 
@@ -115,4 +114,12 @@ export const Button = styled.button`
         background-color: #2b67aa;
         cursor: pointer;
     }
+`;
+
+export const TextArea = styled.textarea`
+    height: 100px;
+    resize: none;
+    border: 1px solid #e4e4e7;
+    padding: 10px;
+    border-radius: 8px;
 `;

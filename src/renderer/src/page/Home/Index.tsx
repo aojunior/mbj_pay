@@ -1,4 +1,4 @@
-import {useEffect, useState, } from 'react';
+import { useState, } from 'react';
 import PaymentScreen from '@renderer/page/Home/Payment';
 import StandBy from '@renderer/page/Home/StandBy';
 
@@ -6,13 +6,12 @@ const win: any = window
 
 function Home () {
   const [file, setFile] = useState (null);
-  
 
-  useEffect(() => {
-    win.api.reciveFile( data => {
-      setFile(data.data)
-    })
-  },[])
+  win.api.reciveFile( data => {
+    localStorage.clear()
+    localStorage.setItem('transactionid', data.transactionId)
+    setFile(data)
+  });
 
   return(
     file === null ?

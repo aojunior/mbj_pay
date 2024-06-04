@@ -20,6 +20,9 @@ importers:
       '@react-icons/all-files':
         specifier: ^4.1.0
         version: 4.1.0(react@18.3.1)
+      auto-launch:
+        specifier: ^5.0.6
+        version: 5.0.6
       axios:
         specifier: ^1.6.8
         version: 1.6.8
@@ -32,6 +35,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
+      electron-router-dom:
+        specifier: ^1.0.5
+        version: 1.0.5(electron@28.3.1)(react-router-dom@6.23.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
@@ -1209,6 +1215,9 @@ packages:
       dmg-builder: 24.13.3
       electron-builder-squirrel-windows: 24.13.3
 
+  applescript@1.0.0:
+    resolution: {integrity: sha512-yvtNHdWvtbYEiIazXAdp/NY+BBb65/DAseqlNiJQjOx9DynuzOYDbVLBJvuc0ve0VL9x6B3OHF6eH52y9hCBtQ==}
+
   aproba@2.0.0:
     resolution: {integrity: sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==}
 
@@ -1293,6 +1302,10 @@ packages:
   at-least-node@1.0.0:
     resolution: {integrity: sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==}
     engines: {node: '>= 4.0.0'}
+
+  auto-launch@5.0.6:
+    resolution: {integrity: sha512-OgxiAm4q9EBf9EeXdPBiVNENaWE3jUZofwrhAkWjHDYGezu1k3FRZHU8V2FBxGuSJOHzKmTJEd0G7L7/0xDGFA==}
+    engines: {node: '>=4.0.0'}
 
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
@@ -1715,6 +1728,13 @@ packages:
 
   electron-publish@24.13.1:
     resolution: {integrity: sha512-2ZgdEqJ8e9D17Hwp5LEq5mLQPjqU3lv/IALvgp+4W8VeNhryfGhYEQC/PgDPMrnWUp+l60Ou5SJLsu+k4mhQ8A==}
+
+  electron-router-dom@1.0.5:
+    resolution: {integrity: sha512-xxzgteOD75kydC7jBQYRsVlXG6+wcZrB8SpB1CRbA42Zi5BaMEAFvIwbqCimSHfWWDYRiWy4eIB3ccRNLcNkIw==}
+    peerDependencies:
+      electron: '>=20.0'
+      react: '>=17.0'
+      react-router-dom: '>=6.0'
 
   electron-to-chromium@1.4.767:
     resolution: {integrity: sha512-nzzHfmQqBss7CE3apQHkHjXW77+8w3ubGCIoEijKCJebPufREaFETgGXWTkh32t259F3Kcq+R8MZdFdOJROgYw==}
@@ -2796,6 +2816,10 @@ packages:
   mkdirp-classic@0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
 
+  mkdirp@0.5.6:
+    resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
+    hasBin: true
+
   mkdirp@1.0.4:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
@@ -3561,6 +3585,10 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
+  untildify@3.0.3:
+    resolution: {integrity: sha512-iSk/J8efr8uPT/Z4eSUywnqyrQU7DSdMfdqK4iWEaUVVmcP5JcnpRqmVMwcwcnmI1ATFNgC5V90u09tBynNFKA==}
+    engines: {node: '>=4'}
+
   update-browserslist-db@1.0.15:
     resolution: {integrity: sha512-K9HWH62x3/EalU1U6sjSZiylm9C8tgq2mSvshZpqc7QE69RaA2qjhkW2HlNA0tFpEbtyFz7HTqbSdN4MSwUodA==}
     hasBin: true
@@ -3644,6 +3672,9 @@ packages:
 
   wide-align@1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
+
+  winreg@1.2.4:
+    resolution: {integrity: sha512-IHpzORub7kYlb8A43Iig3reOvlcBJGX9gZ0WycHhghHtA65X0LYnMRuJs+aH1abVnMJztQkvQNlltnbPi5aGIA==}
 
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
@@ -4873,6 +4904,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  applescript@1.0.0: {}
+
   aproba@2.0.0: {}
 
   archiver-utils@2.1.0:
@@ -5004,6 +5037,14 @@ snapshots:
   asynckit@0.4.0: {}
 
   at-least-node@1.0.0: {}
+
+  auto-launch@5.0.6:
+    dependencies:
+      applescript: 1.0.0
+      mkdirp: 0.5.6
+      path-is-absolute: 1.0.1
+      untildify: 3.0.3
+      winreg: 1.2.4
 
   available-typed-arrays@1.0.7:
     dependencies:
@@ -5520,6 +5561,12 @@ snapshots:
       mime: 2.6.0
     transitivePeerDependencies:
       - supports-color
+
+  electron-router-dom@1.0.5(electron@28.3.1)(react-router-dom@6.23.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
+    dependencies:
+      electron: 28.3.1
+      react: 18.3.1
+      react-router-dom: 6.23.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   electron-to-chromium@1.4.767: {}
 
@@ -6949,6 +6996,10 @@ snapshots:
 
   mkdirp-classic@0.5.3: {}
 
+  mkdirp@0.5.6:
+    dependencies:
+      minimist: 1.2.8
+
   mkdirp@1.0.4: {}
 
   ms@2.1.2: {}
@@ -7800,6 +7851,8 @@ snapshots:
 
   universalify@2.0.1: {}
 
+  untildify@3.0.3: {}
+
   update-browserslist-db@1.0.15(browserslist@4.23.0):
     dependencies:
       browserslist: 4.23.0
@@ -7891,6 +7944,8 @@ snapshots:
   wide-align@1.1.5:
     dependencies:
       string-width: 4.2.3
+
+  winreg@1.2.4: {}
 
   word-wrap@1.2.5: {}
 

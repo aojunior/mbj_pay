@@ -7,15 +7,15 @@ export function SidebarComponent() {
         <Sidebar>
             <SidebarContent>
                 <SidebarLink>
-                    Create Account
+                    Adicionar Conta de Depósito
                 </SidebarLink>
 
                 <SidebarLink>
-                    Create Account
+                    Verificar Atualizacao
                 </SidebarLink>
 
                 <SidebarLink>
-                    Create Account
+                    Suporte
                 </SidebarLink>
 
             </SidebarContent>
