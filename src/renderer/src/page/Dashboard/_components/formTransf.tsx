@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { useEffect, useState } from "react";
 import { Button, TextArea, Card, CardContent, CardFooter, CardHeader, CardTitle, Container, ContentInRow, FormInput, Input, Label, Separator } from "../../../styles/global";
-import { DialogTransf } from "./DialogTransf";
+import { DialogExtract } from "./DialogExtract";
 import { DetailContent, RowDetails } from "../styles";
+import { DialogRefund } from "./DialogRefund";
 
 const win: any = window
 
@@ -13,11 +14,15 @@ type BalanceProps = {
 
 export function FormTransf({balance, extract}: BalanceProps) {
 
-    const [dialogOpen, setDialogOpen] = useState(false)
-    console.log(extract)
-  
-    function toggleDialog() {
-        setDialogOpen(!dialogOpen)
+    const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
+    const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
+
+    function toggleExtractDialog() {
+        setDialogExtractOpen(!dialogExtractOpen)
+    }
+
+    function toggleRefundDialog() {
+        setDialogRefundOpen(!dialogRefundOpen)
     }
 
     function saveInDb() {
@@ -45,6 +50,7 @@ export function FormTransf({balance, extract}: BalanceProps) {
                             <CardTitle> Area de Transferência </CardTitle>
                             <Separator/>
                         </CardHeader>
+                        
                         <CardContent>
                             <FormInput>
                                 <Label>Selecione a Conta:</Label>
@@ -91,12 +97,13 @@ export function FormTransf({balance, extract}: BalanceProps) {
                         <Label>Transferências</Label>
                         <div style={{ width: '100%',}}>
                             {
-                                extract.map((data: any) => (
+                                extract.map((data: any, i) => (
+                                    i < 10 &&
                                     <RowDetails>
                                         <p>{data.description}</p>
-                                        <DetailContent style={{ color: data.type == 'C' ? 'red' : 'green'}}>
-                                            <p>{data.type == 'C' ? '-' : '+'}</p>
-                                            <p>R$ {data.amount.toFixed(2)}</p>
+                                        <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green'}}>
+                                            <p>{data.type !== 'C' ? '-' : ''}</p>
+                                            <p style={{fontWeight: '700'}}>R$ {data.amount.toFixed(2)}</p>
                                         </DetailContent>
                                     </RowDetails>
                                 ))
@@ -104,12 +111,15 @@ export function FormTransf({balance, extract}: BalanceProps) {
                         </div>
                     </CardContent>
 
-                    <CardFooter>
-                        <Button onClick={toggleDialog}> Extrato </Button>
+                    <CardFooter style={{flexDirection: 'row', justifyContent: 'space-around'}}>
+                        <Button onClick={toggleExtractDialog}> Extrato </Button>
+                        <Button style={{backgroundColor: 'red'}} onClick={toggleRefundDialog}> Devolucao </Button>
                     </CardFooter>
                 </Card>
             </ContentInRow>
-            { dialogOpen && <DialogTransf toggle={toggleDialog} /> }
+            { dialogExtractOpen && <DialogExtract toggle={toggleExtractDialog} /> }
+            { dialogRefundOpen && <DialogRefund toggle={toggleRefundDialog} /> }
+            
         </Container>
     )
 }

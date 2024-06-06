@@ -3,7 +3,7 @@ import { styled } from 'styled-components'
 
 export const DialogContext = styled.div`
     width: 80%;
-    height: 70%;
+    height: 85%;
     display: flex;
     background: #fff;
     padding: 10px 15px;
@@ -30,6 +30,7 @@ export const Dialog = styled.dialog`
     background: #0009;
     backdrop-filter: blur(2px);
 `;
+
 export const FilterPanel = styled.div`
     width: 100%;
     padding: 5px;
@@ -50,4 +51,19 @@ export const DetailContent = styled.div`
     gap: 10px;
     margin-left: 25px;
     align-items: flex-end;
+`;
+
+export const ContentSelect = styled.div`
+    display: flex;
+    width: 95%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #e7e7e4;
+    transition: 100ms;
+    &:hover {
+        cursor: pointer;
+        background-color: #d6d6e5;
+    }
 `;

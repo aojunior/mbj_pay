@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, removeReqAndCreateRes, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday } from '@shared/api'
+import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday, extractBalanceFilter, refundInstantPayment, refundCodes } from '@shared/api'
 import { dbAlter, dbInsert } from '@shared/database'
 import AutoLaunch from 'auto-launch'
 
@@ -77,51 +77,51 @@ app.whenReady().then( () => {
   createPath();
 
   // Configuração do auto launch
-  let electronAutoLauncher = new AutoLaunch({
-    name: 'MBJPay',
-    path: app.getPath('exe'),
-  });
+  // let electronAutoLauncher = new AutoLaunch({
+  //   name: 'MBJPay',
+  //   path: app.getPath('exe'),
+  // });
 
   // Verifica se já está configurado para auto launch
-  electronAutoLauncher.isEnabled()
-  .then((isEnabled) => {
-    if (!isEnabled) {
-      electronAutoLauncher.enable();
-    }
-  })
-  .catch((err) => {
-    console.error(err);
-  });
+  // electronAutoLauncher.isEnabled()
+  // .then((isEnabled) => {
+  //   if (!isEnabled) {
+  //     electronAutoLauncher.enable();
+  //   }
+  // })
+  // .catch((err) => {
+  //   console.error(err);
+  // });
 
-  const iconPath = join(__dirname,'../assets', 'icon.png'); // Caminho do ícone
+  // const iconPath = join(__dirname,'../assets', 'icon.png'); // Caminho do ícone
 
-  tray = new Tray(iconPath);
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Mostrar Aplicação',
-      click: function () {
-        mainWindow.show();
-      },
-    },
-    {
-      label: 'Sair',
-      click: function () {
-        isQuiting = true;
-        app.quit();
-      },
-    },
-  ]);
+  // tray = new Tray(iconPath);
+  // const contextMenu = Menu.buildFromTemplate([
+  //   {
+  //     label: 'Mostrar Aplicação',
+  //     click: function () {
+  //       mainWindow.show();
+  //     },
+  //   },
+  //   {
+  //     label: 'Sair',
+  //     click: function () {
+  //       isQuiting = true;
+  //       app.quit();
+  //     },
+  //   },
+  // ]);
 
-  tray.setToolTip('MBJ-Pay');
-  tray.setContextMenu(contextMenu);
+  // tray.setToolTip('MBJ-Pay');
+  // tray.setContextMenu(contextMenu);
 
-  tray.on('double-click', () => {
-    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
-  });
+  // tray.on('double-click', () => {
+  //   mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+  // });
 
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
-  });
+  // app.on('browser-window-created', (_, window) => {
+  //   optimizer.watchWindowShortcuts(window);
+  // });
 
   watchFileAndFormat( async (formatData) => {
 
@@ -207,8 +207,16 @@ ipcMain.on('verify_instantpayment', async() => {
 
   const verify = await verifyInstantPayment(transactionid, token);
   
-  mainWindow.webContents.send('status_instantpayment', verify.transactions[0]);
+  mainWindow.webContents.send('response_verify_instantpayment', verify.transactions[0]);
 })
+
+ipcMain.on('refund_codes', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  const response = await refundCodes(token) 
+
+  mainWindow.webContents.send('respose_refund_codes', response.data)
+})
+
 
 ipcMain.on('verify_balance', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
@@ -220,10 +228,14 @@ ipcMain.on('verify_balance', async() => {
 
 ipcMain.on('extract_balance_today', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
-
   const response = await extractBalanceToday(token);
-  
   mainWindow.webContents.send('response_extract_today', response);
+})
+
+ipcMain.on('extract_balance_filter', async(_, args) => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  const response = await extractBalanceFilter(token, args[0], args[1]);
+  mainWindow.webContents.send('response_extract_filter', response);
 })
 
 ipcMain.on('cancel_payment', async() => {

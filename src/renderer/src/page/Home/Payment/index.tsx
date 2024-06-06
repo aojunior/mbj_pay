@@ -79,23 +79,8 @@ function PaymentScreen ({file}) {
                 console.log('Print QRCODE')
             break;
             case 'F3':
-                /*
-                    [
-                        {
-                        accountHolderId: '1241A999-BC8C-4AAF-B8D7-DFFD5CDCACD9',
-                        accountId: '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C',
-                        transactionId: '6E33911E-AF77-3872-9368-F697792A256D',
-                        mobilePhone: [Object],
-                        transactionType: 'PaymentInstantPayment',
-                        transactionStatus: 'CREATED',
-                        totalAmount: 50,
-                        transactionDate: '2024-06-04T14:55:56.315-03:00'
-                        }
-                    ]
-
-                */
                 win.api.verifyInstantPayment()
-                win.api.statusInstantPayment(data => {
+                win.api.responseVerifyInstantPayment(data => {
                     checkTransactionStatus(data.transactionStatus)
                 })
             break;

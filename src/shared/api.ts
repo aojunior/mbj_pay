@@ -388,6 +388,44 @@ export async function verifyInstantPayment(transactionid: string, token: string)
   return response.data
 }
 
+export async function refundCodes(token: string) {
+  let response
+  response = await api.get(`v1/instant-payments/BRA/return-codes`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    httpsAgent
+  }).then( res => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response
+}
+
+export async function refundInstantPayment(transactionid: string, reasonCode: string, token: string) {
+  let response
+  const db = await dbRead()
+  const valorHash = ``
+  const sha_signature = await encrypt_string(valorHash)
+
+  response = await api.post(`v1/accounts/${db.AccountId}/instant-payments/${transactionid}/returns`, {
+    headers: {
+      ...headers
+    },
+    httpsAgent
+  })
+
+}
+
 export async function verifyBalance(token: string) {
   let response
   const db = await dbRead()
@@ -424,14 +462,14 @@ export async function extractBalanceToday(token: string) {
   let date = new Date().toISOString()
   let formateDate = date.split('T')
   // let formateDate = '2023-06-15'
-
+  
   const db = await dbRead()
-
+  
   const valorHash = db.AccountId
-
+  
   const sha_signature = await encrypt_string(valorHash)
-
-  response = await api.get(`/v1/accounts/${db.AccountId}/statement?end=${formateDate[0]}&start${formateDate[0]}`, {
+  
+  response = await api.get(`/v1/accounts/${db.AccountId}/statement?ending=${formateDate[0]}&start=${formateDate[0]}`, {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
@@ -454,23 +492,12 @@ export async function extractBalanceToday(token: string) {
   return response.data
 }
 
-export async function extractBalanceFilter(token: string, dateEnd: string, dateStart: string, type: string) {
+export async function extractBalanceFilter(token: string, dateStart: string, dateEnd: string) {
   let response
-  let date = new Date().toISOString()
-  let formateDate = date.split('T')
-  // let formateDate = '2023-06-15'
-  function subtractDaysFromDate(days) {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toLocaleDateString();
-  }
   const db = await dbRead()
-
   const valorHash = db.AccountId
-
   const sha_signature = await encrypt_string(valorHash)
-
-  response = await api.get(`/v1/accounts/${db.AccountId}/statement?end=${dateEnd}&start${dateStart}`, {
+  response = await api.get(`/v1/accounts/${db.AccountId}/statement?ending=${dateEnd}&start=${dateStart}`, {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,

@@ -13,12 +13,23 @@ export const API = {
   verifyAccount: () => ipcRenderer.send("verify_account"),
   createAlias: () => ipcRenderer.send("create_alias", ),
   verifyAlias: () => ipcRenderer.send("verify_alias", ),
+  
+  createInstantPayment: (data) => ipcRenderer.send("create_instantpayment", data),
+  cancelInstantPayment: () => ipcRenderer.send("cancel_instantpayment", ),
   verifyInstantPayment: () => ipcRenderer.send("verify_instantpayment", ),
-  statusInstantPayment: (callback) => ipcRenderer.on("status_instantpayment", (_, args) => callback(args)),
+  responseVerifyInstantPayment: (callback) => ipcRenderer.on("response_verify_instantpayment", (_, args) => callback(args)),
+  
+  refundCodes: () => ipcRenderer.send('refund_codes',),
+  responseRefundCodes: (callback) => ipcRenderer.on("respose_refund_codes", (_, args) => callback(args)),
+
+  refundInstantPayment: () => ipcRenderer.send("refund_instantpayment", ),
+  
   verifyBalance: () => ipcRenderer.send("verify_balance", ),
   responseBalance: (callback) => ipcRenderer.on("response_balance", (_, args) => callback(args)),
   extractBalanceToday: () => ipcRenderer.send("extract_balance_today", ),
+  extractBalanceFilter: (start, end) => ipcRenderer.send("extract_balance_filter", [start, end]),
   responseExtractToday: (callback) => ipcRenderer.on("response_extract_today", (_, args) => callback(args)),
+  responseExtractFilter: (callback) => ipcRenderer.on("response_extract_filter", (_, args) => callback(args)),
 };
 
 contextBridge.exposeInMainWorld("api", API);
