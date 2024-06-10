@@ -4,12 +4,14 @@ import { Container, FormInput, Label, Separator, TextArea } from '@renderer/styl
 // import QRCode from '../../../assets/images.png'
 import { Button, ContainInfo, ContainQRCode, Display, Footer, InfoDisplay, LoadInfo, QRcode, ValueAmount, ValueDisplay, ValueLabel } from './styles';
 import { ContantRow, DotWave } from '../StandBy/styles';
+import { Notification } from '@renderer/components/notification';
 
 
 const win: any = window
 
 function PaymentScreen ({file}) {
     const [transactionStatus, setTransactionStatus] = useState('')
+    const [showNotification, setShowNotification] = useState(false);
 
     function checkTransactionStatus(status: string) {
         setTransactionStatus('')
@@ -144,6 +146,13 @@ function PaymentScreen ({file}) {
             <Button onClick={() => handleKeyButton('F2')} ><code>F2</code> - Imprimir QR Code</Button>
             <Button onClick={() => handleKeyButton('F3')} ><code>F3</code> - Consultar Pagamento</Button>
         </Footer>
+
+        <Notification 
+            message='Chave Pix Copiada com sucesso use CTRL + V para colar '
+            type='confirm'
+            show={showNotification}
+            onClose={() => setShowNotification(false)}
+        />
     </Container>
     );
 };

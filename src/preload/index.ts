@@ -22,7 +22,8 @@ export const API = {
   refundCodes: () => ipcRenderer.send('refund_codes',),
   responseRefundCodes: (callback) => ipcRenderer.on("respose_refund_codes", (_, args) => callback(args)),
 
-  refundInstantPayment: () => ipcRenderer.send("refund_instantpayment", ),
+  refundInstantPayment: (item, reasonCode) => ipcRenderer.send("refund", [item, reasonCode]),
+  responseRefundInstantPayment: (callback) => ipcRenderer.on("response_refund",  (_, args) => callback(args)),
   
   verifyBalance: () => ipcRenderer.send("verify_balance", ),
   responseBalance: (callback) => ipcRenderer.on("response_balance", (_, args) => callback(args)),

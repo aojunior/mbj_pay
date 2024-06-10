@@ -13,7 +13,6 @@ type BalanceProps = {
 }
 
 export function FormTransf({balance, extract}: BalanceProps) {
-
     const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
     const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
 
@@ -119,7 +118,7 @@ export function FormTransf({balance, extract}: BalanceProps) {
             </ContentInRow>
             { dialogExtractOpen && <DialogExtract toggle={toggleExtractDialog} /> }
             { dialogRefundOpen && <DialogRefund toggle={toggleRefundDialog} /> }
-            
+
         </Container>
     )
 }

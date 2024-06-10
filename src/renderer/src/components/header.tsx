@@ -18,7 +18,7 @@ const Logo = styled.img`
 
 export function Header() {
   return (
-    <Container>
+    <Container >
       <Logo alt="logo"  src={electronLogo} />
     </Container>
   )

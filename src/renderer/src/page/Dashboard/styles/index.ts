@@ -1,6 +1,21 @@
 import { styled } from 'styled-components'
 
 
+export const Dialog = styled.dialog`
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #0009;
+    backdrop-filter: blur(2px);
+`;
+
+
 export const DialogContext = styled.div`
     width: 80%;
     height: 85%;
@@ -15,20 +30,6 @@ export const DialogContext = styled.div`
 
     box-shadow: 1px 2px 3px 1px rgba(0, 0, 0, 0.25);
     border-radius: 10px;   
-`;
-
-export const Dialog = styled.dialog`
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    left: 0;
-    top: 0;
-    background: #0009;
-    backdrop-filter: blur(2px);
 `;
 
 export const FilterPanel = styled.div`

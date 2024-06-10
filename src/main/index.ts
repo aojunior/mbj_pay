@@ -57,18 +57,18 @@ function createWindow(): void {
   // : mainWindow.loadFile(...fileRoute)
   mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
 
-  mainWindow.on('minimize', function (event) {
-    event.preventDefault();
-    mainWindow.hide();
-  });
+  // mainWindow.on('minimize', function (event) {
+  //   event.preventDefault();
+  //   mainWindow.hide();
+  // });
 
-  mainWindow.on('close', function (event) {
-    if (!isQuiting) {
-      event.preventDefault();
-      mainWindow.hide();
-    }
-    return false;
-  });
+  // mainWindow.on('close', function (event) {
+  //   if (!isQuiting) {
+  //     event.preventDefault();
+  //     mainWindow.hide();
+  //   }
+  //   return false;
+  // });
 };
 
 app.whenReady().then( () => {
@@ -156,6 +156,7 @@ ipcMain.on('navigate', (_, route) => {
 
 ipcMain.on('token_generator',  async () => {
   let token = await tokenGenerator()
+
   mainWindow.webContents.send('access_token', token)
 });
 
@@ -217,10 +218,15 @@ ipcMain.on('refund_codes', async() => {
   mainWindow.webContents.send('respose_refund_codes', response.data)
 })
 
+ipcMain.on('refund', async(_, args) => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  const response = await refundInstantPayment(args[0], args[1], token) 
+  console.log(response)
+  // mainWindow.webContents.send('respose_refund', response.data)
+})
 
 ipcMain.on('verify_balance', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
-
   const response = await verifyBalance(token);
   
   mainWindow.webContents.send('response_balance', response);

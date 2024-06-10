@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle, FormInput, Label, Separator } from "../../../styles/global";
 import { ContentSelect, DetailContent, Dialog, DialogContext, FilterPanel } from "../styles";
+import { Alert } from "@renderer/components/alert";
 
 type dialogProps = {
     toggle: () => void, 
@@ -14,6 +15,8 @@ export function DialogRefund({toggle}: dialogProps) {
     const [input, setInput] = useState('')
     const dateFilter = {start: '', end: ''}
     const [extract, setExtract] = useState<any>([])
+    const [openAlert, setOpenAlert] = useState(false)
+    const [item, setItem] = useState<any>()
 
     const formatDate = (date: string) => {
         let format = date.split('T')
@@ -60,16 +63,22 @@ export function DialogRefund({toggle}: dialogProps) {
 
     async function getRefundCodes() {
         await win.api.refundCodes()
-        await win.api.responseRefundCodes(data => {
-            console.log(data.returnCodes)
-            setArrCodes(data.returnCodes)})
+        await win.api.responseRefundCodes(data => setArrCodes(data.returnCodes))
     } 
 
     async function handleRefund(item) {
         if(reasonCodes == '') 
             return alert('Selecione um motivo')
+            setItem(item)
+            toggleAlert()
+    }
 
-        await win.api.refund(item.transactionId, reasonCodes)
+    function toggleAlert() {
+        setOpenAlert(!openAlert)
+    }
+    
+    async function handle() {
+        await win.api.refundInstantPayment(item, reasonCodes)
     }
     
     useEffect(() => {
@@ -81,7 +90,6 @@ export function DialogRefund({toggle}: dialogProps) {
         };
     }, []);
 
-      
     return (
         <Dialog id="dialog"  >
             <DialogContext style={{ gap: 10 , }}>
@@ -147,6 +155,19 @@ export function DialogRefund({toggle}: dialogProps) {
                 </Card>
                 <Button onClick={toggle}> Fechar </Button>
             </DialogContext>
+
+            {
+                openAlert &&
+                <Alert
+                title="Confirmar Devolução?"
+                message="Deseja confirmar a devolução deste pagamento?"
+                messageAdd='Este tipo de ação é irreversível.'
+                nameButton="Devolver"
+                typeButton="delete"
+                toggle={toggleAlert}
+                actionButton={handle}
+                />
+            }
         </Dialog>
     )
 }

@@ -1,9 +1,33 @@
-import { Container, Link } from "./style";
 import { useNavigate } from 'react-router-dom'
+import { styled } from "styled-components";
 
-// const navigate = (route: string) => {
-//     (window as any).api.navigate(route);
-// };
+const Container = styled.div`
+    left: 0;
+    transform: translateY(-80%);
+    transition: transform 0.3s ease-in-out;
+    &:hover {
+        transform: translateX(0);
+        width: 100%;
+    }
+    width: 100%;
+
+    background-color: #fff;
+    backdrop-filter: blur(2px);
+    background: #0001;
+    padding: 5px 0 10px 0; 
+`;
+
+const Link = styled.button`
+    border: none;
+    padding: 5px;
+    background-color: #3498db;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #fff;
+    &:hover {
+        cursor: pointer;
+    }
+`
 
 export function Navbar() {
     const navigate = useNavigate()

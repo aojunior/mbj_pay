@@ -20,7 +20,8 @@ const headers = {
   'Accept-Encoding': 'gzip, deflate, br',
   'connection': 'keep-alive',
   'Accept': '*/*',
-  'Content-Type': 'application/x-www-form-urlencoded',
+  'Content-Type': 'application/json',
+  
   'Host': 'mtls-mp.hml.flagship.maas.link'
 }
 
@@ -49,18 +50,21 @@ const api = axios.create({
 export async function tokenGenerator() {
   let token
   
-  await api.post('/auth/realms/Matera/protocol/openid-connect/token',
+  token = await api.post('/auth/realms/Matera/protocol/openid-connect/token',
     {
       grant_type: 'client_credentials',
       client_id: client_id,
       client_secret: client_secret,
     },
     {
-      headers
+      headers: {
+        ...headers,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
     }
   )
   .then((response) => {
-    token = response.data.access_token
+    return response.data.access_token
   })
   .catch(e => console.error(e))
 
@@ -148,7 +152,6 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Transaction-Hash': sha_signature
     },
@@ -179,7 +182,6 @@ export async function VerifyAccount(token) {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Transaction-Hash': sha_signature
     },
@@ -214,7 +216,6 @@ export async function createAliases(token: string) {
     headers:{
       ...headers,
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Accept': '*/*',
       'Transaction-Hash': sha_signature
     },
@@ -338,7 +339,6 @@ export async function createInstantPayment(paymentFile: any, token: string) {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
       'Transaction-Hash': sha_signature
     },
     httpsAgent
@@ -370,7 +370,6 @@ export async function verifyInstantPayment(transactionid: string, token: string)
       ...headers,
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
       'Transaction-Hash': sha_signature
     },
     httpsAgent
@@ -394,7 +393,6 @@ export async function refundCodes(token: string) {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
     },
     httpsAgent
   }).then( res => {
@@ -411,19 +409,40 @@ export async function refundCodes(token: string) {
   return response
 }
 
-export async function refundInstantPayment(transactionid: string, reasonCode: string, token: string) {
+export async function refundInstantPayment(item: any, reasonCode: string, token: string) {
   let response
   const db = await dbRead()
-  const valorHash = ``
+  const valorHash = (item.amount).toFixed(0) + db.AccoutId + item.transactionid + reasonCode
   const sha_signature = await encrypt_string(valorHash)
 
-  response = await api.post(`v1/accounts/${db.AccountId}/instant-payments/${transactionid}/returns`, {
+  const data = {
+    externalIdentifier: uuidv4() + now,
+    amount: item.amount,
+    returnReasonCode: reasonCode,
+    mediatorFee: 1
+  }
+
+  response = await api.post(`v1/accounts/${db.AccountId}/instant-payments/${item.transactionid}/returns`, {
+    data,
     headers: {
-      ...headers
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Transaction-Hash': sha_signature
     },
     httpsAgent
+  }).then( res => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+      console.error('Error: ', error);
+    }
   })
 
+  return response
 }
 
 export async function verifyBalance(token: string) {
@@ -439,7 +458,6 @@ export async function verifyBalance(token: string) {
       ...headers,
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
       'Transaction-Hash': sha_signature
     },
     httpsAgent
@@ -474,7 +492,6 @@ export async function extractBalanceToday(token: string) {
       ...headers,
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
       'Transaction-Hash': sha_signature
     },
     httpsAgent
@@ -502,7 +519,6 @@ export async function extractBalanceFilter(token: string, dateStart: string, dat
       ...headers,
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
       'Transaction-Hash': sha_signature
     },
     httpsAgent
