@@ -17,8 +17,6 @@ export default function Dashboard() {
     setBalance({})
     await win.api.verifyBalance()
     await win.api.responseBalance( data => {
-      console.log('this data  ' +data)
-
       if(data == undefined || data == null) 
         setShowNotification(true)
       setBalance(data)

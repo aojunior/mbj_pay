@@ -13,6 +13,7 @@ export const API = {
   verifyAccount: () => ipcRenderer.send("verify_account"),
   createAlias: () => ipcRenderer.send("create_alias", ),
   verifyAlias: () => ipcRenderer.send("verify_alias", ),
+  responseVerifyAlias: (callback) => ipcRenderer.on("response_verify_alias", (_, args) => callback(args) ),
   
   createInstantPayment: (data) => ipcRenderer.send("create_instantpayment", data),
   cancelInstantPayment: () => ipcRenderer.send("cancel_instantpayment", ),

@@ -144,6 +144,7 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
       ]
     }
   }
+
   const sha_signature = await encrypt_string(data.externalIdentifier + accountData.companyDocument)
   
   response = await api.post('/v1/accounts',
@@ -171,14 +172,11 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
   return response
 }
 
-export async function VerifyAccount(token) {
-  let response
-  const data = await dbRead()  
-  const AccountID = data.AccountId
-  
-  const sha_signature = await encrypt_string(AccountID)
+export async function VerifyAccount(token, AccId) {
+  let response  
+  const sha_signature = await encrypt_string(AccId)
 
-  response = await api.get(`/v1/accounts/${AccountID}`, {
+  response = await api.get(`/v1/accounts/${AccId}`, {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
@@ -197,20 +195,20 @@ export async function VerifyAccount(token) {
     }
   })
 
-  return response
+  return response.data
 }
 
-export async function createAliases(token: string) {
-  const db = await dbRead()
-  const AccountID = db.AccountId
-  const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountID}/aliases:`)
+export async function createAliases(token: string, AccId: string) {
+  const sha_signature = await encrypt_string(`post:/v1/accounts/${AccId}/aliases:`)
+
   const data = {
     externalIdentifier: `${uuidv4()}${now}`,
     alias: {
       type: 'EVP'
     }
   }
-  let response = await api.post(`/v1/accounts/${AccountID}/aliases`,
+
+  let response = await api.post(`/v1/accounts/${AccId}/aliases`,
   data,
   {
     headers:{
@@ -221,7 +219,7 @@ export async function createAliases(token: string) {
     },
     httpsAgent
   }).then((res): any => {
-    if(res.status == 200 || res.status == 202)
+    if(res.status == 202)
     return [res.status, res.data]
   }).catch(error => {
     if (error.response) {
@@ -231,15 +229,12 @@ export async function createAliases(token: string) {
     }
   })
 
-  return {response, AccountID}
+  return response
 }
 
-export async function verifyAliases(token: string) {
-  const data = await dbRead()
-  const AccountID = data.AccountId
-  //const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountiD}/aliases`)
+export async function verifyAliases(token: string, AccId: string) {
 
-  let response = await api.get(`/v1/accounts/${AccountID}/aliases`, {
+  let response = await api.get(`/v1/accounts/${AccId}/aliases`, {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
@@ -256,43 +251,40 @@ export async function verifyAliases(token: string) {
     }
   })
 
-  return {response, AccountID}
+  return response.data
 }
 
-export async function verifyAliasesComplete(token: string) {
-  const data = await dbRead()
-  const AccountID = data.AccountId
-  const Alias = data.Aliases
+// export async function verifyAliasesComplete(token: string) {
+//   const data = await dbRead()
+//   const AccountID = data.AccountId
+//   const Alias = data.Aliases
+//   //const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountiD}/aliases`)
 
-  //const sha_signature = await encrypt_string(`post:/v1/accounts/${AccountiD}/aliases`)
+//   let response = await api.get(`/v1/accounts/${AccountID}/aliases/BRA/${Alias}`, {
+//     headers: {
+//       ...headers,
+//       'Authorization': `Bearer ${token}`,
+//     },
+//     httpsAgent
+//   }).then( res => {
+//     if(res.status == 200 || res.status == 202) 
+//       return res.data
+//   }).catch(error => {
+//     if(error.response) {
+//       console.error(error.response.data)
+//     } else {
+//       console.error('Error', error.message);
+//     }
+//   })
 
-  let response = await api.get(`/v1/accounts/${AccountID}/aliases/BRA/${Alias}`, {
-    headers: {
-      ...headers,
-      'Authorization': `Bearer ${token}`,
-    },
-    httpsAgent
-  }).then( res => {
-    if(res.status == 200 || res.status == 202) 
-      return res.data
-  }).catch(error => {
-    if(error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error', error.message);
-    }
-  })
+//   return {response, AccountID}
+// }
 
-  return {response, AccountID}
-}
-
-export async function createInstantPayment(paymentFile: any, token: string) {
+export async function createInstantPayment(paymentFile: any, token: string, AccId: string, Alias: string, MedId, MedFee) {
   let response
-  const db = await dbRead()
-
   let totalAmount = paymentFile.totalAmount | 0
   let recipientAmount = paymentFile.totalAmount | 0
-  const valorHash = db.Aliases + totalAmount + db.AccountId + recipientAmount
+  const valorHash = Alias + totalAmount + AccId + recipientAmount
 
   const sha_signature = await encrypt_string(valorHash)
 
@@ -303,7 +295,7 @@ export async function createInstantPayment(paymentFile: any, token: string) {
     "paymentInfo": {
       "transactionType": "InstantPayment",
       "instantPayment": {
-        "alias": db.Aliases,
+        "alias": Alias,
         "qrCodeImageGenerationSpecification": {
           "errorCorrectionLevel": "M",
           "imageWidth": 400,
@@ -322,11 +314,11 @@ export async function createInstantPayment(paymentFile: any, token: string) {
     "recipients": [
       {
         "account": {
-          "accountId": db.AccountId
+          "accountId": MedId
         },
         "amount": recipientAmount,
         "currency": "BRL",
-        "mediatorFee": 2,
+        "mediatorFee": MedFee,
         "recipientComment": paymentFile.recipientComment
       }
     ],
@@ -357,15 +349,93 @@ export async function createInstantPayment(paymentFile: any, token: string) {
   return response.data
 }
 
-export async function verifyInstantPayment(transactionid: string, token: string) {
+export async function verifyInstantPayment(transactionid: string, token: string, AccId: string) {
   let response
-  const db = await dbRead()
-
-  const valorHash = `get:/v2/accounts/${db.AccountId}/transactions/${transactionid}`
-
+  const valorHash = `get:/v2/accounts/${AccId}/transactions/${transactionid}`
   const sha_signature = await encrypt_string(valorHash)
 
-  response = await api.get(`/v2/accounts/${db.AccountId}/transactions/${transactionid}`, {
+  response = await api.get(`/v2/accounts/${AccId}/transactions/${transactionid}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response.data
+}
+
+export async function verifyBalance(token: string, ) {
+  let response
+  const db = await dbRead('client')
+  console.log(db)
+  const sha_signature = await encrypt_string(db.AccountId)
+
+  response = await api.get(`/v2/accounts/${db.AccountId}/balance`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response.data
+}
+
+export async function extractBalanceToday(token: string, AccId: string) {
+  let response
+  let date = new Date().toISOString()
+  let formateDate = date.split('T') // '2023-06-15'
+  const sha_signature = await encrypt_string(AccId)
+  
+  response = await api.get(`/v1/accounts/${AccId}/statement?ending=${formateDate[0]}&start=${formateDate[0]}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if(res.status == 200 || res.status == 202) 
+      return res.data
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message);
+    }
+  })
+
+  return response.data
+}
+
+export async function extractBalanceFilter(token: string, dateStart: string, dateEnd: string, AccId: string) {
+  let response
+  const sha_signature = await encrypt_string(AccId)
+  response = await api.get(`/v1/accounts/${AccId}/statement?ending=${dateEnd}&start=${dateStart}`, {
     headers: {
       ...headers,
       'Authorization': `Bearer ${token}`,
@@ -409,10 +479,9 @@ export async function refundCodes(token: string) {
   return response
 }
 
-export async function refundInstantPayment(item: any, reasonCode: string, token: string) {
+export async function refundInstantPayment(item: any, reasonCode: string, token: string, AccId: string) {
   let response
-  const db = await dbRead()
-  const valorHash = (item.amount).toFixed(0) + db.AccoutId + item.transactionid + reasonCode
+  const valorHash = (item.amount).toFixed(0) + AccId + item.transactionid + reasonCode
   const sha_signature = await encrypt_string(valorHash)
 
   const data = {
@@ -422,7 +491,7 @@ export async function refundInstantPayment(item: any, reasonCode: string, token:
     mediatorFee: 1
   }
 
-  response = await api.post(`v1/accounts/${db.AccountId}/instant-payments/${item.transactionid}/returns`, {
+  response = await api.post(`v1/accounts/${AccId}/instant-payments/${item.transactionid}/returns`, {
     data,
     headers: {
       ...headers,
@@ -443,95 +512,4 @@ export async function refundInstantPayment(item: any, reasonCode: string, token:
   })
 
   return response
-}
-
-export async function verifyBalance(token: string) {
-  let response
-  const db = await dbRead()
-
-  const valorHash = db.AccountId
-
-  const sha_signature = await encrypt_string(valorHash)
-
-  response = await api.get(`/v2/accounts/${db.AccountId}/balance`, {
-    headers: {
-      ...headers,
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
-  }).then((res): any => {
-    if(res.status == 200 || res.status == 202) 
-      return res.data
-  }).catch(error => {
-    if(error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error: ', error.message);
-    }
-  })
-
-  return response.data
-}
-
-export async function extractBalanceToday(token: string) {
-  let response
-  let date = new Date().toISOString()
-  let formateDate = date.split('T')
-  // let formateDate = '2023-06-15'
-  
-  const db = await dbRead()
-  
-  const valorHash = db.AccountId
-  
-  const sha_signature = await encrypt_string(valorHash)
-  
-  response = await api.get(`/v1/accounts/${db.AccountId}/statement?ending=${formateDate[0]}&start=${formateDate[0]}`, {
-    headers: {
-      ...headers,
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
-  }).then((res): any => {
-    if(res.status == 200 || res.status == 202) 
-      return res.data
-  }).catch(error => {
-    if(error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error: ', error.message);
-    }
-  })
-
-  return response.data
-}
-
-export async function extractBalanceFilter(token: string, dateStart: string, dateEnd: string) {
-  let response
-  const db = await dbRead()
-  const valorHash = db.AccountId
-  const sha_signature = await encrypt_string(valorHash)
-  response = await api.get(`/v1/accounts/${db.AccountId}/statement?ending=${dateEnd}&start=${dateStart}`, {
-    headers: {
-      ...headers,
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
-  }).then((res): any => {
-    if(res.status == 200 || res.status == 202) 
-      return res.data
-  }).catch(error => {
-    if(error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error: ', error.message);
-    }
-  })
-
-  return response.data
 }
