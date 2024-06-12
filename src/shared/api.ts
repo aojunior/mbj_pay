@@ -72,22 +72,22 @@ export async function tokenGenerator() {
 }
 
 export async function createAccount(accountData: z.infer<typeof accountSchema>, token) {
-  let response 
+  let response
   const data = {
     externalIdentifier: `${uuidv4()}${now}` ,
     clientType: "CORPORATE",
     accountType: "UNLIMITED_ORDINARY",
     client: {
-        name: accountData.ownerName,
-        taxIdentifier: {
-            taxId: accountData.companyDocument,
-            country: "BRA"
-        },
-        mobilePhone: {
-            country: "BRA",
-            phoneNumber: accountData.companyPhoneNumber
-        },
-        email: accountData.companyEmailAddress
+      name: accountData.ownerName,
+      taxIdentifier: {
+          taxId: accountData.companyDocument,
+          country: "BRA"
+      },
+      mobilePhone: {
+          country: "BRA",
+          phoneNumber: accountData.companyPhoneNumber
+      },
+      email: accountData.companyEmailAddress
     },
     billingAddress: {
         logradouro: accountData.companyAddress,

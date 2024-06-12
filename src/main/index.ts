@@ -164,6 +164,14 @@ ipcMain.on('token_generator',  async () => {
   mainWindow.webContents.send('access_token', token)
 });
 
+ipcMain.on('initial_',  async () => {
+  const db = await dbRead('client')
+  let credential = false
+  if(db.AccountId && db.Cnpj)
+    credential = true
+  mainWindow.webContents.send('_initial', credential)
+});
+
 ipcMain.on('create_account', async(_, args) => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
   let newAccount = await createAccount(args, token)
@@ -174,8 +182,9 @@ ipcMain.on('create_account', async(_, args) => {
     Cnpj: args.companyDocument,
     Tel: args.companyPhoneNumber
   }
-
   await dbInsertClient(data)
+
+  mainWindow.webContents.send('response_create_account', true);
 });
 
 ipcMain.on('verify_account', async() => {
@@ -190,7 +199,7 @@ ipcMain.on('verify_account', async() => {
     Status: consulta.accountStatus,
     MedAccId: consulta.mediatorId 
   }
-
+  console.log(data)
   if(data.Status !== db.Status)
     await dbUpdateClient(data)
 })
@@ -207,12 +216,17 @@ ipcMain.on('create_alias', async() => {
 
 ipcMain.on('verify_alias', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
-  const db = await dbRead('client')
-  const verify = await verifyAliases(token, db.AliasId)
+  const client = await dbRead('client')
+  const db = await dbRead('aliases')
+  let verify
 
-  await dbInsertAlias(verify.aliases)
+  if(client.Account && client.Branch) {
+    verify = await verifyAliases(token, db.Alias)
+    await dbInsertAlias(verify.aliases)
+    return mainWindow.webContents.send('response_verify_alias', verify.aliases); 
+  }
 
-  mainWindow.webContents.send('response_verify_alias', verify.aliases);  
+  mainWindow.webContents.send('response_verify_alias', 'VerifyAccount');
 })
 
 ipcMain.on('verify_instantpayment', async() => {

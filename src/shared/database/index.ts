@@ -1,6 +1,8 @@
 import { database  } from "./databaseConnect";
 
 const db = database
+const dt = new Date().toISOString()
+const now = dt.split('T')
 
 export const dbCreate = () => {
     try {
@@ -41,7 +43,7 @@ export const dbRead = (table) => {
 export const dbInsertClient = ({AccId, AccHID, Cnpj, Tel, Status}) => {
     try {
         const insertQuery = db.prepare(
-            `INSERT INTO client (AccountId, AccountHolderId, Cnpj, Phone, Status, Date) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}', '${Status}', NOW())`
+            `INSERT INTO client (AccountId, AccountHolderId, Cnpj, Phone, Status, Date) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}', '${Status}', '${now[0]}')`
         )
 
         const transaction = db.transaction(() => {
@@ -64,11 +66,11 @@ export const dbUpdateClient = ({AccId, Acc, Branch, Status, MedAccId}) => {
         let insertQuery
         if(Status == 'REGULAR') {
             insertQuery = db.prepare(
-                `UPDATE SET client Branch = '${Branch}', Account = '${Acc}', Status = '${Status}' WHERE  AccountID = '${AccId}')`
+                `UPDATE client SET Branch = '${Branch}', Account = '${Acc}', Status = '${Status}' WHERE  AccountId = '${AccId}'`
             )
         } else {
             insertQuery = db.prepare(
-                `UPDATE SET client Status = '${Status}' WHERE  AccountID = '${AccId}')`
+                `UPDATE client SET Status = '${Status}' WHERE AccountId = '${AccId}'`
             )
         }
         
@@ -100,7 +102,7 @@ export const dbUpdateClient = ({AccId, Acc, Branch, Status, MedAccId}) => {
 export const dbInsertAlias = (data) => {
     try {
         const insertQuery = db.prepare(
-            `INSERT IGNORE INTO alias (AccountId, Alias, Status, Date) VALUES ( @AccountId , @Alias, @Status, NOW()) LIMIT 1`
+            `INSERT IGNORE INTO alias (AccountId, Alias, Status, Date) VALUES ( @AccountId , @Alias, @Status, '${now[0]}') LIMIT 1`
         )
         const transaction = db.transaction((aliases) => {
             for(const alias of aliases) insertQuery.run(alias)
@@ -146,7 +148,7 @@ export const dbActiveAlias = (Alias) => {
 export const dbUpdateAlias = (Alias, Status) => {
     try {
         const insertQuery = db.prepare(
-            `Update alias set Status = '${Status}' WHERE Alias = '${Alias}'`
+            `Update alias SET Status = '${Status}' WHERE Alias = '${Alias}'`
         );
 
         const transaction = db.transaction(() => {
@@ -178,7 +180,7 @@ export const dbReadActiveAlias = () => {
 export const dbInsertTransaction = ({AccId, TranId, TranType, Status, Amount, Ident}) => {
     try {
         const insertQuery = db.prepare(
-            `INSERT INTO transactions (AccountId, TransactionId, TransactionType, Amount, Status, Identify, Date) VALUES ('${AccId}' , '${TranId}', '${TranType}', '${Amount}', '${Status}', '${Ident}', NOW())`
+            `INSERT INTO transactions (AccountId, TransactionId, TransactionType, Amount, Status, Identify, Date) VALUES ('${AccId}' , '${TranId}', '${TranType}', '${Amount}', '${Status}', '${Ident}', '${now[0]}' )`
         )
 
         const transaction = db.transaction(() => {

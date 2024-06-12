@@ -5,7 +5,6 @@ import { AddBank } from "./_components/AddBank";
 import { ManageAlias } from "./_components/manageAliases";
 import { Section } from "./styles";
 
-
 const win: any = window
 export default function Settings() {
     const [selectedSection, setSelectedSection] = useState('AddBank');
@@ -15,7 +14,7 @@ export default function Settings() {
       await win.api.verifyAlias()
       await win.api.responseVerifyAlias(data =>  {
         console.log(data)
-        setResponseAliases(data.aliases)
+        setResponseAliases(data)
       })
     }
 

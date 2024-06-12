@@ -4,13 +4,18 @@ export const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
   navigate: (route) => ipcRenderer.send('navigate', route),
-  // onCount: (callback) => ipcRenderer.on("count", (_, args) => callback(args)),
+  initialMain: () => ipcRenderer.send('initial_', ),
+  initialRender: (callback) => ipcRenderer.on("_initial", (_, args) => callback(args)),
+  
   reciveFile: (callback) => ipcRenderer.on("file", (_, args) => callback(args)),
   cancelPayment: () => ipcRenderer.send("cancel_payment", ),
   tokenGenerator: () => ipcRenderer.send("token_generator"),
   accessToken: (callback) => ipcRenderer.on("access_token", (_, args) => callback(args)),
+  
   createAccount: (data) => ipcRenderer.send('create_account', data ),
+  responseCreateAccount: (callback) => ipcRenderer.on('response_create_account', (_, args) => callback(args)),
   verifyAccount: () => ipcRenderer.send("verify_account"),
+
   createAlias: () => ipcRenderer.send("create_alias", ),
   verifyAlias: () => ipcRenderer.send("verify_alias", ),
   responseVerifyAlias: (callback) => ipcRenderer.on("response_verify_alias", (_, args) => callback(args) ),
@@ -30,6 +35,7 @@ export const API = {
   responseBalance: (callback) => ipcRenderer.on("response_balance", (_, args) => callback(args)),
   extractBalanceToday: () => ipcRenderer.send("extract_balance_today", ),
   extractBalanceFilter: (start, end) => ipcRenderer.send("extract_balance_filter", [start, end]),
+  
   responseExtractToday: (callback) => ipcRenderer.on("response_extract_today", (_, args) => callback(args)),
   responseExtractFilter: (callback) => ipcRenderer.on("response_extract_filter", (_, args) => callback(args)),
 };

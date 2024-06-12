@@ -7,6 +7,7 @@ import { FormOwner } from './_components/formOwner'
 import { FormBank } from './_components/formBank'
 import { bankSchema, companySchema, ownerSchema } from './schema'
 import { Button, Container, ContentInRow } from '../../styles/global'
+import { Finally } from './_components/finally'
 
 const win: any = window
 
@@ -44,13 +45,21 @@ export default function CreateAccount() {
     ownerPhoneNumber: '1127024478'
   } as z.infer<typeof ownerSchema>)
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
+  const [finish, setFinish] = useState(false)
 
-  function sendData() {
+  async function sendData() {
     const concatAccount = {...companyData, ...ownerData, ...bankData}
-    win.api.createAccount(concatAccount)
+    await win.api.createAccount(concatAccount)
+
+    await win.api.responseCreateAccount(data => {
+      setFinish(data)
+    })
   }
 
   return (
+    finish ?
+    <Finally />
+    :
     <>
       <Progress data={pages[select]}/>
         <Container >
