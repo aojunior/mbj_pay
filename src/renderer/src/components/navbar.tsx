@@ -37,7 +37,7 @@ export function Navbar() {
             <ul style={{display: 'flex', flexDirection: 'row', gap: 20, justifyContent: 'center'}}>
                 <li><Link onClick={() => navigate('/')}>Home</Link></li>
                 <li><Link onClick={() => navigate('/dashboard')}>Dashboard</Link></li>
-                <li><Link onClick={() => navigate('/createaccount')}>New Account</Link></li>
+                {/* <li><Link onClick={() => navigate('/createaccount')}>New Account</Link></li> */}
                 <li><Link onClick={() => navigate('/settings')}>Settings</Link></li>
             </ul>
         </Container>

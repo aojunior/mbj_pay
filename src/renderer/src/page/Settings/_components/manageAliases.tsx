@@ -11,6 +11,8 @@ const win: any = window
 
 export function ManageAlias({aliasData}: aliasProps) {
     const [load, setLoad] = useState(false)
+    
+
     const handleVerifyAccount = async () => {
         setLoad(true)
         await win.api.verifyAccount()

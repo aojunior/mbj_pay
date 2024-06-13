@@ -220,9 +220,10 @@ ipcMain.on('verify_alias', async() => {
   const db = await dbRead('aliases')
   let verify
 
-  if(client.Account && client.Branch) {
-    verify = await verifyAliases(token, db.Alias)
-    await dbInsertAlias(verify.aliases)
+  if(client.Status == 'REGULAR') {
+    verify = await verifyAliases(token, client.AccountId)
+    console.log(verify.aliases)
+    // await dbInsertAlias(verify.aliases)
     return mainWindow.webContents.send('response_verify_alias', verify.aliases); 
   }
 

@@ -75,7 +75,7 @@ export const dbUpdateClient = ({AccId, Acc, Branch, Status, MedAccId}) => {
         }
         
         const insertQuery2 = db.prepare(
-            `INSERT IGNORE INTO mediator (MediatorAccountId, MediatorFee) VALUES ('${MedAccId}' , ${0.50})`
+            `REPLACE INTO mediator (MediatorAccountId, MediatorFee) VALUES ('${MedAccId}' , ${0.50})`
         )
 
         const transaction = db.transaction(() => {

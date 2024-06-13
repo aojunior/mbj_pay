@@ -6,11 +6,12 @@ const Container = styled.dialog`
     width: 100%;
     height: 100vh;
     backdrop-filter: blur(4px);
-    background: #00000070;
+    background: #0000006f;
     padding: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
 `;
 
 const spin = keyframes`
