@@ -7,7 +7,7 @@ const now = dt.split('T')
 export const dbCreate = () => {
     try {
         const createTbls = {
-            client: db.prepare(`CREATE TABLE IF NOT EXISTS client (AccountId VARCHAR(50), AccountHolderId VARCHAR(50), Account VARCHAR(50), Branch VARCHAR(50), Cnpj VARCHAR(12), Phone VARCHAR(12), Date DateTime, Status VARCHAR(12))`),
+            client: db.prepare(`CREATE TABLE IF NOT EXISTS client (AccountId VARCHAR(50), AccountHolderId VARCHAR(50), Account VARCHAR(50), Branch VARCHAR(50), Cnpj VARCHAR(12), Phone VARCHAR(12), Date DateTime, Status VARCHAR(12), VerifiedAccount VARCHAR(5) )`),
             aliases: db.prepare(`CREATE TABLE IF NOT EXISTS aliases (AccountId VARCHAR(50), Alias VARCHAR(50), Date DateTime, Status VARCHAR(12), Active VARCHAR(5))`),
             transactions: db.prepare(`CREATE TABLE IF NOT EXISTS transactions (AccountId VARCHAR(50), TransactionId VARCHAR(50), TransactionType VARCHAR(50), Amount VARCHAR(50), Status VARCHAR(50), Identify VARCHAR(40), Date DateTime)`),
             mediator: db.prepare(`CREATE TABLE IF NOT EXISTS mediator (MediatorAccountId VARCHAR(50), MediatorFee Float)`)
@@ -40,7 +40,7 @@ export const dbRead = (table) => {
     }
 }
 
-export const dbInsertClient = ({AccId, AccHID, Cnpj, Tel, Status}) => {
+export const dbInsertClient = ({AccId, AccHID, Cnpj, Tel, Status, Verified}) => {
     try {
         const insertQuery = db.prepare(
             `INSERT INTO client (AccountId, AccountHolderId, Cnpj, Phone, Status, Date) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}', '${Status}', '${now[0]}')`

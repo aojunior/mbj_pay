@@ -28,10 +28,14 @@ const Spinner = styled.div`
   animation: ${spin} 0.7s linear infinite;
 `;
 
-export function Loading() {
+type LoadProps = {
+  background?: string;
+}
+
+export function Loading({background}: LoadProps) {
 
   return(
-    <Container id="dialog">
+    <Container id="dialog" style={{background: background && background}}>
       <Spinner/>
     </Container>
   )

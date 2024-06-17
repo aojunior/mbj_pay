@@ -180,7 +180,8 @@ ipcMain.on('create_account', async(_, args) => {
     AccHID: newAccount.data.accountHolderId,
     Status: newAccount.data.accountStatus,
     Cnpj: args.companyDocument,
-    Tel: args.companyPhoneNumber
+    Tel: args.companyPhoneNumber,
+    VerifiedAccount
   }
   await dbInsertClient(data)
 

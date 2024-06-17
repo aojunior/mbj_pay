@@ -3,10 +3,10 @@ import Routes from './Router'
 import { Header } from './components/header'
 import { Navbar } from './components/navbar'
 import { Notification } from './components/notification'
+
 const win: any = window
 function App(): JSX.Element {
   const [showNotification, setShowNotification] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState<boolean>()
   
   const refreshAndStorageToken = useCallback(async () => {
     win.api.tokenGenerator()
@@ -24,18 +24,13 @@ function App(): JSX.Element {
     setInterval(() => refreshAndStorageToken(), 5000 * 60) // 5 min
   }, [refreshAndStorageToken])
 
-  useEffect(() => {
-    win.api.initialMain()
-    win.api.initialRender(data => {
-      setIsAuthorized(data)
-    })
-  }, [])
+
 
   return (
     <div style={{width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column',}}>
       <Navbar/>
       <Header />
-      <Routes isAuthorized={isAuthorized}/>
+      <Routes />
       <Notification 
       type='error'
       show={showNotification}

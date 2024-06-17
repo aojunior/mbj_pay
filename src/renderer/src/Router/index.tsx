@@ -5,14 +5,32 @@ import Home from '@renderer/page/Home/Index';
 import Dashboard from '@renderer/page/Dashboard';
 import CreateAccount from '@renderer/page/CreateAccount';
 import Settings from '@renderer/page/Settings';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Loading } from '@renderer/components/loading';
 
 // import { Navbar } from '@renderer/components/Navbar';
 
-const Routers = ({isAuthorized}: any) => {
+const win: any = window
+
+const Routers = () => {
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(true)
+  const [isLoad, setIsLoad] = useState<boolean>(false)
   
+  useEffect(() => {
+    setIsLoad(true)
+    win.api.initialMain()
+    win.api.initialRender(data => {
+      setIsAuthorized(data)
+    })
+    setIsLoad(false)
+  }, [])
+
   return (
     <Routes>
+      {
+        isLoad &&
+        <Loading background='#fff'/>
+      }
       {
         !isAuthorized && 
         <Route path="/" element={<CreateAccount/>} />
