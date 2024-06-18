@@ -159,7 +159,7 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
     httpsAgent,
   }
   ).then(response => {
-    if (response.status == 200) 
+    if (response.status == 200)
     return response.data
   }).catch(error => {
     if (error.response) {
@@ -167,6 +167,7 @@ export async function createAccount(accountData: z.infer<typeof accountSchema>, 
     } else {
       console.log('Error', error.message);
     }
+    return error.response.data
   })
 
   return response
@@ -193,6 +194,7 @@ export async function VerifyAccount(token, AccId) {
     } else {
       console.log('Error', error.message);
     }
+    return error.response.data
   })
 
   return response.data
@@ -233,7 +235,6 @@ export async function createAliases(token: string, AccId: string) {
 }
 
 export async function verifyAliases(token: string, AccId: string) {
-
   let response = await api.get(`/v1/accounts/${AccId}/aliases`, {
     headers: {
       ...headers,

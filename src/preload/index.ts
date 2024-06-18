@@ -11,10 +11,18 @@ export const API = {
   cancelPayment: () => ipcRenderer.send("cancel_payment", ),
   tokenGenerator: () => ipcRenderer.send("token_generator"),
   accessToken: (callback) => ipcRenderer.on("access_token", (_, args) => callback(args)),
-  
-  createAccount: (data) => ipcRenderer.send('create_account', data ),
-  responseCreateAccount: (callback) => ipcRenderer.on('response_create_account', (_, args) => callback(args)),
-  verifyAccount: () => ipcRenderer.send("verify_account"),
+  createAccount: async(clientData) => {
+    const response = await ipcRenderer.invoke('create-account', clientData)
+    return response
+  },
+  checkClient: async() => {
+    const exists = await ipcRenderer.invoke('check-client')
+    return exists
+  },
+  verifyAccount: async () => {
+    const verify = ipcRenderer.invoke("verify-account")
+    return verify
+  },
   get_account: () => ipcRenderer.send("get_account"),
   getAccount: (callback) => ipcRenderer.on("getAccount", (_, args) => callback(args)),
 

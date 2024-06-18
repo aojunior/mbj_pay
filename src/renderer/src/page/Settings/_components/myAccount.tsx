@@ -26,21 +26,12 @@ export function MyAccount({acc}: accProps) {
     const [load, setLoad] = useState(false)
     const [showNotification, setShowNotification] = useState(false);
 
-
     const handleVerifyAccount = async () => {
         setLoad(true)
-        await win.api.verifyAccount()
-        await win.api.get_account()
-        await win.api.getAccount(data =>{
-            if(data == undefined || data == null) {
-                setShowNotification(true)
-                throw new Error(`Access token not available`)
-            }
-            setAccount(data)
-        })
+        const verify = await win.api.verifyAccount()
+        
         setLoad(false)
     }
-
 
     return (
         <div style={{display: 'flex', flexDirection: 'column', marginLeft: 40}}>
@@ -72,7 +63,7 @@ export function MyAccount({acc}: accProps) {
             <Separator />
 
             {
-                account.Status == 'CREATING' &&
+                account.Status !== 'REGULAR' &&
                 <Button onClick={handleVerifyAccount}>{ load ? 'Carregando' : 'Verificar Conta'} </Button> 
             }
 

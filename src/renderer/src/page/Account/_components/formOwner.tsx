@@ -55,17 +55,10 @@ export function FormOwner({ownerData, setOwnerData}: ownerProps) {
                             </FormInput>
                         </ContentInRow>
 
-                        <ContentInRow style={{gap: 25, justifyContent: 'flex-start', width: '100%'}}>
-                            <FormInput style={{width: 200}}>
-                                <Label>Telefone</Label>
-                                <Input {...register("ownerPhoneNumber")} type='text' placeholder="(xx) 9999-9999" />
-                            </FormInput>
-
-                            <FormInput style={{width: 200}}>
-                                <Label>Telefone 2</Label>
-                                <Input {...register("ownerPhoneNumber2")} type='text' placeholder="(xx) 99999-9999" />
-                            </FormInput>
-                        </ContentInRow>
+                        <FormInput style={{width: 200, alignSelf: 'flex-start'}}>
+                            <Label>Telefone</Label>
+                            <Input {...register("ownerPhoneNumber")} type='text' placeholder="(xx) 9999-9999" />
+                        </FormInput>
                         
                     </CardContent>
                 </Card> 

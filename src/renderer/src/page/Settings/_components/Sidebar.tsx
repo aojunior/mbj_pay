@@ -34,7 +34,7 @@ export function SidebarComponent({ onSelect }: { onSelect: (section: string) => 
             </SidebarLink>
 
             <SidebarLink onClick={() => onSelect('MyAccount')}>
-                Verificar Meus Dados
+                Verificar Minha Conta
             </SidebarLink>
 
             <SidebarLink onClick={() => onSelect('ManageAlias')}>

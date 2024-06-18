@@ -4,7 +4,7 @@ import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, removeReqAndCreateRes, watchFileAndFormat  } from './lib'
 import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday, extractBalanceFilter, refundInstantPayment, refundCodes } from '@shared/api'
-import { dbCreate, dbInsertAlias, dbInsertClient, dbRead, dbReadActiveAlias, dbUpdateClient } from '@shared/database'
+import { dbClientExists, dbCreate, dbInsertAlias, dbInsertClient, dbRead, dbReadActiveAlias, dbUpdateClient } from '@shared/database'
 import AutoLaunch from 'auto-launch'
 
 
@@ -164,6 +164,11 @@ ipcMain.on('token_generator',  async () => {
   mainWindow.webContents.send('access_token', token)
 });
 
+ipcMain.handle('check-client', async() => {
+  const exists = await dbClientExists()
+  return exists
+})
+
 ipcMain.on('initial_',  async () => {
   const db = await dbRead('client')
   let credential = false
@@ -172,19 +177,21 @@ ipcMain.on('initial_',  async () => {
   mainWindow.webContents.send('_initial', credential)
 });
 
-ipcMain.on('create_account', async(_, args) => {
+ipcMain.handle('create-account', async(_, clientData) => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
-  let newAccount = await createAccount(args, token)
+  let newAccount = await createAccount(clientData, token)
+  if(newAccount.error) {
+    return 0
+  }
   let data = {
     AccId: newAccount.data.account.accountId,
     AccHID: newAccount.data.accountHolderId,
     Status: newAccount.data.accountStatus,
-    Cnpj: args.companyDocument,
-    Tel: args.companyPhoneNumber
+    Cnpj: clientData.companyDocument,
+    Tel: clientData.companyPhoneNumber
   }
-  await dbInsertClient(data)
-
-  mainWindow.webContents.send('response_create_account', true);
+  let saveClientInDb = await dbInsertClient(data)
+  return saveClientInDb
 });
 
 ipcMain.on('get_account', async() => {
@@ -192,10 +199,12 @@ ipcMain.on('get_account', async() => {
   mainWindow.webContents.send('getAccount', db);
 })
 
-ipcMain.on('verify_account', async() => {
+ipcMain.handle('verify-account', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
   const db = await dbRead('client')
   let consulta = await VerifyAccount(token, db.AccountId)
+  if(consulta.error) 
+    return 'Error'
 
   let data = {
     AccId: consulta.account.accountId,
@@ -204,10 +213,12 @@ ipcMain.on('verify_account', async() => {
     Status: consulta.accountStatus,
     MedAccId: consulta.mediatorId 
   }
-  if(data.Status !== db.Status)
-    await dbUpdateClient(data)
 
-  return consulta
+  if(data.Status !== db.Status) {
+    let update = await dbUpdateClient(data)
+    return update
+  }
+
 })
 
 ipcMain.on('create_alias', async() => {

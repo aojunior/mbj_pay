@@ -45,16 +45,12 @@ export const dbInsertClient = ({AccId, AccHID, Cnpj, Tel, Status}) => {
         const insertQuery = db.prepare(
             `INSERT INTO client (AccountId, AccountHolderId, Cnpj, Phone, Status, Date) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}', '${Status}', '${now[0]}')`
         )
-
         const transaction = db.transaction(() => {
             const info = insertQuery.run()
-            console.log(
-                `Inserted ${info.changes} rows with last ID 
-                 ${info.lastInsertRowid} into cliente`
-            )
+            return info.lastInsertRowid
         })
-        transaction()
-        console.log('Created')
+
+        return transaction()
     } catch (err) {
         console.error(err)
         throw err
@@ -77,27 +73,36 @@ export const dbUpdateClient = ({AccId, Acc, Branch, Status, MedAccId}) => {
         const insertQuery2 = db.prepare(
             `REPLACE INTO mediator (MediatorAccountId, MediatorFee) VALUES ('${MedAccId}' , ${0.50})`
         )
-
         const transaction = db.transaction(() => {
             const info = insertQuery.run()
-            console.log(
-                `Inserted ${info.changes} rows with last ID 
-                 ${info.lastInsertRowid} into client`
-            )
-
             const info2 = insertQuery2.run()
-            console.log(
-                `Inserted ${info2.changes} rows with last ID 
-                 ${info2.lastInsertRowid} into mediator`
-            )
+
+            if(info.lastInsertRowid == 1 && info2.lastInsertRowid == 1)
+                return 'UPDATED'
         })
-        transaction()
-        console.log('Created')
+
+        return transaction()
     } catch (err) {
         console.error(err)
         throw err
     }
-} 
+}
+
+export const dbClientExists = () => {
+    try {
+        const query = `SELECT * FROM client`
+        const readQuery = db.prepare(query)
+        const rowList = readQuery.all()
+        if(rowList[0]) {
+            return true
+        } else {
+            return false
+        }
+    } catch (err) {
+        console.error(err)
+        throw err
+    }
+}
 
 export const dbInsertAlias = (data) => {
     try {
