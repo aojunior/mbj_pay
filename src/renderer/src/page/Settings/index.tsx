@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import { AddBank } from "./_components/AddBank";
 import { ManageAlias } from "./_components/manageAliases";
 import { Section } from "./styles";
+import { MyAccount } from "./_components/myAccount";
 
 const win: any = window
 export default function Settings() {
     const [selectedSection, setSelectedSection] = useState('AddBank');
     const [responseAliases, setResponseAliases] = useState<any>()
+    const [account, setAccount] = useState <any>()
 
     async function verifyAlias() {
       await win.api.verifyAlias()
-      await win.api.responseVerifyAlias(data =>  {
-        console.log(data)
-        setResponseAliases(data)
-      })
+      await win.api.responseVerifyAlias(data => setResponseAliases(data))
+    }
+
+    async function getAcc() {
+      await win.api.get_account()
+      await win.api.getAccount(data => setAccount(data))
     }
 
     const renderContent = () => {
@@ -24,11 +28,14 @@ export default function Settings() {
           return <AddBank />;
         case 'ManageAlias':          
           return <ManageAlias aliasData={responseAliases} />;
+        case 'MyAccount':          
+          return <MyAccount acc={account}/>;
       }
     };
 
     useEffect(() => {
       verifyAlias()
+      getAcc()
     }, [])
 
     return (

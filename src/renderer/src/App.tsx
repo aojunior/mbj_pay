@@ -24,8 +24,6 @@ function App(): JSX.Element {
     setInterval(() => refreshAndStorageToken(), 5000 * 60) // 5 min
   }, [refreshAndStorageToken])
 
-
-
   return (
     <div style={{width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column',}}>
       <Navbar/>

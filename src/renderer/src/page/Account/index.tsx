@@ -8,6 +8,7 @@ import { FormBank } from './_components/formBank'
 import { bankSchema, companySchema, ownerSchema } from './schema'
 import { Button, Container, ContentInRow } from '../../styles/global'
 import { Finally } from './_components/finally'
+import { Initiate } from './_components/initiate'
 
 const win: any = window
 

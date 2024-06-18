@@ -33,6 +33,10 @@ export function SidebarComponent({ onSelect }: { onSelect: (section: string) => 
                 Adicionar Conta de Depósito
             </SidebarLink>
 
+            <SidebarLink onClick={() => onSelect('MyAccount')}>
+                Verificar Meus Dados
+            </SidebarLink>
+
             <SidebarLink onClick={() => onSelect('ManageAlias')}>
                 Gerenciar Chaves PIX
             </SidebarLink>

@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 
 import Home from '@renderer/page/Home/Index';
 import Dashboard from '@renderer/page/Dashboard';
-import CreateAccount from '@renderer/page/CreateAccount';
+import Account from '@renderer/page/Account';
 import Settings from '@renderer/page/Settings';
 import { useEffect, useState } from 'react';
 import { Loading } from '@renderer/components/loading';
@@ -13,8 +13,8 @@ import { Loading } from '@renderer/components/loading';
 const win: any = window
 
 const Routers = () => {
-  const [isAuthorized, setIsAuthorized] = useState<boolean>(true)
-  const [isLoad, setIsLoad] = useState<boolean>(false)
+  const [isAuthorized, setIsAuthorized] = useState<boolean>()
+  const [isLoad, setIsLoad] = useState<boolean>()
   
   useEffect(() => {
     setIsLoad(true)
@@ -28,17 +28,17 @@ const Routers = () => {
   return (
     <Routes>
       {
-        isLoad &&
-        <Loading background='#fff'/>
+        isLoad ?
+        <Loading />
+      :
+        !isAuthorized ? 
+        <Route path="/" element={<Account/>} />
+        :
+        <Route path="/" element={<Home/>} />
+      
       }
-      {
-        !isAuthorized && 
-        <Route path="/" element={<CreateAccount/>} />
-      }
-
-      <Route path="/" element={<Home/>} />
       <Route path="/dashboard" element={<Dashboard/>} />
-      <Route path="/createaccount" element={<CreateAccount/>} />
+      <Route path="/account" element={<Account/>} />
       <Route path="/settings/" element={<Settings/>} />
     </Routes>
   );

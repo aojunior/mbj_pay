@@ -9,6 +9,7 @@ const Container = styled.dialog`
     background: #0000006f;
     padding: 5px;
     display: flex;
+  
     align-items: center;
     justify-content: center;
     z-index: 1000;
@@ -28,14 +29,11 @@ const Spinner = styled.div`
   animation: ${spin} 0.7s linear infinite;
 `;
 
-type LoadProps = {
-  background?: string;
-}
 
-export function Loading({background}: LoadProps) {
+export function Loading() {
 
   return(
-    <Container id="dialog" style={{background: background && background}}>
+    <Container id="dialog" >
       <Spinner/>
     </Container>
   )

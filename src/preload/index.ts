@@ -15,6 +15,8 @@ export const API = {
   createAccount: (data) => ipcRenderer.send('create_account', data ),
   responseCreateAccount: (callback) => ipcRenderer.on('response_create_account', (_, args) => callback(args)),
   verifyAccount: () => ipcRenderer.send("verify_account"),
+  get_account: () => ipcRenderer.send("get_account"),
+  getAccount: (callback) => ipcRenderer.on("getAccount", (_, args) => callback(args)),
 
   createAlias: () => ipcRenderer.send("create_alias", ),
   verifyAlias: () => ipcRenderer.send("verify_alias", ),

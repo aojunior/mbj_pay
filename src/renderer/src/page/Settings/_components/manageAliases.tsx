@@ -20,7 +20,7 @@ export function ManageAlias({aliasData}: aliasProps) {
 
     return (
         <>
-            <h1> Minha Conta </h1>
+            <h1> Chave Pix </h1>
             { aliasData == 'VerifyAccount' ?
                 <Button onClick={handleVerifyAccount}>
                     Verify Account

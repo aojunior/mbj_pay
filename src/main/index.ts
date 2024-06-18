@@ -180,13 +180,17 @@ ipcMain.on('create_account', async(_, args) => {
     AccHID: newAccount.data.accountHolderId,
     Status: newAccount.data.accountStatus,
     Cnpj: args.companyDocument,
-    Tel: args.companyPhoneNumber,
-    VerifiedAccount
+    Tel: args.companyPhoneNumber
   }
   await dbInsertClient(data)
 
   mainWindow.webContents.send('response_create_account', true);
 });
+
+ipcMain.on('get_account', async() => {
+  const db = await dbRead('client')
+  mainWindow.webContents.send('getAccount', db);
+})
 
 ipcMain.on('verify_account', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
@@ -200,9 +204,10 @@ ipcMain.on('verify_account', async() => {
     Status: consulta.accountStatus,
     MedAccId: consulta.mediatorId 
   }
-  console.log(data)
   if(data.Status !== db.Status)
     await dbUpdateClient(data)
+
+  return consulta
 })
 
 ipcMain.on('create_alias', async() => {
@@ -280,3 +285,5 @@ ipcMain.on('refund', async(_, args) => {
   console.log(response)
   // mainWindow.webContents.send('respose_refund', response.data)
 })
+
+

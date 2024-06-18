@@ -53,3 +53,15 @@ export const DeleteIcon = styled(MdDeleteForever)`
     color: #ee4422;
     cursor: pointer;
 `;
+
+export const Label = styled.label`
+    color: #9d9d9d;
+`;
+
+export const Input = styled.input`
+    width: 300px;
+    height: 30px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid #e4e4e7;
+`;
