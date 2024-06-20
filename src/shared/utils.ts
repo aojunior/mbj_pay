@@ -1,5 +1,5 @@
 export const formatDate = (date: string) => {
-    let d = date.split('-')
+    let d = String(date).split('-')
     return d[2]+'-'+d[1]+'-'+d[0]
 }
 

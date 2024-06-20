@@ -3,8 +3,8 @@ import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, removeReqAndCreateRes, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday, extractBalanceFilter, refundInstantPayment, refundCodes } from '@shared/api'
-import { dbClientExists, dbCreate, dbInsertAlias, dbInsertClient, dbRead, dbReadActiveAlias, dbUpdateClient } from '@shared/database'
+import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday, extractBalanceFilter, refundInstantPayment, refundCodes, deleteAliases } from '@shared/api'
+import { dbClientExists, dbCreate, dbDeleteAlias, dbInsertAlias, dbInsertClient, dbRead, dbReadActiveAlias, dbReadAliases, dbUpdateAlias, dbUpdateClient } from '@shared/database'
 import AutoLaunch from 'auto-launch'
 
 
@@ -194,9 +194,9 @@ ipcMain.handle('create-account', async(_, clientData) => {
   return saveClientInDb
 });
 
-ipcMain.on('get_account', async() => {
+ipcMain.handle('get-account', async() => {
   const db = await dbRead('client')
-  mainWindow.webContents.send('getAccount', db);
+  return db
 })
 
 ipcMain.handle('verify-account', async() => {
@@ -205,7 +205,6 @@ ipcMain.handle('verify-account', async() => {
   let consulta = await VerifyAccount(token, db.AccountId)
   if(consulta.error) 
     return 'Error'
-
   let data = {
     AccId: consulta.account.accountId,
     Acc:consulta.account.account,
@@ -218,33 +217,62 @@ ipcMain.handle('verify-account', async() => {
     let update = await dbUpdateClient(data)
     return update
   }
-
 })
 
-ipcMain.on('create_alias', async() => {
-  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
-  const db = await dbRead('client')
-
-  let alias = await createAliases(token, db.AccountId)
-  if(alias[0] == 202) {
-    return 'Aguarde alguns instante...' 
-  }
-})
-
-ipcMain.on('verify_alias', async() => {
+ipcMain.handle('create-alias', async() => {
   let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
   const client = await dbRead('client')
-  const db = await dbRead('aliases')
-  let verify
+  let createAlias = await createAliases(token, client.AccountId)
+  
+  console.log(createAlias) 
+  return createAlias
+})
 
-  if(client.Status == 'REGULAR') {
-    verify = await verifyAliases(token, client.AccountId)
-    console.log(verify.aliases)
-    // await dbInsertAlias(verify.aliases)
-    return mainWindow.webContents.send('response_verify_alias', verify.aliases); 
+ipcMain.handle('delete-alias', async(_, alias) => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  const client = await dbRead('client')
+  let deleteAlias = await deleteAliases(token, client.AccountId, alias)
+  let deleteA
+  async function deleteBD() {
+    deleteA = await dbDeleteAlias(alias, client.AccountId)
   }
 
-  mainWindow.webContents.send('response_verify_alias', 'VerifyAccount');
+  if(deleteAlias == 202) {
+    deleteBD()
+    return deleteA
+  } else {
+    return 'error'
+  }
+})
+
+ipcMain.handle('update-alias', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then((response) => response);
+  const client = await dbRead('client')
+  const aliases = await dbReadAliases()
+  let verify = await verifyAliases(token, client.AccountId)
+  let update
+  if(aliases.length < verify.aliases.length) {
+    const filteredArray = verify.aliases.filter(item2 => {
+      const matchingItem = aliases.find(item1 => item1.Alias === item2.name)
+      return !matchingItem
+    })
+    update = await dbInsertAlias(filteredArray, client.AccountId)
+  } else {
+    const filteredArray = verify.aliases.filter(item2 => {
+      const matchingItem = aliases.find(item1 => item1.Alias === item2.name);
+      return matchingItem
+    })
+    console.log(aliases, verify.aliases)
+    // update = await dbUpdateAlias(filteredArray, client.AccountId)
+  }
+
+  console.log(aliases, verify.aliases)
+  return update
+})
+
+ipcMain.handle('verify-alias', async() => {
+  const aliases = await dbReadAliases()
+  return aliases
 })
 
 ipcMain.on('verify_instantpayment', async() => {

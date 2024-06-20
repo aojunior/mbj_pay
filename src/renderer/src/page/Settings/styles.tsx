@@ -54,6 +54,11 @@ export const DeleteIcon = styled(MdDeleteForever)`
     cursor: pointer;
 `;
 
+export const WrapIpunt = styled.div`
+    display: flex;
+    flex-direction: column;
+`
+
 export const Label = styled.label`
     color: #9d9d9d;
 `;

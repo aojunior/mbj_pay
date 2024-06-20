@@ -13,13 +13,13 @@ export default function Settings() {
     const [account, setAccount] = useState <any>()
 
     async function verifyAlias() {
-      await win.api.verifyAlias()
-      await win.api.responseVerifyAlias(data => setResponseAliases(data))
+      let resp = await win.api.verifyAlias()
+      setResponseAliases(resp)
     }
 
-    async function getAcc() {
-      await win.api.get_account()
-      await win.api.getAccount(data => setAccount(data))
+    async function getAccount() {
+      const data = await win.api.getAccount()
+      setAccount(data)
     }
 
     const renderContent = () => {
@@ -27,15 +27,15 @@ export default function Settings() {
         case 'AddBank':
           return <AddBank />;
         case 'ManageAlias':          
-          return <ManageAlias aliasData={responseAliases} />;
+          return <ManageAlias Data={responseAliases} />;
         case 'MyAccount':          
           return <MyAccount acc={account}/>;
       }
     };
 
     useEffect(() => {
+      getAccount()
       verifyAlias()
-      getAcc()
     }, [])
 
     return (

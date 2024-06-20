@@ -222,12 +222,37 @@ export async function createAliases(token: string, AccId: string) {
     httpsAgent
   }).then((res): any => {
     if(res.status == 202)
-    return [res.status, res.data]
+      return res.data
   }).catch(error => {
     if (error.response) {
       console.log(error.response.data);
     } else {
       console.log('Error', error.message);
+    }
+  })
+
+  return response.data
+}
+
+export async function deleteAliases(token: string, AccId: string, alias: string) {
+  const sha_signature = await encrypt_string(`delete:/v1/accounts/${AccId}/aliases/${alias}`)
+
+  let response = await api.delete(`/v1/accounts/${AccId}/aliases/${alias}`, {
+    headers:{
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': '*/*',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then( res => {
+    if(res.status == 202) 
+      return res.status
+  }).catch(error => {
+    if(error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error', error.message);
     }
   })
 

@@ -11,6 +11,7 @@ export const API = {
   cancelPayment: () => ipcRenderer.send("cancel_payment", ),
   tokenGenerator: () => ipcRenderer.send("token_generator"),
   accessToken: (callback) => ipcRenderer.on("access_token", (_, args) => callback(args)),
+  
   createAccount: async(clientData) => {
     const response = await ipcRenderer.invoke('create-account', clientData)
     return response
@@ -19,16 +20,30 @@ export const API = {
     const exists = await ipcRenderer.invoke('check-client')
     return exists
   },
-  verifyAccount: async () => {
-    const verify = ipcRenderer.invoke("verify-account")
+  verifyAccount: async() => {
+    const verify = await ipcRenderer.invoke("verify-account")
     return verify
   },
-  get_account: () => ipcRenderer.send("get_account"),
-  getAccount: (callback) => ipcRenderer.on("getAccount", (_, args) => callback(args)),
-
-  createAlias: () => ipcRenderer.send("create_alias", ),
-  verifyAlias: () => ipcRenderer.send("verify_alias", ),
-  responseVerifyAlias: (callback) => ipcRenderer.on("response_verify_alias", (_, args) => callback(args) ),
+  getAccount: async() => {
+    const account = ipcRenderer.invoke("get-account")
+    return account
+  },
+  createAlias: async() => {
+    const alias = await ipcRenderer.invoke("create-alias")
+    return alias
+  },
+  deleteAlias: async(aliasData) => {
+    const alias = await ipcRenderer.invoke("delete-alias", aliasData)
+    return alias
+  },
+  updateAlias: async() => {
+    const alias = await ipcRenderer.invoke("update-alias")
+    return alias
+  },
+  verifyAlias: async() => {
+    const aliases = await ipcRenderer.invoke("verify-alias")
+    return aliases
+  },
   
   createInstantPayment: (data) => ipcRenderer.send("create_instantpayment", data),
   cancelInstantPayment: () => ipcRenderer.send("cancel_instantpayment", ),

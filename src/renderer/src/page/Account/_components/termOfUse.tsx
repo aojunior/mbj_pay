@@ -47,7 +47,7 @@ export const TermsOfUse = () => {
     <label htmlFor='checkbox'>Eu aceito os Termos de Uso</label>
    </CheckboxContainer>
    <Button disabled={!accepted} onClick={handleButtonClick}>
-    Começar a criação da conta
+    Nova Conta
    </Button>
   </Container>
  );

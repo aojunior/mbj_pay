@@ -1,10 +1,9 @@
 import { Button, ContentInRow, Separator } from "@renderer/styles/global";
-import { Input, Label } from "../styles";
+import { Input, Label, WrapIpunt } from "../styles";
 import { formatCNPJandCPF, formatDate } from "@shared/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Notification } from "@renderer/components/notification";
-
-const win: any = window
+import { Loading } from "@renderer/components/loading";
 
 type accountProps = {
     AccountId: string,
@@ -13,35 +12,50 @@ type accountProps = {
     Branch: string,
     Cnpj: string,
     Phone: string,
-    Date: string,
+    CreatedAT: string,
     Status: string
 }
-
-type accProps = {
+type Props = {
     acc: accountProps
 }
 
-export function MyAccount({acc}: accProps) {
+const win: any = window
+
+export function MyAccount({acc}: Props) {
     const [account, setAccount] = useState(acc)
-    const [load, setLoad] = useState(false)
+    const [isLoad, setIsLoad] = useState(false)
     const [showNotification, setShowNotification] = useState(false);
 
+    async function getAccount() {
+        const data = await win.api.getAccount()
+        setAccount(data)
+    }
+
     const handleVerifyAccount = async () => {
-        setLoad(true)
+        setIsLoad(true)
         const verify = await win.api.verifyAccount()
-        
-        setLoad(false)
+        if(verify == 'UPDATED') {
+            getAccount()
+        } else {
+            console.log(verify)
+            setShowNotification(true)
+        }
+        setIsLoad(false)
     }
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column', marginLeft: 40}}>
+        <div style={{display: 'flex', flexDirection: 'column', marginLeft: 40, gap: 15}}>
+            { isLoad && <Loading /> }
             <h1> Meus Dados</h1>
+            <WrapIpunt>
+                <Label>ID da Conta</Label>
+                <Input type="text" value={account.AccountId}/>
+            </WrapIpunt>
 
-            <Label>ID da Conta</Label> 
-            <Input type="text" value={account?.AccountId}/>   
-
-            <Label>CNPJ</Label> 
-            <Input type="text" value={formatCNPJandCPF(account.Cnpj as string)} style={{width: 140}}/>   
+            <WrapIpunt>
+                <Label>CNPJ</Label>
+                <Input type="text" value={formatCNPJandCPF(account.Cnpj as string)} style={{width: 140}}/>
+            </WrapIpunt>
 
             <ContentInRow style={{width: '40%'}}>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -54,24 +68,25 @@ export function MyAccount({acc}: accProps) {
                 </div>
             </ContentInRow>
 
-            <Label>Status da Conta</Label> 
-            <Input type="text" value={account?.Status} style={{width: 120}}/>   
+            <WrapIpunt>
+                <Label>Status da Conta</Label>
+                <Input type="text" value={account?.Status} style={{width: 120, textAlign: 'center'}}/>
+            </WrapIpunt>
 
-            <Label>Data de Criação</Label> 
-            <Input type="text" value={formatDate(account.Date as string)} style={{width: 120}}/>   
+            <WrapIpunt>
+                <Label>Data de Criação</Label>
+                <Input type="text" value={formatDate(account.CreatedAT as string)} style={{width: 120, textAlign: 'center'}}/>
+            </WrapIpunt>
 
             <Separator />
 
-            {
-                account.Status !== 'REGULAR' &&
-                <Button onClick={handleVerifyAccount}>{ load ? 'Carregando' : 'Verificar Conta'} </Button> 
-            }
+            <Button onClick={handleVerifyAccount}>Verificar Status</Button>
 
             <Notification
             type='error'
             show={showNotification}
             onClose={() => setShowNotification(!showNotification)}
-            message="Error when trying to connect to the server" 
+            message="Erro na verificacao da conta" 
             />
         </div>
     )
