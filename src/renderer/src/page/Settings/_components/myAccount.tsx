@@ -25,6 +25,10 @@ export function MyAccount({acc}: Props) {
     const [account, setAccount] = useState(acc)
     const [isLoad, setIsLoad] = useState(false)
     const [showNotification, setShowNotification] = useState(false);
+    const [notification, setNotification] = useState({
+        message: '',
+        type:  '' as "error" | "warning" | "info" | "confirm" | "custom",
+    })
 
     async function getAccount() {
         const data = await win.api.getAccount()
@@ -36,15 +40,42 @@ export function MyAccount({acc}: Props) {
         const verify = await win.api.verifyAccount()
         if(verify == 'UPDATED') {
             getAccount()
+        } else if(verify == 'RELOAD') {
+            setNotification({
+                message: 'Sua conta foi atualizada!',
+                type: 'info'
+            })
         } else {
-            console.log(verify)
+            setNotification({
+                message: 'Houve um erro ao tentar verificar a conta, tente novamente!',
+                type: 'error'
+            })
             setShowNotification(true)
         }
         setIsLoad(false)
     }
 
+    const handleDeleteAccount = async () => {
+        setIsLoad(true)
+        const del = await win.api.deleteAccount()
+        // if(del == 'DELETED') {
+        //     setNotification({
+        //         message: 'Sua conta foi deletada com sucesso!',
+        //         type: 'warning'
+        //     })
+        // } else {
+        //     setNotification({
+        //         message: 'Houve um erro ao tentar deletar a conta, tente novamente!',
+        //         type: 'error'
+        //     })
+        // }
+        // setShowNotification(true)
+        console.log(del)
+        setIsLoad(false)
+    }
+
     return (
-        <div style={{display: 'flex', flexDirection: 'column', marginLeft: 40, gap: 15}}>
+        <div style={{display: 'flex', flexDirection: 'column', paddingLeft: 40, paddingRight: 40, gap: 15}}>
             { isLoad && <Loading /> }
             <h1> Meus Dados</h1>
             <WrapIpunt>
@@ -80,13 +111,16 @@ export function MyAccount({acc}: Props) {
 
             <Separator />
 
-            <Button onClick={handleVerifyAccount}>Verificar Status</Button>
+            <ContentInRow>
+                <Button onClick={handleVerifyAccount}>Verificar</Button>
+                <Button style={{backgroundColor: 'red'}} onClick={handleDeleteAccount}>Excluir Conta</Button>
+            </ContentInRow>
 
             <Notification
-            type='error'
+            type={notification.type}
             show={showNotification}
             onClose={() => setShowNotification(!showNotification)}
-            message="Erro na verificacao da conta" 
+            message={notification.message}
             />
         </div>
     )

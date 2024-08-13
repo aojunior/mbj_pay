@@ -8,7 +8,7 @@ import { MyAccount } from "./_components/myAccount";
 
 const win: any = window
 export default function Settings() {
-    const [selectedSection, setSelectedSection] = useState('AddBank');
+    const [selectedSection, setSelectedSection] = useState('');
     const [responseAliases, setResponseAliases] = useState<any>()
     const [account, setAccount] = useState <any>()
 
@@ -26,10 +26,10 @@ export default function Settings() {
       switch (selectedSection) {
         case 'AddBank':
           return <AddBank />;
-        case 'ManageAlias':          
-          return <ManageAlias Data={responseAliases} />;
         case 'MyAccount':          
           return <MyAccount acc={account}/>;
+        case 'ManageAlias':          
+          return <ManageAlias Data={responseAliases} />;
       }
     };
 

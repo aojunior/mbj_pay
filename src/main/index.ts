@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { createPath, removeReqAndCreateRes, watchFileAndFormat  } from './lib'
-import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday, extractBalanceFilter, refundInstantPayment, refundCodes, deleteAliases } from '@shared/api'
+import { tokenGenerator, createAccount, VerifyAccount, createAliases, verifyAliases, createInstantPayment, verifyInstantPayment, verifyBalance, extractBalanceToday, extractBalanceFilter, refundInstantPayment, refundCodes, deleteAliases, DeleteAccount } from '@shared/api'
 import { dbClientExists, dbCreate, dbDeleteAlias, dbInsertAlias, dbInsertClient, dbRead, dbReadActiveAlias, dbReadAliases, dbUpdateAlias, dbUpdateClient } from '@shared/database'
 import AutoLaunch from 'auto-launch'
 
@@ -205,6 +205,7 @@ ipcMain.handle('verify-account', async() => {
   let consulta = await VerifyAccount(token, db.AccountId)
   if(consulta.error) 
     return 'Error'
+
   let data = {
     AccId: consulta.account.accountId,
     Acc:consulta.account.account,
@@ -216,7 +217,20 @@ ipcMain.handle('verify-account', async() => {
   if(data.Status !== db.Status) {
     let update = await dbUpdateClient(data)
     return update
+  } 
+  if(data.Status === db.Status) {
+    return 'RELOAD'
   }
+})
+
+ipcMain.handle('delete-account', async() => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`).then( (response) => response);
+  const db = await dbRead('client')
+  let consulta = await DeleteAccount(token, db.AccountId)
+  console.log(consulta)
+  //if(consulta.error) 
+    //return 'Error'
+
 })
 
 ipcMain.handle('create-alias', async() => {
@@ -224,7 +238,6 @@ ipcMain.handle('create-alias', async() => {
   const client = await dbRead('client')
   let createAlias = await createAliases(token, client.AccountId)
   
-  console.log(createAlias) 
   return createAlias
 })
 
@@ -233,6 +246,7 @@ ipcMain.handle('delete-alias', async(_, alias) => {
   const client = await dbRead('client')
   let deleteAlias = await deleteAliases(token, client.AccountId, alias)
   let deleteA
+  
   async function deleteBD() {
     deleteA = await dbDeleteAlias(alias, client.AccountId)
   }
@@ -251,22 +265,12 @@ ipcMain.handle('update-alias', async() => {
   const aliases = await dbReadAliases()
   let verify = await verifyAliases(token, client.AccountId)
   let update
-  if(aliases.length < verify.aliases.length) {
-    const filteredArray = verify.aliases.filter(item2 => {
-      const matchingItem = aliases.find(item1 => item1.Alias === item2.name)
-      return !matchingItem
-    })
-    update = await dbInsertAlias(filteredArray, client.AccountId)
-  } else {
-    const filteredArray = verify.aliases.filter(item2 => {
-      const matchingItem = aliases.find(item1 => item1.Alias === item2.name);
-      return matchingItem
-    })
-    console.log(aliases, verify.aliases)
-    // update = await dbUpdateAlias(filteredArray, client.AccountId)
-  }
-
-  console.log(aliases, verify.aliases)
+  const filteredArray = verify.aliases.filter(item2 => {
+    const matchingItem = aliases.find(item1 => item1.Alias === item2.name)
+    return !matchingItem
+  })
+  update = await dbInsertAlias(filteredArray, client.AccountId)
+  console.log(verify.aliases)
   return update
 })
 

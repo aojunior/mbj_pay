@@ -20,6 +20,10 @@ export const API = {
     const exists = await ipcRenderer.invoke('check-client')
     return exists
   },
+  deleteAccount: async() => {
+    const del = await ipcRenderer.invoke("delete-account")
+    return del
+  },
   verifyAccount: async() => {
     const verify = await ipcRenderer.invoke("verify-account")
     return verify

@@ -200,6 +200,31 @@ export async function VerifyAccount(token, AccId) {
   return response.data
 }
 
+export async function DeleteAccount(token, AccId) {
+  let response
+  const sha_signature = await encrypt_string(AccId)
+  response = await api.delete(`/v1/accounts/${AccId}`, {
+    headers: {
+      ...headers,
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent,
+  }).then(res => {
+    if (res.status === 200 || res.status === 202)
+    return res.status
+  }).catch(error => {
+    if (error.response) {
+      console.log(error.response.data);
+    } else {
+      console.log('Error', error.message);
+    }
+    return error.response.data
+  })
+  return response
+}
+
 export async function createAliases(token: string, AccId: string) {
   const sha_signature = await encrypt_string(`post:/v1/accounts/${AccId}/aliases:`)
 
@@ -231,7 +256,7 @@ export async function createAliases(token: string, AccId: string) {
     }
   })
 
-  return response.data
+  return response
 }
 
 export async function deleteAliases(token: string, AccId: string, alias: string) {

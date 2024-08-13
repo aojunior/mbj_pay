@@ -11,6 +11,7 @@ import { MdAccountBalance } from 'react-icons/md';
 import { Navbar } from '@renderer/components/navbar';
 import { Header } from '@renderer/components/header';
 import { Finalization } from '../Account/_components/finalization';
+import { useAccount } from '@renderer/context/account.context';
 
 const win: any = window
  function Root(): JSX.Element {
@@ -27,6 +28,7 @@ const win: any = window
 }
 
 export default function Layout() {
+  const { setAccState } = useAccount()
   const [showNotification, setShowNotification] = useState(false);
   const [clientExists, setClientExists] = useState<boolean>(false)
   const [isLoad, setIsLoad] = useState<boolean>(false)
@@ -55,6 +57,7 @@ export default function Layout() {
       setClientExists(exists)
   
       if(exists) {
+        setAccState(exists)
         navigate('/home')
       } else {
         navigate('/terms')

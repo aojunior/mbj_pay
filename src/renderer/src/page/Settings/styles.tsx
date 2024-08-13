@@ -15,6 +15,7 @@ export const Section = styled.div`
 export const Table = styled.table`
     width: 100%;
     border-collapse: collapse;
+    border-radius: 5px;
     font-size: 18px;
     font-family: Arial, sans-serif;
     align-self: center;

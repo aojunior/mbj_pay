@@ -101,7 +101,6 @@ function PaymentScreen ({file}) {
 
     return (
     <Container style={{alignItems: 'center', justifyContent: 'center'}}>
-
         <Display>
             <ValueDisplay>
                 <ValueLabel>Valor a Pagar:</ValueLabel>

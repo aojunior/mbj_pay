@@ -94,7 +94,7 @@ export const dbClientExists = () => {
         const readQuery = db.prepare(query)
         const rowList = readQuery.all()
         if(rowList[0]) {
-            return true
+            return rowList[0]
         } else {
             return false
         }
@@ -107,7 +107,7 @@ export const dbClientExists = () => {
 export const dbInsertAlias = (data, accountId) => {
     try {
         const insertQuery = db.prepare(
-            `INSERT INTO aliases (AccountId, Alias, Status, Type, CreatedAT) VALUES ( '${accountId}' , @name, @status, @type, '${now[0]}' )`
+            `REPLACE INTO aliases (AccountId, Alias, Status, Type, CreatedAT) VALUES ( '${accountId}' , @name, @status, @type, '${now[0]}' )`
         )
         const transaction = db.transaction((aliases) => {
             for(const alias of aliases) {
