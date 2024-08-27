@@ -6,7 +6,6 @@ import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
 import { Client } from '@prisma/client'
 
-
 type accountProps = Client
 type Props = {
   acc: accountProps
@@ -88,7 +87,6 @@ export function MyAccount({ acc }: Props) {
         <Input
           type="text"
           value={account.companyName}
-          style={{ width: 140 }}
         />
       </WrapIpunt>
 
@@ -107,14 +105,14 @@ export function MyAccount({ acc }: Props) {
       </WrapIpunt>
 
       <Label style={{color: '#444', marginTop: 15}}>Detalhes Bancário</Label>
-      <ContentInRow style={{ width: '80%' }}>
+      <ContentInRow style={{ width: '50%',  }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Conta</Label>
-          <Input type="text" value={account.branchBank} style={{ width: 120 }} />
+          <Input type="text" value={account.accountBank} style={{ width: 120 }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <Label>Filial (Branch)</Label>
-          <Input type="text" value={account.accountBank} style={{ width: 120 }} />
+          <Label>Agência (Branch)</Label>
+          <Input type="text" value={account.branchBank} style={{ width: 120 }} />
         </div>
       </ContentInRow>
 

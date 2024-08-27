@@ -194,6 +194,7 @@ export async function VerifyAccountAPI(token, AccId) {
       httpsAgent
     })
     .then((res: any) => {
+      console.log(res.data)
       if (res.status === 200) return res.data
     })
     .catch((error) => {
@@ -227,6 +228,7 @@ export async function DeleteAccountAPI(token, AccId) {
     .catch((error) => {
       if (error.response) {
         console.log(error.response.data)
+        console.log(error.response)
         console.log('Error', error.message)
 
       } else {
@@ -268,7 +270,7 @@ export async function createAliasesAPI(token: string, AccId: string) {
     }
   })
 
-  return response
+  return response.data
 }
 
 export async function deleteAliases(token: string, AccId: string, alias: string) {

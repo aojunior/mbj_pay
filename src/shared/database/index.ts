@@ -67,18 +67,6 @@
 // }
 
 
-// export const dbReadAliases = () => {
-//   try {
-//     const query = `SELECT * FROM aliases`
-//     const readQuery = db.prepare(query)
-//     const rowList = readQuery.all()
-//     return rowList
-//   } catch (err) {
-//     console.error(err)
-//     throw err
-//   }
-// }
-
 // export const dbReadActiveAlias = () => {
 //   try {
 //     const query = `SELECT * FROM aliases WHERE Active = 'True'`

@@ -22,14 +22,14 @@ function Root(): JSX.Element {
       <Route path="/terms" element={<TermsOfUse />} />
       <Route path="/finalization" element={<Finalization />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/settings" element={<Settings />} />
     </Routes>
   )
 }
 
 export default function Layout() {
-  const { setAccState } = useAccount()
+  const { setAccState, accState } = useAccount()
   const [showNotification, setShowNotification] = useState(false)
-  const [clientExists, setClientExists] = useState<boolean>(false)
   const [isLoad, setIsLoad] = useState<boolean>(false)
   const navigate = useNavigate()
 
@@ -50,9 +50,7 @@ export default function Layout() {
   useEffect(() => {
     const checkClient = async () => {
       setIsLoad(true)
-      const exists = await win.api.checkClient()
-      setClientExists(exists)
-
+      const exists = await win.api.getAccount()
       if (exists) {
         setAccState(exists)
         navigate('/home')
@@ -67,7 +65,7 @@ export default function Layout() {
   return (
     <div style={{ width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column', margin:0, padding:0 }}>
       {isLoad && <Loading />}
-      {clientExists && <Navbar />}
+      {accState && <Navbar />}
       <Header />
       <Root />
       <Notification

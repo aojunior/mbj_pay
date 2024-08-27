@@ -64,7 +64,7 @@ export function FormBank({ bankData, setBankData }: bankProps) {
           <CardContent>
             <FormInput style={{ width: 450, marginTop: 20, marginBottom: 20}}>
               <Label>Crie uma Senha da Aplicação</Label>
-              <Label style={{fontSize: 11}}>Essa senha será usada para transferências, criação de chave pix e alterações de dados</Label>
+              <Label style={{fontSize: 11, fontWeight: 500, color: '#4f4f4f'}}>Essa senha será usada para transferências, criação de chave pix e alterações de dados</Label>
 
               <ContentInRow style={{ justifyContent: 'flex-start', alignItems: 'center', gap: 10 }}>
                 <Input {...register('password')} type={ showPassword ? "text" : "password"}placeholder="Digite aqui"  />

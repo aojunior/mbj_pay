@@ -32,7 +32,7 @@ import {
 // } from '@shared/database'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
-import { clientExists, createAliasDB, createClientDB, deleteClientDB, getClientDB, updateClientDB } from '@shared/database/actions'
+import { clientExists, createAliasDB, createClientDB, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -187,11 +187,6 @@ ipcMain.handle('token_generator', async () => {
   return token
 })
 
-// HANDLE ACCOUNT
-ipcMain.handle('check-client', async () => {
-  const exists = await clientExists()
-  return exists
-})
 
 // ipcMain.handle('initial_', async () => {
   // const db = await dbRead('client')
@@ -200,6 +195,7 @@ ipcMain.handle('check-client', async () => {
 //   return credential
 // })
 
+// HANDLE ACCOUNT
 ipcMain.handle('create-account', async (_, formData) => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
@@ -212,6 +208,8 @@ ipcMain.handle('create-account', async (_, formData) => {
     AccId: newAccount.data.account.accountId,
     AccHId: newAccount.data.accountHolderId,
     Status: newAccount.data.accountStatus,
+    AccBank: newAccount.data.account,
+    BranchBank: newAccount.data.branch,
     Nome: formData.companyName,
     Email: formData.companyEmailAddress,
     Cnpj: formData.companyDocument,
@@ -219,6 +217,7 @@ ipcMain.handle('create-account', async (_, formData) => {
     Pass: formData.password
   }
   let saveClientInDb = await createClientDB(data)
+  console.log(newAccount)
   console.log(saveClientInDb)
   return 1
 })
@@ -243,7 +242,7 @@ ipcMain.handle('verify-account', async () => {
     Status: consulta.accountStatus,
     MedAccId: consulta.mediatorId
   }
-
+  console.log(consulta)
   if (data.Status !== db?.status) {
     let update = await updateClientDB(data)
     return update
@@ -271,9 +270,40 @@ ipcMain.handle('create-alias', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const db = await getClientDB()
-  let createAlias = await createAliasesAPI(token, String(db?.accountId))
-  await createAliasDB(createAlias.alias, String(db?.accountId))
-  return createAlias
+  const aliases = await readAliasesDB()
+  const createAlias = await createAliasesAPI(token, String(db?.accountId))  
+
+  if(createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
+    setTimeout(async () => {
+      // Get all, filter and add new alias in the db
+      const verify = await verifyAliases(token, String(db?.accountId))
+      const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
+        const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
+        return !matchingItem;
+      });
+      filteredArrayAdd.map(async (alias) => {
+        await createAliasDB(alias, String(db?.accountId))
+      })
+
+// Filtra aliases que precisam ser atualizados
+const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
+  const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
+  return matchingItem && matchingItem.status !== aliasAPI.status; // Exemplo de condição para atualização
+});
+
+// Filtra aliases que precisam ser removidos
+const filteredArrayDelete = aliases.filter((aliasDB) => {
+  const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias);
+  return !matchingItem;
+});
+
+
+    }, 1500)
+    return 'CREATED'
+  } else {
+    console.log(createAlias)
+    return 'ERROR'
+  }
 })
 
 ipcMain.handle('update-alias', async () => {
@@ -281,21 +311,44 @@ ipcMain.handle('update-alias', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const client = await getClientDB()
-  // const aliases = await dbReadAliases()
+  const aliases = await readAliasesDB()
   let verify = await verifyAliases(token, String(client?.accountId))
   let update
-  const filteredArray = verify.aliases.filter((item2) => {
-    // const matchingItem = aliases.find((item1) => item1.Alias === item2.name)
-    // return !matchingItem
+  const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
+    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
+    return !matchingItem;
+  });
+  filteredArrayAdd.map(async (alias) => {
+    await createAliasDB(alias, String(client?.accountId))
   })
-  // update = await dbInsertAlias(filteredArray, client.AccountId)
-  console.log(verify.aliases)
+
+  const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
+    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
+    return matchingItem && matchingItem.status !== aliasAPI.status; // Exemplo de condição para atualização
+  });
+
+  if(filteredArrayUpdate.length > 0) {
+    filteredArrayUpdate.map(async (alias) => {
+      await updateAliasDB(alias, String(client?.accountId))
+    })
+  }
+
+  const filteredArrayDelete = aliases.filter((aliasDB) => {
+    const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias);
+    return !matchingItem;
+  });
+  if(filteredArrayDelete.length > 0) {
+    filteredArrayDelete.map(async (alias) => {
+      await deleteAliasDB(alias.alias, String(client?.accountId))
+    })
+  }
+
   return update
 })
 
 ipcMain.handle('verify-alias', async () => {
-  // const aliases = await dbReadAliases()
-  // return aliases
+  const aliases = await readAliasesDB()
+  return aliases
 })
 
 ipcMain.handle('delete-alias', async (_, alias) => {
@@ -304,17 +357,16 @@ ipcMain.handle('delete-alias', async (_, alias) => {
     .then((response) => response)
   const client = await getClientDB()
   let deleteAlias = await deleteAliases(token, String(client?.accountId), alias)
-  let deleteA
 
   async function deleteBD() {
-    // deleteA = await dbDeleteAlias(alias, client.AccountId)
+    const deleteA = await deleteAliasDB(alias, String(client?.accountId))
+    return deleteA
   }
 
   if (deleteAlias == 202) {
-    deleteBD()
-    return deleteA
+    return deleteBD()
   } else {
-    return 'error'
+    return 'ERROR'
   }
 })
 // ----------------------------------------------------------------

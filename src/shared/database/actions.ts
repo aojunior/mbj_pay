@@ -3,7 +3,6 @@ import { prisma } from './databaseConnect';
 import crypto from "crypto";
 import cryptoJs from 'crypto-js'
 
-
 // ACTION TO CLIENT
 export async function createClientDB(data: any) {
   try {
@@ -12,8 +11,8 @@ export async function createClientDB(data: any) {
       data: {
         accountId: data.AccId,
         accountHolderId: data.AccHId,
-        accountBank: '',
-        branchBank: '',
+        accountBank: 0,
+        branchBank: 0,
         companyName: data.Nome,
         taxId: data.Cnpj,
         phoneNumber: data.Tel,
@@ -23,7 +22,6 @@ export async function createClientDB(data: any) {
         status: data.Status
       },
     })
-
     return account
   } catch (error) {
     console.log(error)
@@ -60,7 +58,7 @@ export async function updateClientDB(data: any) {
 
 export async function clientExists() {
   try {
-    const account = await prisma.client.findFirst()
+    const account = await prisma.client.findFirstOrThrow()
     if (account) {
       return true
     } else {
@@ -114,7 +112,6 @@ export async function createAliasDB(data, accountId: string) {
     if(data.status == 'CLEARING_REGISTRATION_PENDING') {
       data.status = 'PENDING'
     }
-
     const alias = await prisma.aliases.create({
       data: {
         accountId: accountId,
@@ -124,24 +121,32 @@ export async function createAliasDB(data, accountId: string) {
         type: data.type,
       }
     })
+    return alias
   } catch (error) {
     console.error(error)
   }
 }
 
 export async function deleteAliasDB(alias: string, accountId: string) {
-  const del = await prisma.aliases.deleteMany({
-    where: {
-      AND: [
-        {
-          accountId: accountId,
-        },
-        {
-          alias: alias
-        }
-      ]
-    },
-  })
+  try {
+    const del = await prisma.aliases.deleteMany({
+      where: {
+        AND: [
+          {
+            accountId: accountId,
+          },
+          {
+            alias: alias
+          }
+        ]
+      },
+    }).then(async () => {
+      return await prisma.aliases.findMany()
+    })
+    return del
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 export async function updateAliasDB(data: any, accountId: string) {
@@ -159,7 +164,7 @@ export async function updateAliasDB(data: any, accountId: string) {
   }
 }
 
-export async function ActiveAliasDB(alias: string, accountId: string) {
+export async function activeAliasDB(alias: string, accountId: string) {
   try {
     const disableAll = await prisma.aliases.updateMany({
       where: {
@@ -181,6 +186,22 @@ export async function ActiveAliasDB(alias: string, accountId: string) {
   } catch (error) {
     console.log(error) 
   }
+}
+
+export async function readAliasesDB() {
+  const aliasesAll = await prisma.aliases.findMany()
+
+  return aliasesAll
+}
+
+export async function readAliasesActiveDB() {
+  const aliasesAll = await prisma.aliases.findFirst({
+    where: {
+      alias: 'alias'
+    }
+  })
+
+  return aliasesAll
 }
 // ----------------------------------------------------------------
 

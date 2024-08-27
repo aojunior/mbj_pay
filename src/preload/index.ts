@@ -10,10 +10,7 @@ export const API = {
     const newToken = await ipcRenderer.invoke('token_generator')
     return newToken
   },
-  checkClient: async () => {
-    const exists = await ipcRenderer.invoke('check-client')
-    return exists
-  },
+
   createAccount: async (clientData) => {
     const response = await ipcRenderer.invoke('create-account', clientData)
     return response

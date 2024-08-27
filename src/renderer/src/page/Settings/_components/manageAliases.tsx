@@ -4,16 +4,17 @@ import { useEffect, useState } from 'react'
 import { Loading } from '@renderer/components/loading'
 import { Notification } from '@renderer/components/notification'
 import { useAccount } from '@renderer/context/account.context'
+import { Aliases } from '@prisma/client'
 
 type aliasProps = {
-  Data: any
+  aliases: Aliases[]
 }
 
 const win: any = window
 
-export function ManageAlias({ Data }: aliasProps) {
+export function ManageAlias({aliases}: aliasProps) {
   const { accState } = useAccount()
-  const [aliasData, setAliasData] = useState(Data)
+  const [aliasData, setAliasData] = useState(aliases)
   const [isLoad, setIsLoad] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [notification, setNotification] = useState({
@@ -22,14 +23,36 @@ export function ManageAlias({ Data }: aliasProps) {
   })
 
   const handleCreateAccount = async () => {
+    if(aliasData.length == 5) {
+      setNotification({
+        message: 'Você já possui 5 chaves Pix registradas!',
+        type: 'warning'
+      })
+      setShowNotification(true)
+
+      return
+    }
     setIsLoad(true)
     let create = await win.api.createAlias()
-    setNotification({
-      message: 'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
-      type: 'confirm'
-    })
-    setShowNotification(true)
+    setTimeout(async () => {
+      if(create === 'CREATED') {
+        let resp = await win.api.verifyAlias()
+        setAliasData(resp)
+        setNotification({
+          message: 'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
+          type: 'confirm'
+        })
+        setShowNotification(true)
+      } else {
+        setNotification({
+          message: 'Erro ao criar nova chave Pix! Por favor tente novamente mais tarde.',
+          type: 'error'
+        })
+        setShowNotification(true)
+      }
     setIsLoad(false)
+    }, 5500)
+
     return create
   }
 
@@ -51,7 +74,7 @@ export function ManageAlias({ Data }: aliasProps) {
     switch (event.key || event) {
       case 'F5':
         setIsLoad(true)
-        if (accState.Status == 'Active') {
+        if (accState.status == 'REGULAR') {
           await win.api.updateAlias()
           let resp = await win.api.verifyAlias()
           setAliasData(resp)
@@ -61,8 +84,8 @@ export function ManageAlias({ Data }: aliasProps) {
           })
           setShowNotification(true)
         }
-        setIsLoad(false)
-        break
+        setIsLoad(false)  
+      break
     }
   }
 
@@ -83,15 +106,12 @@ export function ManageAlias({ Data }: aliasProps) {
         gap: 15
       }}
     >
+      {isLoad && <Loading />}
+
       <Button style={{ position: 'absolute', right: 40, top: 150 }} onClick={() => handleKeyButton('F5')} >
         <code>F5</code> - Atualizar
       </Button>
-      {isLoad && <Loading />}
-
-      <span style={{ color: '#999', textAlign: 'end' }}>
-        Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o 
-        banco central possa registrar a nova chave corretamente.
-      </span>
+      
       <h1> Chave Pix </h1>
       <>
         <Table>
@@ -105,10 +125,10 @@ export function ManageAlias({ Data }: aliasProps) {
           <Tbody>
             {aliasData.map((data) => (
               <Tr>
-                <Td>{data.Status}</Td>
-                <Td>{data.Alias}</Td>
+                <Td>{data.status}</Td>
+                <Td>{data.alias}</Td>
                 <Td>
-                  <DeleteIcon size={24} onClick={() => handleDeleteAlias(data.Alias)} />
+                  <DeleteIcon size={24} onClick={() => handleDeleteAlias(data.alias)} />
                 </Td>
               </Tr>
             ))}
@@ -116,9 +136,12 @@ export function ManageAlias({ Data }: aliasProps) {
         </Table>
 
         <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/5</span>
-        {accState.Status == 'Active' && <Button onClick={handleCreateAccount}>Add Chave</Button>}
+        {accState.status == 'REGULAR' && <Button onClick={handleCreateAccount}>Add Chave</Button>}
       </>
-
+      <span style={{ color: '#999', textAlign: 'end' }}>
+        Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o 
+        banco central possa registrar a nova chave corretamente.
+      </span>
       <Notification
         type={notification.type}
         show={showNotification}

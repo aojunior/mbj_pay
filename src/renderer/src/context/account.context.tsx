@@ -1,15 +1,7 @@
+import { Client } from '@prisma/client'
 import { createContext, useContext, useState } from 'react'
 
-type accountProps = {
-  AccountId: string
-  AccountHolderId: string
-  Account: string
-  Branch: string
-  Cnpj: string
-  Phone: string
-  CreatedAT: string
-  Status: string
-}
+type accountProps = Client
 
 type accStateProps = {
   accState: accountProps

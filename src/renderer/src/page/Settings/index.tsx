@@ -3,8 +3,9 @@ import { SidebarComponent } from './_components/Sidebar'
 import { useEffect, useState } from 'react'
 import { AddBank } from './_components/AddBank'
 import { ManageAlias } from './_components/manageAliases'
-import { Section } from './styles'
+import {  } from './styles'
 import { MyAccount } from './_components/myAccount'
+import { Section } from './_components/Section'
 
 const win: any = window
 export default function Settings() {
@@ -29,7 +30,7 @@ export default function Settings() {
       case 'MyAccount':
         return <MyAccount acc={account} />
       case 'ManageAlias':
-        return <ManageAlias Data={responseAliases} />
+        return <ManageAlias aliases={responseAliases} />
     }
   }
 
@@ -40,8 +41,10 @@ export default function Settings() {
 
   return (
     <Container style={{ flexDirection: 'row' }}>
-      <SidebarComponent onSelect={setSelectedSection} />
-      <Section>{renderContent()}</Section>
+      <SidebarComponent onSelect={setSelectedSection} select={selectedSection} />
+      <Section>
+        {renderContent()}
+      </Section>
     </Container>
   )
 }

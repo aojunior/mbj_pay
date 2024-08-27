@@ -56,6 +56,16 @@ export default function CreateAccount() {
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
 
   async function onSubmit() {
+    if(bankData.password.length < 4) {
+      setIsLoad(true)
+      setNotification({
+        message: "Por favor, preencha o campo de senha com no mínimo 4 caracteres" ,
+        type: 'error'
+      })
+      setShowNotification(true)
+      setIsLoad(false)
+      return
+    }
     setIsLoad(true)
     const formatDateForSubmission = (date) => {
       const [day, month, year] = date.split('/');
@@ -99,9 +109,7 @@ export default function CreateAccount() {
         {pages[select] == 2 && <FormBank bankData={bankData} setBankData={setBankData} />}
       </Container>
 
-      <ContentInRow
-        style={ pages[select] === 0 ? { justifyContent: 'flex-end', width: '80%' } : { width: '90%' } }
-      >
+      <ContentInRow style={ pages[select] === 0 ? { justifyContent: 'flex-end', width: '80%' } : { width: '90%' } }>
         {pages[select] > 0 && <Button onClick={() => setSelect(select - 1)}> Voltar </Button>}
         {pages[select] < 2 ? (
           <Button onClick={() => setSelect(select + 1)}> Continuar </Button>

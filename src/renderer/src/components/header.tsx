@@ -13,9 +13,9 @@ const Logo = styled.img`
   width: 180px;
   will-change: filter;
   transition: filter 300ms;
-  filter: drop-shadow(0 0 1.4em #000);
+  filter: drop-shadow(0 0 1.4em #8a9ed8);
   &:hover {
-    filter: drop-shadow(0 0 1.2em #6988e69);
+    filter: drop-shadow(0 0 1.2em #6988e6);
   }
 `
 

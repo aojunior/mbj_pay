@@ -16,8 +16,8 @@ datasource db {
 model Client {
   accountId       String @unique
   accountHolderId String
-  accountBank     String
-  branchBank      String
+  accountBank     Int
+  branchBank      Int
   companyName     String
   email           String
   taxId           String
