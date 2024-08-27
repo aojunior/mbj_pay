@@ -1,50 +1,47 @@
-import { Container } from "@renderer/styles/global";
-import { SidebarComponent } from "./_components/Sidebar";
-import { useEffect, useState } from "react";
-import { AddBank } from "./_components/AddBank";
-import { ManageAlias } from "./_components/manageAliases";
-import { Section } from "./styles";
-import { MyAccount } from "./_components/myAccount";
+import { Container } from '@renderer/styles/global'
+import { SidebarComponent } from './_components/Sidebar'
+import { useEffect, useState } from 'react'
+import { AddBank } from './_components/AddBank'
+import { ManageAlias } from './_components/manageAliases'
+import { Section } from './styles'
+import { MyAccount } from './_components/myAccount'
 
 const win: any = window
 export default function Settings() {
-    const [selectedSection, setSelectedSection] = useState('');
-    const [responseAliases, setResponseAliases] = useState<any>()
-    const [account, setAccount] = useState <any>()
+  const [selectedSection, setSelectedSection] = useState('')
+  const [responseAliases, setResponseAliases] = useState<any>()
+  const [account, setAccount] = useState<any>()
 
-    async function verifyAlias() {
-      let resp = await win.api.verifyAlias()
-      setResponseAliases(resp)
+  async function verifyAlias() {
+    let resp = await win.api.verifyAlias()
+    setResponseAliases(resp)
+  }
+
+  async function getAccount() {
+    const data = await win.api.getAccount()
+    setAccount(data)
+  }
+
+  const renderContent = (): any => {
+    switch (selectedSection) {
+      case 'AddBank':
+        return <AddBank />
+      case 'MyAccount':
+        return <MyAccount acc={account} />
+      case 'ManageAlias':
+        return <ManageAlias Data={responseAliases} />
     }
+  }
 
-    async function getAccount() {
-      const data = await win.api.getAccount()
-      setAccount(data)
-    }
+  useEffect(() => {
+    getAccount()
+    verifyAlias()
+  }, [])
 
-    const renderContent = () => {
-      switch (selectedSection) {
-        case 'AddBank':
-          return <AddBank />;
-        case 'MyAccount':          
-          return <MyAccount acc={account}/>;
-        case 'ManageAlias':          
-          return <ManageAlias Data={responseAliases} />;
-      }
-    };
-
-    useEffect(() => {
-      getAccount()
-      verifyAlias()
-    }, [])
-
-    return (
-      <Container style={{flexDirection: 'row'}}>
-        <SidebarComponent onSelect={setSelectedSection}/>
-        <Section>
-          {renderContent()}
-        </Section>
-
-      </Container>
-    )
+  return (
+    <Container style={{ flexDirection: 'row' }}>
+      <SidebarComponent onSelect={setSelectedSection} />
+      <Section>{renderContent()}</Section>
+    </Container>
+  )
 }

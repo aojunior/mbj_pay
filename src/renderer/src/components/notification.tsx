@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
-import { MdError } from "react-icons/md";
-import { CiWarning } from "react-icons/ci";
-import { MdOutlineInfo } from "react-icons/md";
-import { GiConfirmed } from "react-icons/gi";
+import { useEffect, useState } from 'react'
+import styled, { keyframes } from 'styled-components'
+import { MdError } from 'react-icons/md'
+import { CiWarning } from 'react-icons/ci'
+import { MdOutlineInfo } from 'react-icons/md'
+import { GiConfirmed } from 'react-icons/gi'
 
 const slideIn = keyframes`
   0% {
@@ -14,7 +14,7 @@ const slideIn = keyframes`
     transform: translateX(0);
     opacity: 1;
   }
-`;
+`
 const fadeOut = keyframes`
   0% {
     opacity: 1;
@@ -22,7 +22,7 @@ const fadeOut = keyframes`
   100% {
     opacity: 0;
   }
-`;
+`
 
 const NotificationWrapper = styled.div<{ isExiting: boolean }>`
   position: fixed;
@@ -37,12 +37,12 @@ const NotificationWrapper = styled.div<{ isExiting: boolean }>`
   display: flex;
   gap: 10px;
   align-items: center;
-  animation: ${({ isExiting }) => isExiting ? fadeOut : slideIn} 0.5s ease-out;
+  animation: ${({ isExiting }) => (isExiting ? fadeOut : slideIn)} 0.5s ease-out;
   opacity: ${({ isExiting }) => (isExiting ? 0 : 1)};
   transition: opacity 0.5s ease-out;
 
   z-index: 1000;
-`;
+`
 
 const CloseButton = styled.button`
   background: none;
@@ -55,7 +55,7 @@ const CloseButton = styled.button`
   &:hover {
     color: #ddd;
   }
-`;
+`
 
 type NotificationProps = {
   icon?: any
@@ -66,54 +66,51 @@ type NotificationProps = {
 }
 
 const Notification = ({ message, icon, type, show, onClose }: NotificationProps) => {
-  const [showNotification, setShowNotification] = useState(show);
+  const [showNotification, setShowNotification] = useState(show)
 
-  useEffect(() => {
+  useEffect(():any => {
     if (show) {
       const timer = setTimeout(() => {
-        setShowNotification(!showNotification);
-      }, 5000);
-      return () => clearTimeout(timer);
+        setShowNotification(!showNotification)
+        onClose()
+      }, 5000)
+      return () => clearTimeout(timer)
     }
-  }, [show, onClose]);
+  }, [show, onClose])
 
-  return (
-    show &&
-    type === 'error' ?
-    <NotificationWrapper isExiting={showNotification } style={{borderColor: 'red'}}>
-      <MdError size={24} color='red'/>
+  return show && type === 'error' ? (
+    <NotificationWrapper isExiting={showNotification} style={{ borderColor: 'red' }}>
+      <MdError size={24} color="red" />
       {message}
       <CloseButton onClick={() => onClose()}>×</CloseButton>
     </NotificationWrapper>
-    :
-    type === 'warning' ?
-    <NotificationWrapper isExiting={showNotification } style={{borderColor: '#ffc241'}}>
-      <CiWarning color='#ffc241' size={24}/>
+  ) : type === 'warning' ? (
+    <NotificationWrapper isExiting={showNotification} style={{ borderColor: '#ffc241' }}>
+      <CiWarning color="#ffc241" size={24} />
       {message}
       <CloseButton onClick={onClose}>×</CloseButton>
     </NotificationWrapper>
-    :
-    type === 'info' ?
-    <NotificationWrapper isExiting={showNotification } style={{borderColor: '#106bb9'}}>
-      <MdOutlineInfo color='#106bb9' size={24}/>
+  ) : type === 'info' ? (
+    <NotificationWrapper isExiting={showNotification} style={{ borderColor: '#106bb9' }}>
+      <MdOutlineInfo color="#106bb9" size={24} />
       {message}
       <CloseButton onClick={onClose}>×</CloseButton>
     </NotificationWrapper>
-    :
-    type === 'confirm' ?
-    <NotificationWrapper isExiting={showNotification } style={{borderColor: '#1a692d'}}>
-      <GiConfirmed color='#1a692d' size={24}/>
+  ) : type === 'confirm' ? (
+    <NotificationWrapper isExiting={showNotification} style={{ borderColor: '#1a692d' }}>
+      <GiConfirmed color="#1a692d" size={24} />
       {message}
       <CloseButton onClick={onClose}>×</CloseButton>
     </NotificationWrapper>
-    :
-    type === 'custom' &&
-    <NotificationWrapper isExiting={showNotification }>
-      {icon}
-      {message}
-      <CloseButton onClick={onClose}>×</CloseButton>
-    </NotificationWrapper>
+  ) : (
+    type === 'custom' && (
+      <NotificationWrapper isExiting={showNotification}>
+        {icon}
+        {message}
+        <CloseButton onClick={onClose}>×</CloseButton>
+      </NotificationWrapper>
+    )
   )
-};
+}
 
-export { Notification,  };
+export { Notification }

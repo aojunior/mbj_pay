@@ -9,9 +9,8 @@
 //   DirectoryName = 'clientPix'
 // }
 
-export const appDirectoryName = 'clientPix'
+export const appDirectoryName = process.platform == 'linux' ? 'clientPix' : 'C:/clientPix'
 export const fileEncoding: BufferEncoding = 'utf8'
-
 
 export type fileProps = {
   fileType: string

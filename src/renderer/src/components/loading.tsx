@@ -1,24 +1,22 @@
-import { styled, keyframes } from "styled-components";
-import { IoIosWarning } from "react-icons/io";
-import { GiConfirmed } from "react-icons/gi";
+import { styled, keyframes } from 'styled-components'
 
 const Container = styled.dialog`
-    width: 100%;
-    height: 100vh;
-    backdrop-filter: blur(4px);
-    background: #0000006f;
-    padding: 5px;
-    display: flex;
-  
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-`;
+  width: 100%;
+  height: 100vh;
+  backdrop-filter: blur(4px);
+  background: #0000006f;
+  padding: 5px;
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`
 
 const spin = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-`;
+`
 
 const Spinner = styled.div`
   border: 8px solid rgba(255, 255, 255);
@@ -27,14 +25,12 @@ const Spinner = styled.div`
   width: 50px;
   height: 50px;
   animation: ${spin} 0.7s linear infinite;
-`;
-
+`
 
 export function Loading() {
-
-  return(
-    <Container id="dialog" >
-      <Spinner/>
+  return (
+    <Container id="dialog">
+      <Spinner />
     </Container>
   )
 }

@@ -1,5 +1,5 @@
 import './assets/main.css'
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from 'react-router-dom'
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'

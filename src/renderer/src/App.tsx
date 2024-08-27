@@ -4,7 +4,7 @@ import Layout from './page/Layout'
 function App(): JSX.Element {
   return (
     <AccountWrapper>
-      <Layout/>
+      <Layout />
     </AccountWrapper>
   )
 }

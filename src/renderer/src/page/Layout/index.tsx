@@ -1,50 +1,47 @@
-import { Notification } from '@renderer/components/notification';
+import { Notification } from '@renderer/components/notification'
 import { useCallback, useEffect, useState } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom'
-import Home from '@renderer/page/Home/Index';
-import Dashboard from '@renderer/page/Dashboard';
-import Settings from '@renderer/page/Settings';
-import CreateAccount from '@renderer/page/Account';
-import { TermsOfUse } from '@renderer/page/Account/_components/termOfUse';
-import { Loading } from '@renderer/components/loading';
-import { MdAccountBalance } from 'react-icons/md';
-import { Navbar } from '@renderer/components/navbar';
-import { Header } from '@renderer/components/header';
-import { Finalization } from '../Account/_components/finalization';
-import { useAccount } from '@renderer/context/account.context';
+import Home from '@renderer/page/Home/Index'
+import Dashboard from '@renderer/page/Dashboard'
+import Settings from '@renderer/page/Settings'
+import CreateAccount from '@renderer/page/Account'
+import { TermsOfUse } from '@renderer/page/Account/_components/termOfUse'
+import { Loading } from '@renderer/components/loading'
+import { Navbar } from '@renderer/components/navbar'
+import { Header } from '@renderer/components/header'
+import { Finalization } from '../Account/_components/finalization'
+import { useAccount } from '@renderer/context/account.context'
 
 const win: any = window
- function Root(): JSX.Element {
+function Root(): JSX.Element {
   return (
     <Routes>
-      <Route path="/home" element={<Home/>} />
-      <Route path="/dashboard" element={<Dashboard/>} />
-      <Route path="/create-account" element={<CreateAccount/>} />
-      <Route path="/terms" element={<TermsOfUse/>} />
-      <Route path="/finalization" element={<Finalization/>} />
-      <Route path="/settings" element={<Settings/>} />
+      <Route path="/home" element={<Home />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/create-account" element={<CreateAccount />} />
+      <Route path="/terms" element={<TermsOfUse />} />
+      <Route path="/finalization" element={<Finalization />} />
+      <Route path="/settings" element={<Settings />} />
     </Routes>
   )
 }
 
 export default function Layout() {
   const { setAccState } = useAccount()
-  const [showNotification, setShowNotification] = useState(false);
+  const [showNotification, setShowNotification] = useState(false)
   const [clientExists, setClientExists] = useState<boolean>(false)
   const [isLoad, setIsLoad] = useState<boolean>(false)
   const navigate = useNavigate()
 
+  //Refresh Token in 5 minutes and storage in SessionStorage 
   const refreshAndStorageToken = useCallback(async () => {
-    win.api.tokenGenerator()
-    win.api.accessToken(data => {
-      if(data == undefined || data == null) {
-        setShowNotification(true)
-        throw new Error(`Access token not available`)
-      }
-      sessionStorage.setItem('token', data)
-    })    
+    const newToken = await win.api.tokenGenerator()
+    if (newToken == undefined || newToken == null) {
+      setShowNotification(true)
+      throw new Error(`Access token not available`)
+    }
+    sessionStorage.setItem('token', newToken)
   }, [])
-
   useEffect(() => {
     refreshAndStorageToken()
     setInterval(() => refreshAndStorageToken(), 5000 * 60) // 5 min
@@ -55,8 +52,8 @@ export default function Layout() {
       setIsLoad(true)
       const exists = await win.api.checkClient()
       setClientExists(exists)
-  
-      if(exists) {
+
+      if (exists) {
         setAccState(exists)
         navigate('/home')
       } else {
@@ -68,18 +65,17 @@ export default function Layout() {
   }, [])
 
   return (
-    <div style={{width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column',}}>
-      { isLoad && <Loading /> }
-      { clientExists && <Navbar /> }
-      
+    <div style={{ width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column', margin:0, padding:0 }}>
+      {isLoad && <Loading />}
+      {clientExists && <Navbar />}
       <Header />
       <Root />
       <Notification
-      type='error'
-      show={showNotification}
-      onClose={() => setShowNotification(!showNotification)}
-      message="Error when trying to connect to the server" 
-      /> 
+        type="error"
+        show={showNotification}
+        onClose={() => setShowNotification(!showNotification)}
+        message="Error when trying to connect to the server"
+      />
     </div>
   )
 }

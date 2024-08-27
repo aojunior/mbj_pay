@@ -3,7 +3,6 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  
   main: {
     build: {
       rollupOptions: {
@@ -31,7 +30,7 @@ export default defineConfig({
         '@/assets': resolve('src/assets'),
         '@/contexts': resolve('src/contexts'),
         '@/components': resolve('src/components'),
-        '@/util': resolve('src/shared'),
+        '@/util': resolve('src/shared')
       }
     },
     plugins: [react()],
@@ -42,9 +41,7 @@ export default defineConfig({
           main: 'out/main/index.js',
           preload: 'out/preload/index.js'
         }
-      },
-    },
-  
-  },
-  
+      }
+    }
+  }
 })

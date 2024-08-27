@@ -1,256 +1,132 @@
-import { database  } from "./databaseConnect";
 
-const db = database
-const dt = new Date().toISOString()
-const now = dt.split('T')
 
-export const dbCreate = () => {
-    try {
-        const createTbls = {
-            client: db.prepare(`CREATE TABLE IF NOT EXISTS client (AccountId VARCHAR(50), AccountHolderId VARCHAR(50), Account VARCHAR(50), Branch VARCHAR(50), Cnpj VARCHAR(12), Phone VARCHAR(12), CreatedAT Datetime, Status VARCHAR(12) )`),
-            aliases: db.prepare(`CREATE TABLE IF NOT EXISTS aliases (AccountId VARCHAR(50), Alias VARCHAR(50), Type VARCHAR(20), Status VARCHAR(50), Active VARCHAR(5), CreatedAT Datetime)`),
-            transactions: db.prepare(`CREATE TABLE IF NOT EXISTS transactions (AccountId VARCHAR(50), TransactionId VARCHAR(50), TransactionType VARCHAR(50), Amount VARCHAR(50), Status VARCHAR(50), Identify VARCHAR(40), CreatedAT Datetime)`),
-            mediator: db.prepare(`CREATE TABLE IF NOT EXISTS mediator (MediatorAccountId VARCHAR(50), MediatorFee Float)`)
-        }
-        const transaction = db.transaction(() => {
-            createTbls.client.run()
-            createTbls.aliases.run()
-            createTbls.mediator.run()
-            createTbls.transactions.run()
-            console.log(
-                `Tables create`
-            )
-        })
-        transaction()
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
+// export const dbRead = (table) => {
+//   try {
+//     const query = `SELECT * FROM ${table}`
+//     const readQuery = db.prepare(query)
+//     const rowList = readQuery.all()
+//     return rowList[0]
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
 
-export const dbRead = (table) => {
-    try {
-        const query = `SELECT * FROM ${table}`
-        const readQuery = db.prepare(query)
-        const rowList = readQuery.all()
-        return rowList[0]
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
 
-export const dbInsertClient = ({AccId, AccHID, Cnpj, Tel, Status}) => {
-    try {
-        const insertQuery = db.prepare(
-            `INSERT INTO client (AccountId, AccountHolderId, Cnpj, Phone, Status, CreatedAT) VALUES ('${AccId}' , '${AccHID}', '${Cnpj}', '${Tel}', '${Status}', '${now[0]}')`
-        )
-        const transaction = db.transaction(() => {
-            const info = insertQuery.run()
-            return info.lastInsertRowid
-        })
+// export const dbUpdateClient = ({ AccId, Acc, Branch, Status, MedAccId }) => {
+//   try {
+//     let insertQuery
+//     if (Status == 'REGULAR') {
+//       insertQuery = db.prepare(
+//         `UPDATE client SET Branch = '${Branch}', Account = '${Acc}', Status = '${Status}' WHERE  AccountId = '${AccId}'`
+//       )
+//     } else {
+//       insertQuery = db.prepare(
+//         `UPDATE client SET Status = '${Status}' WHERE AccountId = '${AccId}'`
+//       )
+//     }
 
-        return transaction()
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
+//     const insertQuery2 = db.prepare(
+//       `REPLACE INTO mediator (MediatorAccountId, MediatorFee) VALUES ('${MedAccId}' , ${0.5})`
+//     )
 
-export const dbUpdateClient = ({AccId, Acc, Branch, Status, MedAccId}) => {
-    try {
-        let insertQuery
-        if(Status == 'REGULAR') {
-            insertQuery = db.prepare(
-                `UPDATE client SET Branch = '${Branch}', Account = '${Acc}', Status = '${Status}' WHERE  AccountId = '${AccId}'`
-            )
-        } else {
-            insertQuery = db.prepare(
-                `UPDATE client SET Status = '${Status}' WHERE AccountId = '${AccId}'`
-            )
-        }
-        
-        const insertQuery2 = db.prepare(
-            `REPLACE INTO mediator (MediatorAccountId, MediatorFee) VALUES ('${MedAccId}' , ${0.50})`
-        )
-        const transaction = db.transaction(() => {
-            const info = insertQuery.run()
-            const info2 = insertQuery2.run()
+//     const transaction = db.transaction((): any =>{
+//       const info = insertQuery.run()
+//       const info2 = insertQuery2.run()
 
-            if(info.lastInsertRowid == 1 && info2.lastInsertRowid == 1)
-                return 'UPDATED'
-        })
+//       if (info.lastInsertRowid == 1 && info2.lastInsertRowid == 1) return 'UPDATED'
+//     })
 
-        return transaction()
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
+//     return transaction()
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
 
-export const dbClientExists = () => {
-    try {
-        const query = `SELECT * FROM client`
-        const readQuery = db.prepare(query)
-        const rowList = readQuery.all()
-        if(rowList[0]) {
-            return rowList[0]
-        } else {
-            return false
-        }
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
 
-export const dbInsertAlias = (data, accountId) => {
-    try {
-        const insertQuery = db.prepare(
-            `REPLACE INTO aliases (AccountId, Alias, Status, Type, CreatedAT) VALUES ( '${accountId}' , @name, @status, @type, '${now[0]}' )`
-        )
-        const transaction = db.transaction((aliases) => {
-            for(const alias of aliases) {
-                if(alias.status == 'CLEARING_REGISTRATION_PENDING') {
-                    alias.status = 'PENDING'
-                }
-                insertQuery.run(alias)
-            }
-        })
-        transaction(data)
-        return 200
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
+// export const dbInsertAlias = (data, accountId) => {
+//   try {
+//     const insertQuery = db.prepare(
+//       `REPLACE INTO aliases (AccountId, Alias, Status, Type, CreatedAT) VALUES ( '${accountId}' , @name, @status, @type, '${now[0]}' )`
+//     )
+//     const transaction = db.transaction((aliases) => {
+//       for (const alias of aliases) {
+//         if (alias.status == 'CLEARING_REGISTRATION_PENDING') {
+//           alias.status = 'PENDING'
+//         }
+//         insertQuery.run(alias)
+//       }
+//     })
+//     transaction(data)
+//     return 200
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
 
-export const dbDeleteAlias = (alias, accountId) => {
-    try {
-        const insertQuery = db.prepare(
-            `DELETE FROM aliases WHERE Alias = '${alias}' AND AccountId = '${accountId}'`
-        )
-        const transaction = db.transaction(() => {
-            const info = insertQuery.run()
-            return info
-        })
-        transaction()
-        console.log('Deleted Aliases')
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
 
-export const dbActiveAlias = (Alias) => {
-    try {
-        const desactiveAll = db.prepare(
-            `Update aliases set Active = ''`
-        );
-        const active = db.prepare(
-            `Update aliases set Active = 'True' WHERE Alias = '${Alias}'`
-        );
+// export const dbReadAliases = () => {
+//   try {
+//     const query = `SELECT * FROM aliases`
+//     const readQuery = db.prepare(query)
+//     const rowList = readQuery.all()
+//     return rowList
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
 
-        const transaction = db.transaction(() => {
-            const info = desactiveAll.run()
-            console.log(
-                `Add ${info.changes} rows with last ID 
-                 ${info.lastInsertRowid} into Cliente`
-            )
+// export const dbReadActiveAlias = () => {
+//   try {
+//     const query = `SELECT * FROM aliases WHERE Active = 'True'`
+//     const readQuery = db.prepare(query)
+//     const rowList = readQuery.all()
+//     return rowList[0]
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
 
-            const info2 = active.run()
-            console.log(
-                `Add ${info2.changes} rows with last ID 
-                 ${info2.lastInsertRowid} into Cliente`
-            )
-        })
-        transaction()
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
+// export const dbInsertTransaction = ({ AccId, TranId, TranType, Status, Amount, Ident }) => {
+//   try {
+//     const insertQuery = db.prepare(
+//       `INSERT INTO transactions (AccountId, TransactionId, TransactionType, Amount, Status, Identify, Date) VALUES ('${AccId}' , '${TranId}', '${TranType}', '${Amount}', '${Status}', '${Ident}', '${now[0]}' )`
+//     )
 
-export const dbUpdateAlias = (data, accountId) => {
-    try {
+//     const transaction = db.transaction(() => {
+//       const info = insertQuery.run()
+//       console.log(
+//         `Inserted ${info.changes} rows with last ID 
+//                  ${info.lastInsertRowid} into cliente`
+//       )
+//     })
+//     transaction()
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
 
-        const insertQuery = db.prepare(
-            `UPDATE aliases SET Status = @status WHERE Alias = @name AND AccountId = '${accountId}'`
-        );
+// export const dbUpdateMediatorFee = (MedAccId, MedFee) => {
+//   try {
+//     const insertQuery = db.prepare(
+//       `Update mediator set MediatorFee = ${MedFee} WHERE MediatorAccountId = '${MedAccId}'`
+//     )
 
-        const transaction = db.transaction((aliases) => {
-            for(const alias of aliases) {
-                insertQuery.run(alias)
-            }
-        })
-        transaction(data)
-        return 200
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
-
-export const dbReadAliases = () => {
-    try {
-        const query = `SELECT * FROM aliases`
-        const readQuery = db.prepare(query)
-        const rowList = readQuery.all()
-        return rowList
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
-
-export const dbReadActiveAlias = () => {
-    try {
-        const query = `SELECT * FROM aliases WHERE Active = 'True'`
-        const readQuery = db.prepare(query)
-        const rowList = readQuery.all()
-        return rowList[0]
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
-
-export const dbInsertTransaction = ({AccId, TranId, TranType, Status, Amount, Ident}) => {
-    try {
-        const insertQuery = db.prepare(
-            `INSERT INTO transactions (AccountId, TransactionId, TransactionType, Amount, Status, Identify, Date) VALUES ('${AccId}' , '${TranId}', '${TranType}', '${Amount}', '${Status}', '${Ident}', '${now[0]}' )`
-        )
-
-        const transaction = db.transaction(() => {
-            const info = insertQuery.run()
-            console.log(
-                `Inserted ${info.changes} rows with last ID 
-                 ${info.lastInsertRowid} into cliente`
-            )
-        })
-        transaction()
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
-
-export const dbUpdateMediatorFee = (MedAccId, MedFee) => {
-    try {
-        const insertQuery = db.prepare(
-            `Update mediator set MediatorFee = ${MedFee} WHERE MediatorAccountId = '${MedAccId}'`
-        );
-
-        const transaction = db.transaction(() => {
-            const info = insertQuery.run()
-            console.log(
-                `Add ${info.changes} rows with last ID 
-                 ${info.lastInsertRowid} into Cliente`
-            )
-        })
-        transaction()
-    } catch (err) {
-        console.error(err)
-        throw err
-    }
-}
+//     const transaction = db.transaction(() => {
+//       const info = insertQuery.run()
+//       console.log(
+//         `Add ${info.changes} rows with last ID 
+//                  ${info.lastInsertRowid} into Cliente`
+//       )
+//     })
+//     transaction()
+//   } catch (err) {
+//     console.error(err)
+//     throw err
+//   }
+// }
