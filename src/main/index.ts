@@ -32,7 +32,7 @@ import {
 // } from '@shared/database'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
-import { createAliasDB, createClientDB, credentials, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
+import { alterPasswordDB, createAliasDB, createClientDB, credentialsDB, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -216,7 +216,6 @@ ipcMain.handle('create-account', async (_, formData) => {
 
 ipcMain.handle('get-account', async () => {
   const db = await getClientDB()
-  console.log(db)
   return db
 })
 
@@ -254,6 +253,7 @@ ipcMain.handle('delete-account', async () => {
   const deletionConfirmed = await deleteClientDB(String(db?.accountId))
   return deletionConfirmed
 })
+
 // ----------------------------------------------------------------
 
 // HANDLE ALIASES
@@ -425,6 +425,13 @@ ipcMain.on('refund', async (_, args) => {
 
 // UTILITY CONNECTION
 ipcMain.handle('security', async () => {
-  const response = await credentials()
+  const response = await credentialsDB()
   return response
+})
+
+
+ipcMain.handle('alter_password', async (_, passData) => {
+  const db = await getClientDB()
+  const alterPassword = await alterPasswordDB(passData, db?.accountId)
+  return alterPassword
 })

@@ -1,6 +1,6 @@
 import { Button, ContentInRow, Separator } from '@renderer/styles/global'
 import { Input, Label, WrapIpunt } from '../styles'
-import { formatCNPJandCPF, formatDate } from '@shared/utils'
+import { formatCNPJandCPF, formatDate, HashConstructor } from '@shared/utils'
 import { useEffect, useState } from 'react'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
@@ -16,10 +16,16 @@ export function MyAccount() {
     message: '',
     type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
   })
+  const [pass, setPass] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   async function getAccount() {
+    setIsLoad(true)
+
     const data = await win.api.getAccount()
     setAccount(data)
+    setIsLoad(false)
+
   }
 
   const handleVerifyAccount = async () => {
@@ -64,12 +70,29 @@ export function MyAccount() {
     setIsLoad(false)
   }
 
+  const handleChangePassword = async () => {
+    if(pass.length < 4) {
+      setNotification({
+        message: 'Por favor, preencha o campo de senha com no mínimo 4 caracteres',
+        type: 'error'
+      })
+      setShowNotification(true)
+      return
+    }
+    const alter = await win.api.alterPassword(pass)
+    if(alter == 'CHANGED') {
+      setNotification({
+        message: 'Senha alterada!',
+        type: 'confirm'
+      })
+      setShowNotification(true)
+    }
+    setPass('')
+    setShowPassword(!showPassword)
+  }
+
   useEffect(() => {
-    (async () => {
-      setIsLoad(true)
-      getAccount()
-      setIsLoad(false)
-    })()
+    getAccount()
   }, [])
 
   return (
@@ -85,13 +108,36 @@ export function MyAccount() {
       {isLoad && <Loading />}
       <h1> Informações da Conta</h1>
 
-      <WrapIpunt>
-        <Label>Razão Social</Label>
-        <Input
-          type="text"
-          value={account?.companyName}
-        />
-      </WrapIpunt>
+      <ContentInRow>
+        <WrapIpunt>
+          <Label>Razão Social</Label>
+          <Input
+            type="text"
+            value={account?.companyName}
+          />
+        </WrapIpunt>
+        <WrapIpunt>
+          {
+            showPassword &&
+            <Input
+              type="text"
+              placeholder='Digite a Nova Senha'
+              value={pass}
+              onChange={e => setPass(e.target.value)}
+            />
+          }
+          <Button onClick={() => {
+            if(showPassword) {
+              handleChangePassword()
+            } else {
+              setShowPassword(!showPassword)
+            }
+          }} >{showPassword ? 'Salvar' : 'Alterar Senha'}</Button>
+
+
+
+        </WrapIpunt>
+      </ContentInRow>
 
       <WrapIpunt>
         <Label>CNPJ</Label>

@@ -1,4 +1,3 @@
-import { HashComparator } from '@shared/utils'
 import { createContext, useContext, useState } from 'react'
 
 type securityProps = {
@@ -17,10 +16,6 @@ export const SecurityWrapper = ({ children }) => {
     const [confirmed, setConfirmed] = useState(false)
     const [showSecurity, setShowSecurity] = useState(false)
 
-    async function test() {
-        const credentials = win.api.security()
-        setConfirmed(await HashComparator(password, credentials))
-    }
 
     return (
         <SecurityContext.Provider value={{ password, setPassword, confirmed, setConfirmed, showSecurity, setShowSecurity }}>

@@ -4,6 +4,8 @@ import {AiFillEyeInvisible, AiFillEye} from 'react-icons/ai'
 import { Input } from '@renderer/styles/global'
 import { useEffect, useState } from 'react'
 import { ContantRow } from '@renderer/page/Home/StandBy/styles'
+import { HashComparator } from '@shared/utils'
+import { useSecurity } from '@renderer/context/security.context'
 
 const Container = styled.dialog`
   width: 100%;
@@ -60,55 +62,56 @@ const Button = styled.button`
     cursor: pointer;
   }
 `
-
+const win: any = window
 export function ShowPassword() {
-    const [showPassword, setShowPassword] = useState(false)
-    function checkPassword(event) {
-        switch (event.key || event) {
-            case 'Enter':  
-                console.log('Checking password')
-            break
-        }
+  const { password, setPassword, setConfirmed, confirmed } = useSecurity()
+  const [showPassword, setShowPassword] = useState(false)
+  async function checkPassword(event) {
+    switch (event.key || event) {
+      case 'Enter':  
+        const securityData = await win.api.security()
+        console.log(password, securityData)
+        setConfirmed(await HashComparator(password, securityData))
+        console.log(confirmed)
+      break
     }
-    
-    function togglePassword() {
-        setShowPassword(!showPassword)
-    }
+  }
+  
+  function togglePassword() {
+    setShowPassword(!showPassword)
+  }
 
-    useEffect(() => {
-        window.addEventListener('keydown', checkPassword)
-        return () => {
-            window.removeEventListener('keydown', checkPassword)
+  useEffect(() => {
+    window.addEventListener('keydown', checkPassword)
+    return () => {
+      window.removeEventListener('keydown', checkPassword)
+    }
+  },[])
+
+  return (
+    <Container>
+      <Section>
+        <Header>
+          <Title>Confirmação de senha</Title>
+          <IoIosWarning size={28} color="#FFA500" />
+        </Header>
+        <p>Para contiuar, digite sua senha:</p>
+        <ContantRow style={{justifyContent: 'flex-end', alignItems: 'center'}}>
+          <Input style={{width: '75%'}} type={showPassword ? "text":"password"} placeholder="Confirme a senha" onChange={e => setPassword(e.target.value)} />
+          {
+          showPassword ?
+          <AiFillEyeInvisible size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
+          :
+          <AiFillEye size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
           }
-    },[])
+        </ContantRow>
 
-    return (
-
-        <Container>
-            <Section>
-                <Header>
-                    <Title>Confirmação de senha</Title>
-                    <IoIosWarning size={28} color="#FFA500" />
-                </Header>
-                <p>Para contiuar, digite sua senha:</p>
-                <ContantRow style={{justifyContent: 'flex-end', alignItems: 'center'}}>
-                    <Input style={{width: '75%'}} type={showPassword ? "text":"password"} placeholder="Confirme a senha" />
-                    {
-                    showPassword ?
-                    <AiFillEyeInvisible size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
-                    :
-                    <AiFillEye size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
-                    }
-                </ContantRow>
-
-                <Footer>
-                    <Button
-                        onClick={() => checkPassword('Enter')}
-                    >
-                        Confirmar
-                    </Button>
-                </Footer>
-            </Section>
-        </Container>
-    )
+        <Footer>
+          <Button onClick={() => checkPassword('Enter')}>
+            Confirmar
+          </Button>
+        </Footer>
+      </Section>
+    </Container>
+  )
 }

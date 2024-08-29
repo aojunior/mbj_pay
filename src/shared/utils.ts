@@ -47,7 +47,7 @@ export function HashConstructor(password: string) {
   }
 }
 
-export async function HashComparator(password: string, data: any) {
+export function HashComparator(password: string, data: any) {
   let concat = password + data.saltKey
   let hash = cryptoJs.SHA256(concat)
   if(hash.toString(cryptoJs.enc.Hex) !== data.hashPassword) {

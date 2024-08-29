@@ -1,6 +1,6 @@
 import { Aliases } from '@prisma/client';
 import { prisma } from './databaseConnect';
-import { HashConstructor } from '../utils';
+import { HashConstructor, HashComparator } from '../utils';
 
 // ACTION TO CLIENT
 export async function createClientDB(data: any) {
@@ -119,7 +119,7 @@ export async function deleteClientDB(accountId: string)  {
   }
 }
 
-export async function credentials() {
+export async function credentialsDB() {
   try {
     const credentials = await prisma.client.findFirst({
       select: {
@@ -128,6 +128,24 @@ export async function credentials() {
       }
     })
     return credentials
+  } catch (error) {
+    console.error(error) 
+  }
+}
+
+export async function alterPasswordDB(password, accountId) {
+  try {
+    const data = HashConstructor(password)
+    const credentials = await prisma.client.update({
+      where: {
+        accountId: accountId
+      },
+      data: {
+        hashPassword: data.hashPassword,
+        saltKey: data.saltKey
+      },
+    })
+    return "CHANGED"
   } catch (error) {
     console.error(error) 
   }

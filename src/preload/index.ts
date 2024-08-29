@@ -27,6 +27,10 @@ export const API = {
     const account = ipcRenderer.invoke('get-account')
     return account
   },
+  alterPassword: async (password) => {
+    const alterPass = await ipcRenderer.invoke('alter_password', password)
+    return alterPass
+  },
   createAlias: async () => {
     const alias = await ipcRenderer.invoke('create-alias')
     return alias
