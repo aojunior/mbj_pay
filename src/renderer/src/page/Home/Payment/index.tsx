@@ -74,7 +74,7 @@ function PaymentScreen({ file }) {
 
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
-      case 'Escape':
+      case 'Escape':  
         win.api.cancelPayment()
         break
       case 'F1':

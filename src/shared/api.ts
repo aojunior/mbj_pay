@@ -7,6 +7,7 @@ import { readFileSync } from 'fs'
 import { z } from 'zod'
 import { accountSchema } from './schemas'
 import { getClientDB } from './database/actions'
+import { today } from './utils'
 
 const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID
@@ -361,9 +362,7 @@ export async function createInstantPayment(
   let totalAmount = paymentFile.totalAmount | 0
   let recipientAmount = paymentFile.totalAmount | 0
   const valorHash = Alias + totalAmount + AccId + recipientAmount
-
   const sha_signature = await encrypt_string(valorHash)
-
   const paymentData = {
     externalIdentifier: uuidv4() + now,
     totalAmount: totalAmount,
@@ -402,24 +401,24 @@ export async function createInstantPayment(
   }
 
   response = await api
-    .post(`/v1/payments`, paymentData, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        'Transaction-Hash': sha_signature
-      },
-      httpsAgent
-    })
-    .then((res): any => {
-      if (res.status == 200 || res.status == 202) return res.data
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.response.data)
-      } else {
-        console.error('Error: ', error.message)
-      }
-    })
+  .post(`/v1/payments`, paymentData, {
+    headers: {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  })
+  .then((res): any => {
+    if (res.status == 200 || res.status == 202) return res.data
+  })
+  .catch((error) => {
+    if (error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message)
+    }
+  })
 
   return response.data
 }
@@ -456,7 +455,6 @@ export async function verifyInstantPayment(transactionid: string, token: string,
 export async function verifyBalance(token: string) {
   let response
   const db = await getClientDB()
-  console.log(db)
   const sha_signature = await encrypt_string(String(db?.accountId))
 
   response = await api
@@ -485,12 +483,9 @@ export async function verifyBalance(token: string) {
 
 export async function extractBalanceToday(token: string, AccId: string) {
   let response
-  let date = new Date().toISOString()
-  let formateDate = date.split('T') // '2023-06-15'
   const sha_signature = await encrypt_string(AccId)
-
   response = await api
-    .get(`/v1/accounts/${AccId}/statement?ending=${formateDate[0]}&start=${formateDate[0]}`, {
+    .get(`/v1/accounts/${AccId}/statement?ending=${today}&start=${today}`, {
       headers: {
         ...headers,
         Authorization: `Bearer ${token}`,
@@ -509,16 +504,10 @@ export async function extractBalanceToday(token: string, AccId: string) {
         console.error('Error: ', error.message)
       }
     })
-
   return response.data
 }
 
-export async function extractBalanceFilter(
-  token: string,
-  dateStart: string,
-  dateEnd: string,
-  AccId: string
-) {
+export async function extractBalanceFilter(token: string, dateStart: string, dateEnd: string, AccId: string) {
   let response
   const sha_signature = await encrypt_string(AccId)
   response = await api

@@ -18,6 +18,10 @@ import {
 import { DialogExtract } from './DialogExtract'
 import { DetailContent, RowDetails } from '../styles'
 import { DialogRefund } from './DialogRefund'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { maskCurrencyInput } from '@shared/utils'
 
 const win: any = window
 
@@ -25,10 +29,16 @@ type BalanceProps = {
   balance: any
   extract: any[]
 }
-
 export function FormTransf({ balance, extract }: BalanceProps) {
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
+  const [amount, setAmount] = useState<Number>(0)
+
+  const handleCurrencyChange = (event) => {
+    maskCurrencyInput(event);
+    let a = event.target.value.replace(/\D/g, '')
+    // setAmount(a/100)
+  };
 
   function toggleExtractDialog() {
     setDialogExtractOpen(!dialogExtractOpen)
@@ -42,13 +52,8 @@ export function FormTransf({ balance, extract }: BalanceProps) {
     win.api.verifyAccount()
   }
 
-  // async function verifyAccount() {
-  //     const token = sessionStorage.getItem('token')
-  //     await  (window as any).api.verifyAccount(token)
-  // }
-
   function showBalance() {
-    return balance.available ? `R$  ${Number(balance.available).toFixed(2) || 0}` : 'Carregando ...'
+    return balance?.available ? `R$  ${Number(balance?.available).toFixed(2) || 0}` : 'Carregando ...'
   }
 
   return (
@@ -74,15 +79,11 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
               <FormInput>
                 <Label>Informe o Valor:</Label>
-                <ContentInRow
-                  style={{ justifyContent: 'flex-start', alignItems: 'center', gap: 5 }}
-                >
-                  <span style={{ fontSize: 20, fontWeight: 600 }}>R$</span>
                   <Input
-                    type="number"
                     style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
+                    onChange={handleCurrencyChange}
+                    placeholder="R$ 0,00"
                   />
-                </ContentInRow>
               </FormInput>
 
               <FormInput>
@@ -116,25 +117,26 @@ export function FormTransf({ balance, extract }: BalanceProps) {
             <Label>Transferências</Label>
             <div style={{ width: '100%' }}>
               {extract.map(
-                (data: any, i) =>
-                  i < 10 && (
-                    <RowDetails>
-                      <p>{data.description}</p>
-                      <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green' }}>
-                        <p>{data.type !== 'C' ? '-' : ''}</p>
-                        <p style={{ fontWeight: '700' }}>R$ {data.amount.toFixed(2)}</p>
-                      </DetailContent>
-                    </RowDetails>
-                  )
+                (data: any, i) => i < 10 && (
+                  <RowDetails>
+                    <p>{data.description}</p>
+                    <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green' }}>
+                      <p>{data.type !== 'C' ? '-' : ''}</p>
+                      <p style={{ fontWeight: '700' }}>R$ {data.amount.toFixed(2)}</p>
+                    </DetailContent>
+                  </RowDetails>
+                )
               )}
             </div>
           </CardContent>
 
           <CardFooter style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             <Button onClick={toggleExtractDialog}> Extrato </Button>
-            <Button style={{ backgroundColor: 'red' }} onClick={toggleRefundDialog}>
-              {' '}
-              Devolucao{' '}
+            <Button 
+              style={{ backgroundColor: 'red' }} 
+              onClick={toggleRefundDialog}
+            >
+              Devolução
             </Button>
           </CardFooter>
         </Card>

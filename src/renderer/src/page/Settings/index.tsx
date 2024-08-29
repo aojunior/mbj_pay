@@ -1,46 +1,31 @@
 import { Container } from '@renderer/styles/global'
 import { SidebarComponent } from './_components/Sidebar'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AddBank } from './_components/AddBank'
 import { ManageAlias } from './_components/manageAliases'
 import {  } from './styles'
 import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
+import { ShowPassword } from '@renderer/components/password'
 
-const win: any = window
 export default function Settings() {
   const [selectedSection, setSelectedSection] = useState('')
-  const [responseAliases, setResponseAliases] = useState<any>()
-  const [account, setAccount] = useState<any>()
-
-  async function verifyAlias() {
-    let resp = await win.api.verifyAlias()
-    setResponseAliases(resp)
-  }
-
-  async function getAccount() {
-    const data = await win.api.getAccount()
-    setAccount(data)
-  }
 
   const renderContent = (): any => {
     switch (selectedSection) {
       case 'AddBank':
         return <AddBank />
       case 'MyAccount':
-        return <MyAccount acc={account} />
+        return <MyAccount />
       case 'ManageAlias':
-        return <ManageAlias aliases={responseAliases} />
+        return <ManageAlias />
     }
   }
 
-  useEffect(() => {
-    getAccount()
-    verifyAlias()
-  }, [])
-
   return (
     <Container style={{ flexDirection: 'row' }}>
+      <ShowPassword/>
+
       <SidebarComponent onSelect={setSelectedSection} select={selectedSection} />
       <Section>
         {renderContent()}

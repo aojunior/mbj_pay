@@ -1,10 +1,13 @@
 import { AccountWrapper } from './context/account.context'
+import { SecurityWrapper } from './context/security.context'
 import Layout from './page/Layout'
 
 function App(): JSX.Element {
   return (
     <AccountWrapper>
-      <Layout />
+      <SecurityWrapper>
+        <Layout />
+      </SecurityWrapper>
     </AccountWrapper>
   )
 }

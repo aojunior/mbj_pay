@@ -5,6 +5,7 @@ import { Loading } from '@renderer/components/loading'
 import { Notification } from '@renderer/components/notification'
 import { useAccount } from '@renderer/context/account.context'
 import { Aliases } from '@prisma/client'
+import { ShowPassword } from '@renderer/components/password'
 
 type aliasProps = {
   aliases: Aliases[]
@@ -12,9 +13,9 @@ type aliasProps = {
 
 const win: any = window
 
-export function ManageAlias({aliases}: aliasProps) {
+export function ManageAlias() {
   const { accState } = useAccount()
-  const [aliasData, setAliasData] = useState(aliases)
+  const [aliasData, setAliasData] = useState<any>([])
   const [isLoad, setIsLoad] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [notification, setNotification] = useState({
@@ -22,10 +23,10 @@ export function ManageAlias({aliases}: aliasProps) {
     type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
   })
 
-  const handleCreateAccount = async () => {
+  const handleCreateAlias = async () => {
     if(aliasData.length == 5) {
       setNotification({
-        message: 'Você já possui 5 chaves Pix registradas!',
+        message: 'Você atingiu o limite de chaves Pix registradas!',
         type: 'warning'
       })
       setShowNotification(true)
@@ -35,7 +36,7 @@ export function ManageAlias({aliases}: aliasProps) {
     setIsLoad(true)
     let create = await win.api.createAlias()
     setTimeout(async () => {
-      if(create === 'CREATED') {
+      if(create == 'CREATED') {
         let resp = await win.api.verifyAlias()
         setAliasData(resp)
         setNotification({
@@ -50,10 +51,9 @@ export function ManageAlias({aliases}: aliasProps) {
         })
         setShowNotification(true)
       }
-    setIsLoad(false)
-    }, 5500)
-
-    return create
+      setIsLoad(false)
+      return create
+    }, 3000)
   }
 
   const handleDeleteAlias = async (alias) => {
@@ -76,20 +76,30 @@ export function ManageAlias({aliases}: aliasProps) {
         setIsLoad(true)
         if (accState.status == 'REGULAR') {
           await win.api.updateAlias()
-          let resp = await win.api.verifyAlias()
-          setAliasData(resp)
-          setNotification({
-            message: 'Chave Pix atualizada com sucesso!',
-            type: 'info'
-          })
-          setShowNotification(true)
+          setTimeout(async () => {
+            let resp = await win.api.verifyAlias()
+            setAliasData(resp)
+            
+          }, 3000)
         }
-        setIsLoad(false)  
+        setNotification({
+          message: 'Chave Pix atualizada com sucesso!',
+          type: 'info'
+        })
+        setShowNotification(true)
+        setIsLoad(false)
       break
     }
   }
 
   useEffect(() => {
+    (async () => {
+      setIsLoad(true)
+      let resp = await win.api.verifyAlias()
+      setAliasData(resp)
+      setIsLoad(false)
+
+    })()
     window.addEventListener('keydown', handleKeyButton)
     return () => {
       window.removeEventListener('keydown', handleKeyButton)
@@ -107,7 +117,6 @@ export function ManageAlias({aliases}: aliasProps) {
       }}
     >
       {isLoad && <Loading />}
-
       <Button style={{ position: 'absolute', right: 40, top: 150 }} onClick={() => handleKeyButton('F5')} >
         <code>F5</code> - Atualizar
       </Button>
@@ -136,7 +145,7 @@ export function ManageAlias({aliases}: aliasProps) {
         </Table>
 
         <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/5</span>
-        {accState.status == 'REGULAR' && <Button onClick={handleCreateAccount}>Add Chave</Button>}
+        {accState.status == 'REGULAR' && <Button onClick={handleCreateAlias}>Add Chave</Button>}
       </>
       <span style={{ color: '#999', textAlign: 'end' }}>
         Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o 
@@ -145,7 +154,7 @@ export function ManageAlias({aliases}: aliasProps) {
       <Notification
         type={notification.type}
         show={showNotification}
-        onClose={() => setShowNotification(!showNotification)}
+        onClose={() => setShowNotification(false)}
         message={notification.message}
       />
     </div>

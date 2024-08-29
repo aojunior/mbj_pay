@@ -76,7 +76,7 @@ const Notification = ({ message, icon, type, show, onClose }: NotificationProps)
       }, 5000)
       return () => clearTimeout(timer)
     }
-  }, [show, onClose])
+  }, [show])
 
   return show && type === 'error' ? (
     <NotificationWrapper isExiting={showNotification} style={{ borderColor: 'red' }}>

@@ -104,7 +104,7 @@ export function DialogRefund({ toggle }: dialogProps) {
       <DialogContext style={{ gap: 10 }}>
         <Card style={{ width: '100%' }}>
           <CardHeader>
-            <CardTitle> Devolucao Pagamento </CardTitle>
+            <CardTitle> Devolução Pagamento </CardTitle>
             <Separator />
           </CardHeader>
           <CardContent>

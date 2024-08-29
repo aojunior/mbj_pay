@@ -1,20 +1,15 @@
 import { Button, ContentInRow, Separator } from '@renderer/styles/global'
 import { Input, Label, WrapIpunt } from '../styles'
 import { formatCNPJandCPF, formatDate } from '@shared/utils'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
 import { Client } from '@prisma/client'
 
-type accountProps = Client
-type Props = {
-  acc: accountProps
-}
-
 const win: any = window
 
-export function MyAccount({ acc }: Props) {
-  const [account, setAccount] = useState(acc)
+export function MyAccount() {
+  const [account, setAccount] = useState<Client>({} as Client)
   const [isLoad, setIsLoad] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [notification, setNotification] = useState({
@@ -69,6 +64,14 @@ export function MyAccount({ acc }: Props) {
     setIsLoad(false)
   }
 
+  useEffect(() => {
+    (async () => {
+      setIsLoad(true)
+      getAccount()
+      setIsLoad(false)
+    })()
+  }, [])
+
   return (
     <div
       style={{
@@ -86,7 +89,7 @@ export function MyAccount({ acc }: Props) {
         <Label>Razão Social</Label>
         <Input
           type="text"
-          value={account.companyName}
+          value={account?.companyName}
         />
       </WrapIpunt>
 
@@ -94,25 +97,25 @@ export function MyAccount({ acc }: Props) {
         <Label>CNPJ</Label>
         <Input
           type="text"
-          value={formatCNPJandCPF(account.taxId as string)}
+          value={formatCNPJandCPF(account?.taxId as string)}
           style={{ width: 140 }}
         />
       </WrapIpunt>
 
       <WrapIpunt>
         <Label>ID da Conta</Label>
-        <Input type="text" value={account.accountId} />
+        <Input type="text" value={account?.accountId} />
       </WrapIpunt>
 
       <Label style={{color: '#444', marginTop: 15}}>Detalhes Bancário</Label>
       <ContentInRow style={{ width: '50%',  }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Conta</Label>
-          <Input type="text" value={account.accountBank} style={{ width: 120 }} />
+          <Input type="text" value={account?.accountBank} style={{ width: 120 }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Agência (Branch)</Label>
-          <Input type="text" value={account.branchBank} style={{ width: 120 }} />
+          <Input type="text" value={account?.branchBank} style={{ width: 120 }} />
         </div>
       </ContentInRow>
 
@@ -121,7 +124,7 @@ export function MyAccount({ acc }: Props) {
           <Label>Data de Criação</Label>
           <Input
             type="text"
-            value={formatDate(account.createdAT)} 
+            value={formatDate(account?.createdAT)}
             style={{ width: 120, textAlign: 'center' }}
           />
         </WrapIpunt>
@@ -145,7 +148,7 @@ export function MyAccount({ acc }: Props) {
       <Notification
         type={notification.type}
         show={showNotification}
-        onClose={() => setShowNotification(!showNotification)}
+        onClose={() => setShowNotification(false)}
         message={notification.message}
       />
     </div>

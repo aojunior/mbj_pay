@@ -43,30 +43,40 @@ export const API = {
     const aliases = await ipcRenderer.invoke('verify-alias')
     return aliases
   },
+  security: async () => {
+    const credentials = ipcRenderer.invoke('security')
+    return credentials
+  },
 
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
-  cancelInstantPayment: () => ipcRenderer.send('cancel_instantpayment'),
-  verifyInstantPayment: () => ipcRenderer.send('verify_instantpayment'),
-  responseVerifyInstantPayment: (callback) =>
-    ipcRenderer.on('response_verify_instantpayment', (_, args) => callback(args)),
+  cancelInstantPayment: async () => { 
+    const cancelPayment = await ipcRenderer.send('cancel_instantpayment')
+    return cancelPayment
+  },
+  verifyInstantPayment: async () => {
+    const verifyPayment = await ipcRenderer.invoke('verify_instantpayment')
+    return verifyPayment
+  },
 
   refundCodes: () => ipcRenderer.send('refund_codes'),
-  responseRefundCodes: (callback) =>
-    ipcRenderer.on('respose_refund_codes', (_, args) => callback(args)),
+  responseRefundCodes: (callback) => ipcRenderer.on('respose_refund_codes', (_, args) => callback(args)),
 
   refundInstantPayment: (item, reasonCode) => ipcRenderer.send('refund', [item, reasonCode]),
-  responseRefundInstantPayment: (callback) =>
-    ipcRenderer.on('response_refund', (_, args) => callback(args)),
+  responseRefundInstantPayment: (callback) => ipcRenderer.on('response_refund', (_, args) => callback(args)),
 
-  verifyBalance: () => ipcRenderer.send('verify_balance'),
-  responseBalance: (callback) => ipcRenderer.on('response_balance', (_, args) => callback(args)),
-  extractBalanceToday: () => ipcRenderer.send('extract_balance_today'),
-  extractBalanceFilter: (start, end) => ipcRenderer.send('extract_balance_filter', [start, end]),
 
-  responseExtractToday: (callback) =>
-    ipcRenderer.on('response_extract_today', (_, args) => callback(args)),
-  responseExtractFilter: (callback) =>
-    ipcRenderer.on('response_extract_filter', (_, args) => callback(args))
+  verifyBalance: async () => {
+    const verifyBalance = await ipcRenderer.invoke('verify_balance')
+    return verifyBalance
+  },
+  extractBalanceToday: async () => {
+    const extractToday = await ipcRenderer.invoke('extract_balance_today')
+    return extractToday
+  },
+  extractBalanceFilter: async (start, end) => {
+    const extractFilter = await ipcRenderer.invoke('extract_balance_filter', [start, end])
+    return extractFilter
+  },
 }
 
 contextBridge.exposeInMainWorld('api', API)

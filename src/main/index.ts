@@ -32,7 +32,7 @@ import {
 // } from '@shared/database'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
-import { clientExists, createAliasDB, createClientDB, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
+import { createAliasDB, createClientDB, credentials, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -187,14 +187,6 @@ ipcMain.handle('token_generator', async () => {
   return token
 })
 
-
-// ipcMain.handle('initial_', async () => {
-  // const db = await dbRead('client')
-//   let credential = await clientExists()
-  // if (db.AccountId && db.Cnpj) credential = true
-//   return credential
-// })
-
 // HANDLE ACCOUNT
 ipcMain.handle('create-account', async (_, formData) => {
   let token = await mainWindow.webContents
@@ -224,6 +216,7 @@ ipcMain.handle('create-account', async (_, formData) => {
 
 ipcMain.handle('get-account', async () => {
   const db = await getClientDB()
+  console.log(db)
   return db
 })
 
@@ -242,7 +235,6 @@ ipcMain.handle('verify-account', async () => {
     Status: consulta.accountStatus,
     MedAccId: consulta.mediatorId
   }
-  console.log(consulta)
   if (data.Status !== db?.status) {
     let update = await updateClientDB(data)
     return update
@@ -270,11 +262,11 @@ ipcMain.handle('create-alias', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const db = await getClientDB()
-  const aliases = await readAliasesDB()
   const createAlias = await createAliasesAPI(token, String(db?.accountId))  
-
+  console.log('createAlias', createAlias)
   if(createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
     setTimeout(async () => {
+      const aliases = await readAliasesDB()
       // Get all, filter and add new alias in the db
       const verify = await verifyAliases(token, String(db?.accountId))
       const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
@@ -285,20 +277,9 @@ ipcMain.handle('create-alias', async () => {
         await createAliasDB(alias, String(db?.accountId))
       })
 
-// Filtra aliases que precisam ser atualizados
-const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
-  const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
-  return matchingItem && matchingItem.status !== aliasAPI.status; // Exemplo de condição para atualização
-});
+      console.log('filteredArrayAdd1 ', filteredArrayAdd)
 
-// Filtra aliases que precisam ser removidos
-const filteredArrayDelete = aliases.filter((aliasDB) => {
-  const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias);
-  return !matchingItem;
-});
-
-
-    }, 1500)
+    }, 3000)
     return 'CREATED'
   } else {
     console.log(createAlias)
@@ -313,20 +294,21 @@ ipcMain.handle('update-alias', async () => {
   const client = await getClientDB()
   const aliases = await readAliasesDB()
   let verify = await verifyAliases(token, String(client?.accountId))
-  let update
+
   const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
     const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
     return !matchingItem;
   });
-  filteredArrayAdd.map(async (alias) => {
-    await createAliasDB(alias, String(client?.accountId))
-  })
+  if(filteredArrayAdd.length > 0) {
+    filteredArrayAdd.map(async (alias) => {
+      await createAliasDB(alias, String(client?.accountId))
+    })
+  }
 
   const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
     const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
     return matchingItem && matchingItem.status !== aliasAPI.status; // Exemplo de condição para atualização
   });
-
   if(filteredArrayUpdate.length > 0) {
     filteredArrayUpdate.map(async (alias) => {
       await updateAliasDB(alias, String(client?.accountId))
@@ -341,9 +323,11 @@ ipcMain.handle('update-alias', async () => {
     filteredArrayDelete.map(async (alias) => {
       await deleteAliasDB(alias.alias, String(client?.accountId))
     })
-  }
 
-  return update
+  }
+  console.log('filteredArrayAdd ', filteredArrayAdd)
+  console.log('filteredArrayUpdate ', filteredArrayUpdate)
+  console.log('filteredArrayDelete ', filteredArrayDelete)
 })
 
 ipcMain.handle('verify-alias', async () => {
@@ -382,7 +366,7 @@ ipcMain.on('verify_instantpayment', async () => {
   const db = await getClientDB()
   const verify = await verifyInstantPayment(transactionid, token, String(db?.accountId))
 
-  mainWindow.webContents.send('response_verify_instantpayment', verify.transactions[0])
+  return verify.transactions[0]
 })
 
 ipcMain.on('cancel_payment', async () => {
@@ -392,22 +376,22 @@ ipcMain.on('cancel_payment', async () => {
 // ----------------------------------------------------------------
 
 // HANDLE BALANCE
-ipcMain.on('verify_balance', async () => {
+ipcMain.handle('verify_balance', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const response = await verifyBalance(token)
 
-  mainWindow.webContents.send('response_balance', response)
+  return response
 })
 
-ipcMain.on('extract_balance_today', async () => {
+ipcMain.handle('extract_balance_today', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const db = await getClientDB()
   const response = await extractBalanceToday(token, String(db?.accountId))
-  mainWindow.webContents.send('response_extract_today', response)
+  return response
 })
 
 ipcMain.on('extract_balance_filter', async (_, args) => {
@@ -416,7 +400,7 @@ ipcMain.on('extract_balance_filter', async (_, args) => {
     .then((response) => response)
   const db = await getClientDB()
   const response = await extractBalanceFilter(token, args[0], args[1], String(db?.accountId))
-  mainWindow.webContents.send('response_extract_filter', response)
+  return response
 })
 // ----------------------------------------------------------------
 
@@ -437,4 +421,10 @@ ipcMain.on('refund', async (_, args) => {
   const response = await refundInstantPayment(args[0], args[1], token, String(db?.accountId))
   console.log(response)
   // mainWindow.webContents.send('respose_refund', response.data)
+})
+
+// UTILITY CONNECTION
+ipcMain.handle('security', async () => {
+  const response = await credentials()
+  return response
 })

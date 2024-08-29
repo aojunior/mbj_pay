@@ -14,38 +14,29 @@ export default function Dashboard() {
 
   async function getBalance() {
     setIsLoad(true)
-    setBalance({})
-    await win.api.verifyBalance()
-    await win.api.responseBalance((data) => {
-      if (data == undefined || data == null) setShowNotification(true)
-      setBalance(data)
-    })
-
-    await win.api.extractBalanceToday()
-    await win.api.responseExtractToday((data) => {
-      console.log('this data  ' + data)
-      if (data == undefined || data == null) setShowNotification(true)
-
-      setExtract(data.statement as any[])
-    })
+    const data = await win.api.verifyBalance()
+    const extractToday = await win.api.extractBalanceToday()
+    if (data == undefined || data == null || extractToday == undefined || extractToday == null) {
+      setIsLoad(false)
+      setShowNotification(true)
+      return
+    }
+    setBalance(data)
+    setExtract(extractToday.statement as any[])  
     setIsLoad(false)
   }
-
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
       case 'F5':
         getBalance()
-        break
+      break
     }
   }
 
   useEffect(() => {
     getBalance()
     window.addEventListener('keydown', handleKeyButton)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyButton)
-    }
+    return () => window.removeEventListener('keydown', handleKeyButton)
   }, [])
 
   return (

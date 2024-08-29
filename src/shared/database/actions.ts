@@ -1,7 +1,6 @@
 import { Aliases } from '@prisma/client';
 import { prisma } from './databaseConnect';
-import crypto from "crypto";
-import cryptoJs from 'crypto-js'
+import { HashConstructor } from '../utils';
 
 // ACTION TO CLIENT
 export async function createClientDB(data: any) {
@@ -71,7 +70,22 @@ export async function clientExists() {
 
 export async function getClientDB() {
   try {
-    const account = await prisma.client.findFirst()
+    const account = await prisma.client.findFirst({
+      select: {
+        accountId: true,
+        accountBank: true,
+        branchBank: true,
+        accountHolderId: true,
+        companyName: true,
+        createdAT: true,
+        email: true,
+        phoneNumber: true,
+        taxId: true,
+        status: true,
+        hashPassword: false,
+        saltKey: false
+      }
+    })
     return account
   } catch (error) {
     console.error(error) 
@@ -102,6 +116,20 @@ export async function deleteClientDB(accountId: string)  {
     return 'DELETED'
   } catch (error) {
     console.error(error)
+  }
+}
+
+export async function credentials() {
+  try {
+    const credentials = await prisma.client.findFirst({
+      select: {
+        hashPassword: true,
+        saltKey: true
+      }
+    })
+    return credentials
+  } catch (error) {
+    console.error(error) 
   }
 }
 // ----------------------------------------------------------------
@@ -205,22 +233,3 @@ export async function readAliasesActiveDB() {
 }
 // ----------------------------------------------------------------
 
-//  FUNCTIONS UTILITARIES
-function HashConstructor(password: string) {
-  const saltKey = crypto.randomBytes(32).toString('hex')
-  let concat = password + saltKey
-  let hashPassword = cryptoJs.SHA256(concat)
-  return {
-      saltKey: saltKey,
-      hashPassword: hashPassword.toString(cryptoJs.enc.Hex)
-  }
-}
-
-async function HashComparator(password: string, data: any ) {
-  let concat = password + data.saltkey
-  let hash = cryptoJs.SHA256(concat)
-  if(hash.toString(cryptoJs.enc.Hex) !== data.hashpassword) {
-    return false
-  }
-  return true
-}
