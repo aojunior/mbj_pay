@@ -11,6 +11,7 @@ import { Navbar } from '@renderer/components/navbar'
 import { Header } from '@renderer/components/header'
 import { Finalization } from '../Account/_components/finalization'
 import { useAccount } from '@renderer/context/account.context'
+import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 function Root(): JSX.Element {
@@ -28,8 +29,9 @@ function Root(): JSX.Element {
 }
 
 export default function Layout() {
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { setAccState, accState } = useAccount()
-  const [showNotification, setShowNotification] = useState(false)
+  // const [showNotification, setShowNotification] = useState(false)
   const [isLoad, setIsLoad] = useState<boolean>(false)
   const navigate = useNavigate()
 
@@ -37,11 +39,18 @@ export default function Layout() {
   const refreshAndStorageToken = useCallback(async () => {
     const newToken = await win.api.tokenGenerator()
     if (newToken == undefined || newToken == null) {
+      setContentNotification({
+        ...contentNotification,
+        type: 'error',
+        title: 'Error Connecting to server',
+        message: 'Error when trying to connect to the server'
+      })
       setShowNotification(true)
       throw new Error(`Access token not available`)
     }
     sessionStorage.setItem('token', newToken)
   }, [])
+
   useEffect(() => {
     refreshAndStorageToken()
     setInterval(() => refreshAndStorageToken(), 5000 * 60) // 5 min
@@ -68,12 +77,7 @@ export default function Layout() {
       {accState && <Navbar />}
       <Header />
       <Root />
-      <Notification
-        type="error"
-        show={showNotification}
-        onClose={() => setShowNotification(!showNotification)}
-        message="Error when trying to connect to the server"
-      />
+      <Notification />
     </div>
   )
 }

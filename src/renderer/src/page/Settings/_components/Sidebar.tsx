@@ -10,7 +10,7 @@ const Sidebar = styled.div`
   flex-direction: column;
   gap: 15px;
 `
-const SidebarLink = styled.button`
+const SidebarLink = styled.button<{selected: any}>`
   color: #444 ;
   padding: 5px;
   text-decoration: none;
@@ -18,7 +18,7 @@ const SidebarLink = styled.button`
   transition: background-color 0.3s;
   background-color: #f5f5f7;
   border: none;
-  ${({selected}: any)=> selected && `
+  ${({selected})=> selected && `
     color: blue;
     background-color: #e5e5e7;
   `}
@@ -64,7 +64,7 @@ export function SidebarComponent({ onSelect, select }: selectNavProps ) {
     <Sidebar>
       {
         navList.map(list => 
-          <SidebarLink selected={list.name === select} onClick={() => onSelect(list.name)}>{list.text}</SidebarLink>
+          <SidebarLink key={list.name} selected={list.name === select} onClick={() => onSelect(list.name)}>{list.text}</SidebarLink>
         )
       }
     </Sidebar>

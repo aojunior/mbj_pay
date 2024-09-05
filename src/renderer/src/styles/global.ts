@@ -118,7 +118,7 @@ export const Button = styled.button`
 export const TextArea = styled.textarea`
   height: 100px;
   resize: none;
-  border: 1px solid #e4e4e7;
+  border: 1px solid #c7c7c4;
   padding: 10px;
   border-radius: 8px;
 `

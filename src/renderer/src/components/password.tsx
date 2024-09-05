@@ -2,23 +2,23 @@ import { styled } from 'styled-components'
 import { IoIosWarning } from 'react-icons/io'
 import {AiFillEyeInvisible, AiFillEye} from 'react-icons/ai'
 import { Input } from '@renderer/styles/global'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ContantRow } from '@renderer/page/Home/StandBy/styles'
-import { HashComparator } from '@shared/utils'
 import { useSecurity } from '@renderer/context/security.context'
 
 const Container = styled.dialog`
   width: 100%;
   height: 100vh;
   backdrop-filter: blur(2px);
+  position: absolute;
+  top: 0;
   background: #00000050;
   padding: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
 `
-
 const Section = styled.div`
   width: 50%;
   height: 250px;
@@ -26,7 +26,7 @@ const Section = styled.div`
   border: 1px solid #e7e7e4;
   border-radius: 8px;
   display: flex;
-  padding: 20px 0;
+  padding: 10px;
   flex-direction: column;
   align-items: center;
 `
@@ -38,17 +38,16 @@ const Header = styled.div`
   justify-content: center;
   gap: 10px;
 `
-
 const Title = styled.h2`
   font-weight: 600;
 `
 const Footer = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
   padding: 5px;
-  margin-top: 40px;
+  gap: 15px
 `
 const Button = styled.button`
   border: 1px solid #e4e4e7;
@@ -63,43 +62,54 @@ const Button = styled.button`
   }
 `
 const win: any = window
+
 export function ShowPassword() {
-  const { password, setPassword, setConfirmed, confirmed } = useSecurity()
-  const [showPassword, setShowPassword] = useState(false)
-  async function checkPassword(event) {
-    switch (event.key || event) {
-      case 'Enter':  
-        const securityData = await win.api.security()
-        console.log(password, securityData)
-        setConfirmed(await HashComparator(password, securityData))
-        console.log(confirmed)
-      break
+  const { textPassword, setTextPassword, setConfirmed, setShowSecurity } = useSecurity()
+  const [showTextPassword, setShowTextPassword] = useState(false)
+  const [error, setError] = useState({
+    message: '',
+    borderColor: '#c4c4c7'
+  })
+
+  async function checkPassword() {
+    const securityData = await win.api.security(textPassword)
+    console.log(securityData)
+    setConfirmed(securityData)
+    if(securityData) {
+      setShowSecurity(false)
+    } else {
+      setError({
+        message: 'Senha Invalida!',
+        borderColor: 'red'
+      })
     }
   }
   
   function togglePassword() {
-    setShowPassword(!showPassword)
+    setShowTextPassword(!showTextPassword)
   }
 
-  useEffect(() => {
-    window.addEventListener('keydown', checkPassword)
-    return () => {
-      window.removeEventListener('keydown', checkPassword)
-    }
-  },[])
+  function handleChange(e) {
+    setTextPassword(e.target.value); 
+    setError({
+      message: '',
+      borderColor: '#c4c4c7'
+    })
+  }
 
   return (
     <Container>
       <Section>
+        <span style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }} onClick={() => setShowSecurity(false)}>X</span>
         <Header>
           <Title>Confirmação de senha</Title>
           <IoIosWarning size={28} color="#FFA500" />
         </Header>
         <p>Para contiuar, digite sua senha:</p>
         <ContantRow style={{justifyContent: 'flex-end', alignItems: 'center'}}>
-          <Input style={{width: '75%'}} type={showPassword ? "text":"password"} placeholder="Confirme a senha" onChange={e => setPassword(e.target.value)} />
+          <Input style={{width: '75%', borderColor: error.borderColor}} type={showTextPassword ? "text":"password"} placeholder="Confirme a senha" onChange={handleChange} />
           {
-          showPassword ?
+          showTextPassword ?
           <AiFillEyeInvisible size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
           :
           <AiFillEye size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
@@ -107,7 +117,8 @@ export function ShowPassword() {
         </ContantRow>
 
         <Footer>
-          <Button onClick={() => checkPassword('Enter')}>
+          <p style={{color: 'red'}}>{error.message}</p>
+          <Button onClick={checkPassword}>
             Confirmar
           </Button>
         </Footer>

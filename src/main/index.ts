@@ -33,6 +33,7 @@ import {
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
 import { alterPasswordDB, createAliasDB, createClientDB, credentialsDB, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
+import { HashComparator } from '@shared/utils'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -424,9 +425,10 @@ ipcMain.on('refund', async (_, args) => {
 })
 
 // UTILITY CONNECTION
-ipcMain.handle('security', async () => {
+ipcMain.handle('security', async (_, password) => {
   const response = await credentialsDB()
-  return response
+  const checkPass = await HashComparator(password, response)
+  return checkPass
 })
 
 

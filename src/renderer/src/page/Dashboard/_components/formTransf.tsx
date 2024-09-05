@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Button,
   TextArea,
@@ -18,10 +18,11 @@ import {
 import { DialogExtract } from './DialogExtract'
 import { DetailContent, RowDetails } from '../styles'
 import { DialogRefund } from './DialogRefund'
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { maskCurrencyInput } from '@shared/utils'
+import { ShowPassword } from '@renderer/components/password'
+import { useSecurity } from '@renderer/context/security.context'
+import { Notification } from '@renderer/components/notification'
+import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 
@@ -29,15 +30,17 @@ type BalanceProps = {
   balance: any
   extract: any[]
 }
+
 export function FormTransf({ balance, extract }: BalanceProps) {
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
+  const { confirmed, setConfirmed, showSecurity, setShowSecurity } = useSecurity()
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
-
+  
   const handleCurrencyChange = (event) => {
     maskCurrencyInput(event);
-    let a = event.target.value.replace(/\D/g, '')
-    // setAmount(a/100)
+    setAmount(event.target.value.replace(/\D/g, '')/100)
   };
 
   function toggleExtractDialog() {
@@ -48,21 +51,74 @@ export function FormTransf({ balance, extract }: BalanceProps) {
     setDialogRefundOpen(!dialogRefundOpen)
   }
 
-  function saveInDb() {
-    win.api.verifyAccount()
+  function handleTransactionToOwnAccount() {
+    if(handleTransactionBalance()) {
+      console.log(amount)
+      // win.api.verifyAccount()
+      setContentNotification({
+        ...contentNotification,
+        type: 'confirm',
+        title: 'Transferência Realizada com Sucesso',
+        message: 'Sua transferência foi realizada'
+      })
+      setShowNotification(true)
+    }
+  }
+
+  function handleTransactionBalance() {
+    if(balance?.available) {
+      switch(balance?.available) {
+        case balance?.available < amount:
+          setContentNotification({
+            ...contentNotification,
+            type: 'warning',
+            title: 'Não foi Possível Prosseguir',
+            message: 'Saldo Insuficiente para Transferêcia!'
+          })
+          setShowNotification(true)
+          return false
+        case balance?.available >= amount:
+          return true
+        default:
+          return 'Transferência efetuada com sucesso!'
+      }
+    } else {
+      setContentNotification({
+        ...contentNotification,
+        type: 'error',
+        title: 'Erro de Conexão',
+        message: 'Houve um erro na transferência, tente novamente!'
+      })
+      setShowNotification(true)
+      return false
+    }
   }
 
   function showBalance() {
     return balance?.available ? `R$  ${Number(balance?.available).toFixed(2) || 0}` : 'Carregando ...'
   }
 
+  useEffect(() => {
+    setConfirmed(false)
+  }, [])
+
+  useEffect(() => {
+    if(confirmed) {
+      handleTransactionToOwnAccount()
+    }
+  }, [confirmed])
+
   return (
     <Container style={{ paddingLeft: 15, paddingRight: 15 }}>
+      {
+        showSecurity &&
+        <ShowPassword />
+      }
       <ContentInRow>
         <div style={{ display: 'flex', flexDirection: 'column', width: '50%', gap: 25 }}>
           <Card style={{ width: '100%', height: 430 }}>
             <CardHeader>
-              <CardTitle> Area de Transferência </CardTitle>
+              <CardTitle> Transferência via PIX </CardTitle>
               <Separator />
             </CardHeader>
 
@@ -91,13 +147,13 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 <TextArea />
               </FormInput>
 
-              <Button onClick={saveInDb}> Confirmar </Button>
+              <Button onClick={()=>setShowSecurity(true)}> Confirmar </Button>
             </CardContent>
           </Card>
 
           <Card style={{ width: '100%' }}>
             <FormInput style={{ width: '100%' }}>
-              <Label>Saldo Atual</Label>
+              <Label>Saldo Disponível </Label>
               <Input
                 style={{ textAlign: 'end', fontWeight: '900' }}
                 readOnly
@@ -114,7 +170,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
           </CardHeader>
 
           <CardContent style={{ justifyContent: 'flex-start', height: '80%' }}>
-            <Label>Transferências</Label>
+            <Label>Extrato</Label>
             <div style={{ width: '100%' }}>
               {extract.map(
                 (data: any, i) => i < 10 && (
@@ -143,6 +199,8 @@ export function FormTransf({ balance, extract }: BalanceProps) {
       </ContentInRow>
       {dialogExtractOpen && <DialogExtract toggle={toggleExtractDialog} />}
       {dialogRefundOpen && <DialogRefund toggle={toggleRefundDialog} />}
+
+      <Notification />
     </Container>
   )
 }

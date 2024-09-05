@@ -6,7 +6,6 @@ import { ManageAlias } from './_components/manageAliases'
 import {  } from './styles'
 import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
-import { ShowPassword } from '@renderer/components/password'
 
 export default function Settings() {
   const [selectedSection, setSelectedSection] = useState('')
@@ -24,8 +23,6 @@ export default function Settings() {
 
   return (
     <Container style={{ flexDirection: 'row' }}>
-      <ShowPassword/>
-
       <SidebarComponent onSelect={setSelectedSection} select={selectedSection} />
       <Section>
         {renderContent()}

@@ -47,8 +47,8 @@ export const API = {
     const aliases = await ipcRenderer.invoke('verify-alias')
     return aliases
   },
-  security: async () => {
-    const credentials = ipcRenderer.invoke('security')
+  security: async (password) => {
+    const credentials = ipcRenderer.invoke('security', password)
     return credentials
   },
 

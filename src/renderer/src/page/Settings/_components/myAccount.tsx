@@ -5,10 +5,13 @@ import { useEffect, useState } from 'react'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
 import { Client } from '@prisma/client'
+import { ShowPassword } from '@renderer/components/password'
+import { useSecurity } from '@renderer/context/security.context'
 
 const win: any = window
 
 export function MyAccount() {
+  const { setShowSecurity, showSecurity, confirmed, setConfirmed } = useSecurity()
   const [account, setAccount] = useState<Client>({} as Client)
   const [isLoad, setIsLoad] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
@@ -17,7 +20,6 @@ export function MyAccount() {
     type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
   })
   const [pass, setPass] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
 
   async function getAccount() {
     setIsLoad(true)
@@ -25,7 +27,6 @@ export function MyAccount() {
     const data = await win.api.getAccount()
     setAccount(data)
     setIsLoad(false)
-
   }
 
   const handleVerifyAccount = async () => {
@@ -88,11 +89,12 @@ export function MyAccount() {
       setShowNotification(true)
     }
     setPass('')
-    setShowPassword(!showPassword)
+    setConfirmed(false)
   }
 
   useEffect(() => {
     getAccount()
+    setConfirmed(false)
   }, [])
 
   return (
@@ -108,34 +110,36 @@ export function MyAccount() {
       {isLoad && <Loading />}
       <h1> Informações da Conta</h1>
 
+      {
+        showSecurity &&
+        <ShowPassword />
+      }
       <ContentInRow>
         <WrapIpunt>
           <Label>Razão Social</Label>
-          <Input
-            type="text"
+          <Input type="text"
             value={account?.companyName}
           />
         </WrapIpunt>
+
         <WrapIpunt>
-          {
-            showPassword &&
-            <Input
-              type="text"
-              placeholder='Digite a Nova Senha'
-              value={pass}
-              onChange={e => setPass(e.target.value)}
-            />
+          {confirmed ?
+            <>
+              <Input
+                type="text"
+                placeholder='Digite a Nova Senha'
+                value={pass}
+                onChange={e => setPass(e.target.value)}
+              />
+              <Button onClick={handleChangePassword}>
+                Salvar
+              </Button>
+            </>
+          :
+            <Button onClick={() => setShowSecurity(true)}>
+              Alterar Senha
+            </Button>
           }
-          <Button onClick={() => {
-            if(showPassword) {
-              handleChangePassword()
-            } else {
-              setShowPassword(!showPassword)
-            }
-          }} >{showPassword ? 'Salvar' : 'Alterar Senha'}</Button>
-
-
-
         </WrapIpunt>
       </ContentInRow>
 

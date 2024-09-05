@@ -7,7 +7,8 @@ const Container = styled.dialog`
   background: #0000006f;
   padding: 5px;
   display: flex;
-
+  position: absolute;
+  top: 0;
   align-items: center;
   justify-content: center;
   z-index: 1000;
