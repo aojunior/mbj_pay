@@ -64,7 +64,7 @@ const Button = styled.button`
 const win: any = window
 
 export function ShowPassword() {
-  const { textPassword, setTextPassword, setConfirmed, setShowSecurity } = useSecurity()
+  const { textPassword, setTextPassword, security, setSecurity, setShowSecurity } = useSecurity()
   const [showTextPassword, setShowTextPassword] = useState(false)
   const [error, setError] = useState({
     message: '',
@@ -74,7 +74,7 @@ export function ShowPassword() {
   async function checkPassword() {
     const securityData = await win.api.security(textPassword)
     console.log(securityData)
-    setConfirmed(securityData)
+    setSecurity({...security, confirmed: securityData})
     if(securityData) {
       setShowSecurity(false)
     } else {

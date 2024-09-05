@@ -19,17 +19,6 @@ import {
   deleteAliases,
   DeleteAccountAPI
 } from '@shared/api'
-// import {
-//   dbClientExists,
-//   dbCreate,
-//   dbDeleteAlias,
-//   dbInsertAlias,
-//   dbInsertClient,
-//   dbRead,
-//   dbReadActiveAlias,
-//   dbReadAliases,
-//   dbUpdateClient
-// } from '@shared/database'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
 import { alterPasswordDB, createAliasDB, createClientDB, credentialsDB, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
@@ -89,7 +78,6 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.mbjpay')
   createWindow()
   createPath()  // Cria as pastas necessarias para receber e enviar arquivos de leitura
-  // dbCreate()
 
   // Configuração do auto launch (iniciar com windows)
   let electronAutoLauncher = new AutoLaunch({
@@ -247,12 +235,18 @@ ipcMain.handle('delete-account', async () => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const db = await getClientDB()
-  let consulta = await DeleteAccountAPI(token, String(db?.accountId))
-  console.log(consulta)
-  if(consulta.error) return 'Error'
-  const deletionConfirmed = await deleteClientDB(String(db?.accountId))
-  return deletionConfirmed
+  const alias = await readAliasesDB()
+  console.log(alias[0])
+  // if(!alias) {
+  //   const db = await getClientDB()
+  //   let consulta = await DeleteAccountAPI(token, String(db?.accountId))
+  //   console.log(consulta)
+  //   if(consulta.error) return 'Error'
+  //   const deletionConfirmed = await deleteClientDB(String(db?.accountId))
+  //   return deletionConfirmed
+  // } else {
+  //   return 'Alias Registered'
+  // }
 })
 
 // ----------------------------------------------------------------

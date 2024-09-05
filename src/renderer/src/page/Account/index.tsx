@@ -9,18 +9,15 @@ import { bankSchema, companySchema, ownerSchema } from './schema'
 import { Button, Container, ContentInRow } from '../../styles/global'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
+import { useNotification } from '@renderer/context/notification.context'
 const win: any = window
 
 export default function CreateAccount() {
   const navigate = useNavigate()
+  const {contentNotification, setContentNotification, setShowNotification} = useNotification()
   const pages = [0, 1, 2]
   const [select, setSelect] = useState(0)
   const [isLoad, setIsLoad] = useState(false)
-  const [notification, setNotification] = useState({
-    message: '',
-    type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
-  })
-  const [showNotification, setShowNotification] = useState(false)
 
   const [companyData, setCompanyData] = useState({
     companyAddress: 'rua galaxia',
@@ -58,9 +55,11 @@ export default function CreateAccount() {
   async function onSubmit() {
     if(bankData.password.length < 4) {
       setIsLoad(true)
-      setNotification({
+      setContentNotification({
+        ...contentNotification,
+        title: "Necessa'rio criar uma Senha",
         message: "Por favor, preencha o campo de senha com no mínimo 4 caracteres" ,
-        type: 'error'
+        type: "error" 
       })
       setShowNotification(true)
       setIsLoad(false)
@@ -82,14 +81,18 @@ export default function CreateAccount() {
     let resp = await win.api.createAccount(concatAccount)
     setIsLoad(false)
     if (resp == 1) {
-      setNotification({
+      setContentNotification({
+        ...contentNotification,
+        title: 'Conta criada com sucesso!',
         message: 'Sua conta foi criada com sucesso!',
         type: 'confirm'
       })
       setShowNotification(true)
       setTimeout(() => navigate('/finalization'), 2000)
     } else {
-      setNotification({
+      setContentNotification({
+        ...contentNotification,
+        title: 'Erro!',
         message: 'Houve um erro ao tentar criar a conta, tente novamente!',
         type: 'error'
       })
@@ -118,12 +121,7 @@ export default function CreateAccount() {
         )}
       </ContentInRow>
 
-      <Notification
-        message={notification.message}
-        show={showNotification}
-        type={notification.type}
-        onClose={() => setShowNotification(!showNotification)}
-      />
+      <Notification />
     </>
   )
 }

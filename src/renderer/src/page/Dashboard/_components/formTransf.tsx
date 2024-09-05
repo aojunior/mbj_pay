@@ -32,8 +32,8 @@ type BalanceProps = {
 }
 
 export function FormTransf({ balance, extract }: BalanceProps) {
-  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const { confirmed, setConfirmed, showSecurity, setShowSecurity } = useSecurity()
+  const { contentNotification, setContentNotification, setShowNotification,  } = useNotification()
+  const { security, setSecurity, showSecurity, setShowSecurity, callSecurityButton } = useSecurity()
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
@@ -67,20 +67,25 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
   function handleTransactionBalance() {
     if(balance?.available) {
-      switch(balance?.available) {
-        case balance?.available < amount:
-          setContentNotification({
-            ...contentNotification,
-            type: 'warning',
-            title: 'Não foi Possível Prosseguir',
-            message: 'Saldo Insuficiente para Transferêcia!'
-          })
-          setShowNotification(true)
-          return false
-        case balance?.available >= amount:
-          return true
-        default:
-          return 'Transferência efetuada com sucesso!'
+      if(Number(balance?.available) < Number(amount)) {
+        setContentNotification({
+          ...contentNotification,
+          type: 'warning',
+          title: 'Não foi Possível Prosseguir',
+          message: 'Saldo Insuficiente para Transferêcia!'
+        })
+        setShowNotification(true)
+        return false
+      }
+      if(Number(balance?.available) >= Number(amount)) {
+        setContentNotification({
+          ...contentNotification,
+          type: 'confirm',
+          title: 'Transferêcia efetuada com sucesso',
+          message: 'Sua Transferêcia foi processada com sucesso!'
+        })
+        setShowNotification(true)
+        return true
       }
     } else {
       setContentNotification({
@@ -99,14 +104,17 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }
 
   useEffect(() => {
-    setConfirmed(false)
+    setSecurity({
+      context: '',
+      confirmed: false
+    })
   }, [])
 
   useEffect(() => {
-    if(confirmed) {
+    if(security.confirmed && security.context == 'transaction') {
       handleTransactionToOwnAccount()
     }
-  }, [confirmed])
+  }, [security.confirmed])
 
   return (
     <Container style={{ paddingLeft: 15, paddingRight: 15 }}>
@@ -147,7 +155,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 <TextArea />
               </FormInput>
 
-              <Button onClick={()=>setShowSecurity(true)}> Confirmar </Button>
+              <Button onClick={()=> callSecurityButton('transaction')}> Confirmar </Button>
             </CardContent>
           </Card>
 

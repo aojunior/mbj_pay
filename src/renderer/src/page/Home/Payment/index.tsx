@@ -17,12 +17,13 @@ import {
 } from './styles'
 import { ContantRow, DotWave } from '../StandBy/styles'
 import { Notification } from '@renderer/components/notification'
+import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 
 function PaymentScreen({ file }) {
+  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
   const [transactionStatus, setTransactionStatus] = useState('')
-  const [showNotification, setShowNotification] = useState(false)
 
   function checkTransactionStatus(status: string) {
     setTransactionStatus('')
@@ -78,15 +79,20 @@ function PaymentScreen({ file }) {
         win.api.cancelPayment()
         break
       case 'F1':
-        ;(async () => {
+        (async () => {
           try {
             await navigator.clipboard.writeText(file.instantPayment.textContent)
-            alert('Texto copiado para a área de transferência!')
+            setContentNotification({
+              ...contentNotification,
+              title: "Texto Copiado",
+              message: "Texto do QR Code foi copiado para a área de transferência.",
+              type: "info" 
+            })
+            setShowNotification(true)
           } catch (err) {
             console.error('Falha ao copiar o texto: ', err)
           }
         })()
-        console.log('Copy to clipboard')
         break
       case 'F2':
         console.log('Print QRCODE')
@@ -167,12 +173,7 @@ function PaymentScreen({ file }) {
         </Button>
       </Footer>
 
-      <Notification
-        message="Chave Pix Copiada com sucesso use CTRL + V para colar "
-        type="confirm"
-        show={showNotification}
-        onClose={() => setShowNotification(false)}
-      />
+      <Notification />
     </Container>
   )
 }

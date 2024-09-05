@@ -7,18 +7,16 @@ import { Loading } from '@renderer/components/loading'
 import { Client } from '@prisma/client'
 import { ShowPassword } from '@renderer/components/password'
 import { useSecurity } from '@renderer/context/security.context'
+import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 
 export function MyAccount() {
-  const { setShowSecurity, showSecurity, confirmed, setConfirmed } = useSecurity()
+  const { setShowSecurity, showSecurity, security, setSecurity } = useSecurity()
+  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
   const [account, setAccount] = useState<Client>({} as Client)
   const [isLoad, setIsLoad] = useState(false)
-  const [showNotification, setShowNotification] = useState(false)
-  const [notification, setNotification] = useState({
-    message: '',
-    type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
-  })
+
   const [pass, setPass] = useState('')
 
   async function getAccount() {
@@ -34,17 +32,21 @@ export function MyAccount() {
     const verify = await win.api.verifyAccount()
     if (verify == 'UPDATED') {
       getAccount()
-      setNotification({
-        message: 'Sua conta foi atualizada!',
+      setContentNotification({
+        ...contentNotification,
+        title: 'Sua conta foi atualizada!',
         type: 'info'
       })
     } else if (verify == 'RELOADED') {
-      setNotification({
-        message: 'Sua conta foi atualizada!',
+      setContentNotification({
+        ...contentNotification,
+        title: 'Sua conta foi atualizada!',
         type: 'info'
       })
     } else {
-      setNotification({
+      setContentNotification({
+        ...contentNotification,
+        title:"Erro",
         message: 'Houve um erro ao tentar verificar a conta, tente novamente!',
         type: 'error'
       })
@@ -57,13 +59,25 @@ export function MyAccount() {
     setIsLoad(true)
     const del = await win.api.deleteAccount()
     if(del == 'DELETED') {
-      setNotification({
-        message: 'Sua conta foi deletada com sucesso!',
+      setContentNotification({
+        ...contentNotification,
+        title: "Conta inativada!",
+        message: 'Sua conta foi inativada com sucesso!',
         type: 'warning'
       })
-    } else {
-      setNotification({
-        message: 'Houve um erro ao tentar deletar a conta, tente novamente!',
+    } else if(del == 'Alias Registered') {
+      setContentNotification({
+        ...contentNotification,
+        title: "Conta ainda possui alias registrado ",
+        message: "E' necessa'rio excluir todos os alias antes de inativar a conta!",
+        type: 'error'
+      }) 
+    }
+    else {
+      setContentNotification({
+        ...contentNotification,
+        title: "Erro",
+        message: 'Houve um erro ao tentar inativar a conta, tente novamente!',
         type: 'error'
       })
     }
@@ -73,7 +87,9 @@ export function MyAccount() {
 
   const handleChangePassword = async () => {
     if(pass.length < 4) {
-      setNotification({
+      setContentNotification({
+        ...contentNotification,
+        title: "Senha Inva'lida",
         message: 'Por favor, preencha o campo de senha com no mínimo 4 caracteres',
         type: 'error'
       })
@@ -82,19 +98,27 @@ export function MyAccount() {
     }
     const alter = await win.api.alterPassword(pass)
     if(alter == 'CHANGED') {
-      setNotification({
-        message: 'Senha alterada!',
+      setContentNotification({
+        ...contentNotification,
+        title: 'Nova Senha',
+        message: 'Senha alterada com sucesso!',
         type: 'confirm'
       })
       setShowNotification(true)
     }
     setPass('')
-    setConfirmed(false)
+    setSecurity({
+      context: '',
+      confirmed: false
+    })
   }
 
   useEffect(() => {
     getAccount()
-    setConfirmed(false)
+    setSecurity({
+      context: '',
+      confirmed: false
+    })
   }, [])
 
   return (
@@ -123,7 +147,7 @@ export function MyAccount() {
         </WrapIpunt>
 
         <WrapIpunt>
-          {confirmed ?
+          {security.confirmed ?
             <>
               <Input
                 type="text"
@@ -191,16 +215,11 @@ export function MyAccount() {
         <Button onClick={handleVerifyAccount}>Verificar</Button>
 
         <Button style={{ backgroundColor: 'red' }} onClick={handleDeleteAccount}>
-          Excluir Conta
+          Inativar Conta
         </Button>
       </ContentInRow>
 
-      <Notification
-        type={notification.type}
-        show={showNotification}
-        onClose={() => setShowNotification(false)}
-        message={notification.message}
-      />
+      <Notification />
     </div>
   )
 }

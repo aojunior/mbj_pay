@@ -3,15 +3,11 @@ import { useState } from 'react'
 import { Container, Message, Title } from '../styles'
 import { Button } from '@renderer/styles/global'
 import { Loading } from '@renderer/components/loading'
+import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 export function Finalization() {
-
-  const [notification, setNotification] = useState({
-    message: '',
-    type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
-  })
-  const [showNotification, setShowNotification] = useState(false)
+  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
   const [isLoad, setIsLoad] = useState(false)
 
   async function handleVerifyAccount() {
@@ -20,7 +16,9 @@ export function Finalization() {
     setIsLoad(false)
 
     if (verify == 'UPDATED') {
-      setNotification({
+      setContentNotification({
+        ...contentNotification,
+        title: 'Conta Verificada',
         message: 'Sua conta foi verificada com sucesso!',
         type: 'info'
       })
@@ -51,12 +49,7 @@ export function Finalization() {
           Verificar Conta
         </Button>
 
-        <Notification
-          message={notification.message}
-          show={showNotification}
-          type={notification.type}
-          onClose={() => setShowNotification(!showNotification)}
-        />
+        <Notification />
       </Container>
     </>
   )

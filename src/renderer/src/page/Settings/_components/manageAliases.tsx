@@ -6,6 +6,8 @@ import { Notification } from '@renderer/components/notification'
 import { useAccount } from '@renderer/context/account.context'
 import { Aliases } from '@prisma/client'
 import { ShowPassword } from '@renderer/components/password'
+import { useNotification } from '@renderer/context/notification.context'
+import { useSecurity } from '@renderer/context/security.context'
 
 type aliasProps = {
   aliases: Aliases[]
@@ -15,22 +17,21 @@ const win: any = window
 
 export function ManageAlias() {
   const { accState } = useAccount()
+  const { setShowSecurity, showSecurity, security, setSecurity, callSecurityButton } = useSecurity()
+  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
   const [aliasData, setAliasData] = useState<any>([])
   const [isLoad, setIsLoad] = useState(false)
-  const [showNotification, setShowNotification] = useState(false)
-  const [notification, setNotification] = useState({
-    message: '',
-    type: '' as 'error' | 'warning' | 'info' | 'confirm' | 'custom'
-  })
+  const [selectedAlias, setSelectedAlias] = useState('')
 
   const handleCreateAlias = async () => {
-    if(aliasData.length == 5) {
-      setNotification({
-        message: 'Você atingiu o limite de chaves Pix registradas!',
+    if(aliasData.length > 0) {
+      setContentNotification({
+        ...contentNotification,
+        title: 'Limite de chave Pix atingida',
+        message: "N~ao foi poss'ivel cadastrar uma nova chaves Pix!" ,
         type: 'warning'
       })
       setShowNotification(true)
-
       return
     }
     setIsLoad(true)
@@ -39,14 +40,18 @@ export function ManageAlias() {
       if(create == 'CREATED') {
         let resp = await win.api.verifyAlias()
         setAliasData(resp)
-        setNotification({
+        setContentNotification({
+          ...contentNotification,
+          title: 'Chave Pix registrada com sucesso!',
           message: 'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
           type: 'confirm'
         })
         setShowNotification(true)
       } else {
-        setNotification({
-          message: 'Erro ao criar nova chave Pix! Por favor tente novamente mais tarde.',
+        setContentNotification({
+          ...contentNotification,
+          title: 'Erro ao registrar nova chave Pix!',
+          message: 'Erro ao registrar nova chave Pix! Por favor tente novamente mais tarde.',
           type: 'error'
         })
         setShowNotification(true)
@@ -56,16 +61,23 @@ export function ManageAlias() {
     }, 3000)
   }
 
-  const handleDeleteAlias = async (alias) => {
+  const handleDeleteAlias = async () => {
     setIsLoad(true)
-    const del = await win.api.deleteAlias(alias)
+    const del = await win.api.deleteAlias(selectedAlias)
     let resp = await win.api.verifyAlias()
     setAliasData(resp)
-    setNotification({
-      message: 'Sua chave Pix foi deletada com sucesso!',
-      type: 'warning'
+    setContentNotification({
+      ...contentNotification,
+      title: "Chave Pix deletada",
+      message: "Sua chave Pix foi deletada com sucesso!",
+      type: "warning"
     })
     setShowNotification(true)
+    setSelectedAlias('')
+    setSecurity({
+      context: '',
+      confirmed: false
+    })
     setIsLoad(false)
     return del
   }
@@ -82,8 +94,10 @@ export function ManageAlias() {
             
           }, 3000)
         }
-        setNotification({
-          message: 'Chave Pix atualizada com sucesso!',
+        setContentNotification({
+          ...contentNotification,
+          title: 'Atualizado com Sucesso',
+          message: 'Sua lista de chaves Pix foi atualizada com sucesso!',
           type: 'info'
         })
         setShowNotification(true)
@@ -104,7 +118,17 @@ export function ManageAlias() {
     return () => {
       window.removeEventListener('keydown', handleKeyButton)
     }
+    setSecurity({
+      context: '',
+      confirmed: false
+    })
   }, [])
+
+  useEffect(() => {
+    if(security.confirmed && security.context === 'deleteAlias') {
+      handleDeleteAlias()
+    }
+  }, [security.confirmed])
 
   return (
     <div
@@ -117,6 +141,10 @@ export function ManageAlias() {
       }}
     >
       {isLoad && <Loading />}
+      {
+        showSecurity &&
+        <ShowPassword />
+      }
       <Button style={{ position: 'absolute', right: 40, top: 150 }} onClick={() => handleKeyButton('F5')} >
         <code>F5</code> - Atualizar
       </Button>
@@ -137,26 +165,21 @@ export function ManageAlias() {
                 <Td>{data.status}</Td>
                 <Td>{data.alias}</Td>
                 <Td>
-                  <DeleteIcon size={24} onClick={() => handleDeleteAlias(data.alias)} />
+                  <DeleteIcon size={24} onClick={() => {callSecurityButton('deleteAlias'); setSelectedAlias(data.alias)} }/>
                 </Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
 
-        <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/5</span>
+        <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/1</span>
         {accState.status == 'REGULAR' && <Button onClick={handleCreateAlias}>Add Chave</Button>}
       </>
       <span style={{ color: '#999', textAlign: 'end' }}>
         Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o 
         banco central possa registrar a nova chave corretamente.
       </span>
-      <Notification
-        type={notification.type}
-        show={showNotification}
-        onClose={() => setShowNotification(false)}
-        message={notification.message}
-      />
+      <Notification />
     </div>
   )
 }
