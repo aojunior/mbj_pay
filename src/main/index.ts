@@ -1,7 +1,9 @@
 import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
-import { join } from 'path'
+import  path, { join } from 'path'
+import os from 'node:os'
+import { machineIdSync } from 'node-machine-id'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.png'
 import { createPath, removeReqAndCreateRes, watchFileAndFormat } from './lib'
 import {
   tokenGenerator,
@@ -9,7 +11,6 @@ import {
   VerifyAccountAPI,
   createAliasesAPI,
   verifyAliases,
-  createInstantPayment,
   verifyInstantPayment,
   verifyBalance,
   extractBalanceToday,
@@ -17,12 +18,30 @@ import {
   refundInstantPayment,
   refundCodes,
   deleteAliases,
+  // DeleteAccountAPI,
+  getLocationAndIPV6,
+  createInstantPayment,
   DeleteAccountAPI
-} from '@shared/api'
+} from './lib/api'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
-import { alterPasswordDB, createAliasDB, createClientDB, credentialsDB, deleteAliasDB, deleteClientDB, getClientDB, readAliasesDB, updateAliasDB, updateClientDB } from '@shared/database/actions'
-import { HashComparator } from '@shared/utils'
+import {
+  alterPasswordDB,
+  createAliasDB,
+  createClientDB,
+  credentialsDB,
+  deleteAliasDB,
+  deleteClientDB,
+  getAliasesDB,
+  // deleteClientDB,
+  getClientDB,
+  getMediatorDB,
+  setDataToTermsOfService,
+  updateAliasDB,
+  updateClientDB
+} from './lib/actions'
+import { currentTime, HashComparator } from '@shared/utils'
+import { prisma } from '@shared/database/databaseConnect'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -54,121 +73,239 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: 'deny' };
-  });
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
 
-  mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!)
+
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
+    mainWindow.webContents.openDevTools(); // Abre as DevTools para debugar
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  }
 
   mainWindow.on('minimize', function (event) {
-    event.preventDefault();
-    mainWindow.hide();
-  });
+    event.preventDefault()
+    mainWindow.hide()
+  })
 
   mainWindow.on('close', function (event) {
     if (!isQuiting) {
-      event.preventDefault();
-      mainWindow.hide();
+      event.preventDefault()
+      mainWindow.hide()
     }
-    return false;
-  });
+    return false
+  })
 }
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.mbjpay')
   createWindow()
-  createPath()  // Cria as pastas necessarias para receber e enviar arquivos de leitura
+  createPath() // Cria as pastas necessarias para receber e enviar arquivos de leitura
 
   // Configuração do auto launch (iniciar com windows)
   let electronAutoLauncher = new AutoLaunch({
     name: 'MBJPay',
-    path: app.getPath('exe'),
-  });
+    path: app.getPath('exe')
+  })
 
   // Verifica se já está configurado para auto launch
-  electronAutoLauncher.isEnabled()
-  .then((isEnabled) => {
-    if (!isEnabled) {
-      electronAutoLauncher.enable();
-    }
-  })
-  .catch((err) => {
-    console.error(err);
-  });
+  electronAutoLauncher
+    .isEnabled()
+    .then((isEnabled) => {
+      if (!isEnabled) {
+        electronAutoLauncher.enable()
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 
-  const iconPath = join(__dirname,'../assets', 'icon.png'); // Caminho do ícone
+  const iconPath = join(__dirname, '../assets', 'icon.png') // Caminho do ícone
 
-  tray = new Tray(iconPath);
+  tray = new Tray(iconPath)
   // Menu após minimizacao da janela
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Abrir Aplicação',
       click: function () {
-        mainWindow.show();
-      },
+        mainWindow.show()
+      }
     },
     {
       label: 'Sair',
-      click: function () {
-        isQuiting = true;
-        app.quit();
-      },
-    },
-  ]);
+      click: async function () {
+        isQuiting = true
+        app.quit()
+      }
+    }
+  ])
 
-  tray.setToolTip('MBJ-Pay');
-  tray.setContextMenu(contextMenu);
-
+  tray.setToolTip('MBJ-Pay')
+  tray.setContextMenu(contextMenu)
+  
   tray.on('double-click', () => {
-    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
-  });
+    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
+  })
 
   app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window);
-  });
+    optimizer.watchWindowShortcuts(window)
+  })
 
   // Monitora a pasta de recebimento do arquivo, vindo do sistema
   // Formata e envia para criar pagamento
   watchFileAndFormat(async (formatData) => {
     if (!formatData) mainWindow.webContents.send('file', null)
-
-    // const db = await dbReadActiveAlias()
-    // const client = await dbRead('client')
-    // const mediator = await dbRead('mediator')
+      
+      const db = await getAliasesDB()
+      const client = await getClientDB()
+      const mediator = await getMediatorDB()
 
     let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
-    
-    mainWindow.show()
+      .executeJavaScript(`sessionStorage.getItem('token')`)
+      .then((response) => response)
 
-    // let response = await createInstantPayment(
-    //   formatData,
-    //   token,
-    //   client.AccountId,
-    //   db.Alias,
-    //   mediator.MediatorAccountId,
-    //   mediator.MediatorFee
-    // )
-    // mainWindow.webContents.send('file', response)
+      mainWindow.show()
+      
+      let response = await createInstantPayment(
+        formatData,
+        token,
+        String(client?.accountId),
+        String(db[0]?.alias),
+        mediator?.mediatorAccountId,
+        mediator?.mediatorFee
+    )
+    mainWindow.webContents.send('file', response)
   })
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
+    })
 })
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
+    await prisma.$disconnect();
     app.quit()
   }
 })
 
-// IPC Preloader creates
+// Prisma
+const platformToExecutables: Record<string, any> = {
+  win32: {
+    migrationEngine:
+      'node_modules/@prisma/engines/migration-engine-windows.exe',
+    queryEngine: 'node_modules/@prisma/engines/query_engine-windows.dll.node',
+  },
+  linux: {
+    migrationEngine:
+      'node_modules/@prisma/engines/migration-engine-debian-openssl-1.1.x',
+    queryEngine:
+      'node_modules/@prisma/engines/libquery_engine-debian-openssl-1.1.x.so.node',
+  },
+  darwin: {
+    migrationEngine: 'node_modules/@prisma/engines/migration-engine-darwin',
+    queryEngine:
+      'node_modules/@prisma/engines/libquery_engine-darwin.dylib.node',
+  },
+  darwinArm64: {
+    migrationEngine:
+      'node_modules/@prisma/engines/migration-engine-darwin-arm64',
+    queryEngine:
+      'node_modules/@prisma/engines/libquery_engine-darwin-arm64.dylib.node',
+  },
+};
 
+function getPlatformName(): string {
+  const isDarwin = process.platform === 'darwin';
+  if (isDarwin && process.arch === 'arm64') {
+    return `${process.platform}Arm64`;
+  }
+
+  return process.platform;
+}
+
+const extraResourcesPath = app.getAppPath().replace('app.asar', ''); // impacted by extraResources setting in electron-builder.yml
+const platformName = getPlatformName();
+
+const mePath = path.join(
+  extraResourcesPath,
+  platformToExecutables[platformName].migrationEngine
+);
+const qePath = path.join(
+  extraResourcesPath,
+  platformToExecutables[platformName].queryEngine
+);
+
+process.env.PRISMA_QUERY_ENGINE_BINARY = qePath
+
+ipcMain.on('config:get-app-path', (event) => {
+  event.returnValue = app.getAppPath();
+});
+
+ipcMain.on('config:get-platform-name', (event) => {
+  const isDarwin = process.platform === 'darwin';
+  event.returnValue =
+    isDarwin && process.arch === 'arm64'
+      ? `${process.platform}Arm64`
+      : (event.returnValue = process.platform);
+});
+
+ipcMain.on('config:get-prisma-me-path', (event) => {
+  event.returnValue = mePath;
+});
+// Prisma end 
+
+// IPC Preloader creates
 // cross-screen navigation
 ipcMain.on('navigate', (_, route) => {
   mainWindow.loadURL(`http://localhost:5173${route}`)
+})
+
+ipcMain.handle('accept_terms_of_service', async () => {
+  const fetch = await getLocationAndIPV6()
+  function getIPs() {
+    let ifaces: any = os.networkInterfaces()
+    let ipAdresse: any = {}
+    Object.keys(ifaces).forEach(function (ifname) {
+      let alias = 0
+      ifaces[ifname].forEach(function (iface) {
+        if ('IPv4' !== iface.family || iface.internal !== false) {
+          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+          return
+        }
+
+        if (alias >= 1) {
+          // this single interface has multiple ipv4 addresses
+          // console.log(ifname + ':' + alias, iface.address);
+        } else {
+          // this interface has only one ipv4 adress
+          // console.log(ifname, iface.address);
+          ipAdresse = { IP: iface.address, MAC: iface.mac }
+        }
+        ++alias
+      })
+    })
+    return ipAdresse.IP
+  }
+  let ipNet = getIPs()
+  let idDevice = machineIdSync(true)
+
+  const infos = {
+    time: currentTime,
+    createdAT: new Date(),
+    latitude: fetch.latitude,
+    longitude: fetch.longitude,
+    city: fetch.city,
+    state: fetch.region_name,
+    contry: fetch.country_name,
+    // ipv6: fetch.ip,
+    ip: ipNet,
+    idDevice: idDevice
+  }
+  const saveInDB = await setDataToTermsOfService(infos)
+  return saveInDB
 })
 
 ipcMain.handle('token_generator', async () => {
@@ -178,29 +315,34 @@ ipcMain.handle('token_generator', async () => {
 
 // HANDLE ACCOUNT
 ipcMain.handle('create-account', async (_, formData) => {
-  let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
-  let newAccount = await createAccountAPI(formData, token)
-  if (newAccount.error) {
-    return 0
+  try {
+    let token = await mainWindow.webContents
+      .executeJavaScript(`sessionStorage.getItem('token')`)
+      .then((response) => response)
+    let newAccount = await createAccountAPI(formData, token)
+    if (newAccount.error) {
+      return 0
+    }
+    let data = {
+      AccId: newAccount.data.account.accountId,
+      AccHId: newAccount.data.accountHolderId,
+      Status: newAccount.data.accountStatus,
+      AccBank: newAccount.data.account,
+      BranchBank: newAccount.data.branch,
+      Nome: formData.companyName,
+      Email: formData.companyEmailAddress,
+      Cnpj: formData.companyDocument,
+      Tel: formData.companyPhoneNumber,
+      Pass: formData.password
+    }
+    let saveClientInDb = await createClientDB(data)
+    console.log(newAccount)
+    console.log(saveClientInDb)
+    return 1
+  } catch (error) {
+    console.error('Error creating account:', error);
+    return { status: 'error', message: 'Failed to create account.' };
   }
-  let data = {
-    AccId: newAccount.data.account.accountId,
-    AccHId: newAccount.data.accountHolderId,
-    Status: newAccount.data.accountStatus,
-    AccBank: newAccount.data.account,
-    BranchBank: newAccount.data.branch,
-    Nome: formData.companyName,
-    Email: formData.companyEmailAddress,
-    Cnpj: formData.companyDocument,
-    Tel: formData.companyPhoneNumber,
-    Pass: formData.password
-  }
-  let saveClientInDb = await createClientDB(data)
-  console.log(newAccount)
-  console.log(saveClientInDb)
-  return 1
 })
 
 ipcMain.handle('get-account', async () => {
@@ -233,20 +375,20 @@ ipcMain.handle('verify-account', async () => {
 
 ipcMain.handle('delete-account', async () => {
   let token = await mainWindow.webContents
-  .executeJavaScript(`sessionStorage.getItem('token')`)
-  .then((response) => response)
-  const alias = await readAliasesDB()
-  console.log(alias[0])
-  // if(!alias) {
-  //   const db = await getClientDB()
-  //   let consulta = await DeleteAccountAPI(token, String(db?.accountId))
-  //   console.log(consulta)
-  //   if(consulta.error) return 'Error'
-  //   const deletionConfirmed = await deleteClientDB(String(db?.accountId))
-  //   return deletionConfirmed
-  // } else {
-  //   return 'Alias Registered'
-  // }
+    .executeJavaScript(`sessionStorage.getItem('token')`)
+    .then((response) => response)
+  const alias = await getAliasesDB()
+  console.log(alias)
+  if (alias.length == 0) {
+    const db = await getClientDB()
+    let consulta = await DeleteAccountAPI(token, String(db?.accountId))
+    console.log(consulta)
+    if (consulta.error) return 'Error'
+    const deletionConfirmed = await deleteClientDB(String(db?.accountId))
+    return deletionConfirmed
+  } else {
+    return 'Alias Registered'
+  }
 })
 
 // ----------------------------------------------------------------
@@ -257,23 +399,21 @@ ipcMain.handle('create-alias', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const db = await getClientDB()
-  const createAlias = await createAliasesAPI(token, String(db?.accountId))  
+  const createAlias = await createAliasesAPI(token, String(db?.accountId))
   console.log('createAlias', createAlias)
-  if(createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
+  if (createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
     setTimeout(async () => {
-      const aliases = await readAliasesDB()
+      const aliases = await getAliasesDB()
       // Get all, filter and add new alias in the db
       const verify = await verifyAliases(token, String(db?.accountId))
       const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
-        const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
-        return !matchingItem;
-      });
+        const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
+        return !matchingItem
+      })
       filteredArrayAdd.map(async (alias) => {
         await createAliasDB(alias, String(db?.accountId))
       })
-
       console.log('filteredArrayAdd1 ', filteredArrayAdd)
-
     }, 3000)
     return 'CREATED'
   } else {
@@ -287,38 +427,39 @@ ipcMain.handle('update-alias', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const client = await getClientDB()
-  const aliases = await readAliasesDB()
+  const aliases = await getAliasesDB()
   let verify = await verifyAliases(token, String(client?.accountId))
 
   const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
-    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
-    return !matchingItem;
-  });
-  if(filteredArrayAdd.length > 0) {
+    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
+    return !matchingItem
+  })
+  if (filteredArrayAdd.length > 0) {
     filteredArrayAdd.map(async (alias) => {
       await createAliasDB(alias, String(client?.accountId))
     })
   }
 
   const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
-    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name);
-    return matchingItem && matchingItem.status !== aliasAPI.status; // Exemplo de condição para atualização
-  });
-  if(filteredArrayUpdate.length > 0) {
+    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
+    return matchingItem && matchingItem.status !== aliasAPI.status
+  })
+
+  if (filteredArrayUpdate.length > 0) {
     filteredArrayUpdate.map(async (alias) => {
-      await updateAliasDB(alias, String(client?.accountId))
+      await updateAliasDB(alias)
     })
   }
 
   const filteredArrayDelete = aliases.filter((aliasDB) => {
-    const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias);
-    return !matchingItem;
-  });
-  if(filteredArrayDelete.length > 0) {
+    const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias)
+    return !matchingItem
+  })
+
+  if (filteredArrayDelete.length > 0) {
     filteredArrayDelete.map(async (alias) => {
       await deleteAliasDB(alias.alias, String(client?.accountId))
     })
-
   }
   console.log('filteredArrayAdd ', filteredArrayAdd)
   console.log('filteredArrayUpdate ', filteredArrayUpdate)
@@ -326,7 +467,7 @@ ipcMain.handle('update-alias', async () => {
 })
 
 ipcMain.handle('verify-alias', async () => {
-  const aliases = await readAliasesDB()
+  const aliases = await getAliasesDB()
   return aliases
 })
 
@@ -424,7 +565,6 @@ ipcMain.handle('security', async (_, password) => {
   const checkPass = await HashComparator(password, response)
   return checkPass
 })
-
 
 ipcMain.handle('alter_password', async (_, passData) => {
   const db = await getClientDB()

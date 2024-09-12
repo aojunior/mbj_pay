@@ -14,7 +14,7 @@ const win: any = window
 
 export default function CreateAccount() {
   const navigate = useNavigate()
-  const {contentNotification, setContentNotification, setShowNotification} = useNotification()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const pages = [0, 1, 2]
   const [select, setSelect] = useState(0)
   const [isLoad, setIsLoad] = useState(false)
@@ -53,13 +53,13 @@ export default function CreateAccount() {
   const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
 
   async function onSubmit() {
-    if(bankData.password.length < 4) {
+    if (bankData.password.length < 4) {
       setIsLoad(true)
       setContentNotification({
         ...contentNotification,
         title: "Necessa'rio criar uma Senha",
-        message: "Por favor, preencha o campo de senha com no mínimo 4 caracteres" ,
-        type: "error" 
+        message: 'Por favor, preencha o campo de senha com no mínimo 4 caracteres',
+        type: 'error'
       })
       setShowNotification(true)
       setIsLoad(false)
@@ -67,15 +67,15 @@ export default function CreateAccount() {
     }
     setIsLoad(true)
     const formatDateForSubmission = (date) => {
-      const [day, month, year] = date.split('/');
-      return `${year}-${month}-${day}`;
-    };
+      const [day, month, year] = date.split('/')
+      return `${year}-${month}-${day}`
+    }
     const concatAccount = { ...companyData, ...ownerData, ...bankData }
-    concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated);
+    concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated)
     concatAccount.companyDocument = companyData.companyDocument.replace(/\D/g, '')
     concatAccount.companyPhoneNumber = companyData.companyPhoneNumber.replace(/\D/g, '')
 
-    concatAccount.ownerBirthday = formatDateForSubmission(ownerData.ownerBirthday);
+    concatAccount.ownerBirthday = formatDateForSubmission(ownerData.ownerBirthday)
     concatAccount.ownerDocument = ownerData.ownerDocument.replace(/\D/g, '')
     concatAccount.ownerPhoneNumber = ownerData.ownerPhoneNumber.replace(/\D/g, '')
     let resp = await win.api.createAccount(concatAccount)
@@ -112,7 +112,11 @@ export default function CreateAccount() {
         {pages[select] == 2 && <FormBank bankData={bankData} setBankData={setBankData} />}
       </Container>
 
-      <ContentInRow style={ pages[select] === 0 ? { justifyContent: 'flex-end', width: '80%' } : { width: '90%' } }>
+      <ContentInRow
+        style={
+          pages[select] === 0 ? { justifyContent: 'flex-end', width: '80%' } : { width: '90%' }
+        }
+      >
         {pages[select] > 0 && <Button onClick={() => setSelect(select - 1)}> Voltar </Button>}
         {pages[select] < 2 ? (
           <Button onClick={() => setSelect(select + 1)}> Continuar </Button>

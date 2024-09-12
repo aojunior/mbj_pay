@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import styled, { keyframes } from 'styled-components'
 import { MdError } from 'react-icons/md'
 import { CiWarning } from 'react-icons/ci'
@@ -34,7 +34,7 @@ const fadeIn = keyframes`
     opacity: 1;
     transform: translateY(0);
   }
-`;
+`
 
 const fadeOut = keyframes`
   from {
@@ -45,7 +45,7 @@ const fadeOut = keyframes`
     opacity: 0;
     transform: translateY(-5px);
   }
-`;
+`
 
 // const NotificationWrapper = styled.div<{ isExiting: boolean }>`
 //   position: fixed;
@@ -84,21 +84,21 @@ const NotificationContainer = styled.div<{ show: boolean }>`
   animation: ${({ show }) => (show ? fadeIn : fadeOut)} 0.5s forwards;
   transition: all 0.5s ease-in-out;
   z-index: 999999;
-`;
+`
 const NotificationContent = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-`;
+`
 const NotificationTitle = styled.h4`
   font-size: 1.125rem;
   font-weight: 500;
   color: #333;
-`;
+`
 const NotificationText = styled.p`
   font-size: 0.875rem;
   color: #575f6a; /* text-muted-foreground */
-`;
+`
 const CloseButton = styled.button`
   background: none;
   border: none;
@@ -110,16 +110,16 @@ const CloseButton = styled.button`
   &:hover {
     color: #ddd;
   }
-`;
+`
 
 const Notification = () => {
   const { contentNotification, setShowNotification, showNotification } = useNotification()
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowNotification(false);
-    }, 5000);
-    return () => clearTimeout(timer);
+      setShowNotification(false)
+    }, 5000)
+    return () => clearTimeout(timer)
   }, [])
 
   return showNotification && contentNotification.type === 'error' ? (
@@ -166,17 +166,20 @@ const Notification = () => {
       </NotificationContent>
       <CloseButton onClick={() => setShowNotification(false)}>×</CloseButton>
     </NotificationContainer>
-  ) : showNotification && contentNotification.type === 'custom' && (
-    <NotificationContainer show={showNotification}>
-      <NotificationContent>
-        {contentNotification.icon}
-        <div>
-          <NotificationTitle>{contentNotification.title}</NotificationTitle>
-          <NotificationText>{contentNotification.message}</NotificationText>
-        </div>
-      </NotificationContent>
-      <CloseButton onClick={() => setShowNotification(false)}>×</CloseButton>
-    </NotificationContainer>
+  ) : (
+    showNotification &&
+    contentNotification.type === 'custom' && (
+      <NotificationContainer show={showNotification}>
+        <NotificationContent>
+          {contentNotification.icon}
+          <div>
+            <NotificationTitle>{contentNotification.title}</NotificationTitle>
+            <NotificationText>{contentNotification.message}</NotificationText>
+          </div>
+        </NotificationContent>
+        <CloseButton onClick={() => setShowNotification(false)}>×</CloseButton>
+      </NotificationContainer>
+    )
   )
 }
 

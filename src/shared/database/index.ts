@@ -1,5 +1,3 @@
-
-
 // export const dbRead = (table) => {
 //   try {
 //     const query = `SELECT * FROM ${table}`
@@ -11,7 +9,6 @@
 //     throw err
 //   }
 // }
-
 
 // export const dbUpdateClient = ({ AccId, Acc, Branch, Status, MedAccId }) => {
 //   try {
@@ -44,7 +41,6 @@
 //   }
 // }
 
-
 // export const dbInsertAlias = (data, accountId) => {
 //   try {
 //     const insertQuery = db.prepare(
@@ -65,7 +61,6 @@
 //     throw err
 //   }
 // }
-
 
 // export const dbReadActiveAlias = () => {
 //   try {
@@ -88,7 +83,7 @@
 //     const transaction = db.transaction(() => {
 //       const info = insertQuery.run()
 //       console.log(
-//         `Inserted ${info.changes} rows with last ID 
+//         `Inserted ${info.changes} rows with last ID
 //                  ${info.lastInsertRowid} into cliente`
 //       )
 //     })
@@ -108,7 +103,7 @@
 //     const transaction = db.transaction(() => {
 //       const info = insertQuery.run()
 //       console.log(
-//         `Add ${info.changes} rows with last ID 
+//         `Add ${info.changes} rows with last ID
 //                  ${info.lastInsertRowid} into Cliente`
 //       )
 //     })

@@ -22,7 +22,7 @@ import { useNotification } from '@renderer/context/notification.context'
 const win: any = window
 
 function PaymentScreen({ file }) {
-  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [transactionStatus, setTransactionStatus] = useState('')
 
   function checkTransactionStatus(status: string) {
@@ -75,18 +75,18 @@ function PaymentScreen({ file }) {
 
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
-      case 'Escape':  
+      case 'Escape':
         win.api.cancelPayment()
         break
       case 'F1':
-        (async () => {
+        ;(async () => {
           try {
             await navigator.clipboard.writeText(file.instantPayment.textContent)
             setContentNotification({
               ...contentNotification,
-              title: "Texto Copiado",
-              message: "Texto do QR Code foi copiado para a área de transferência.",
-              type: "info" 
+              title: 'Texto Copiado',
+              message: 'Texto do QR Code foi copiado para a área de transferência.',
+              type: 'info'
             })
             setShowNotification(true)
           } catch (err) {

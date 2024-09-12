@@ -4,31 +4,26 @@ import { useEffect, useState } from 'react'
 import { Loading } from '@renderer/components/loading'
 import { Notification } from '@renderer/components/notification'
 import { useAccount } from '@renderer/context/account.context'
-import { Aliases } from '@prisma/client'
 import { ShowPassword } from '@renderer/components/password'
 import { useNotification } from '@renderer/context/notification.context'
 import { useSecurity } from '@renderer/context/security.context'
-
-type aliasProps = {
-  aliases: Aliases[]
-}
 
 const win: any = window
 
 export function ManageAlias() {
   const { accState } = useAccount()
-  const { setShowSecurity, showSecurity, security, setSecurity, callSecurityButton } = useSecurity()
-  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
+  const { showSecurity, security, setSecurity, callSecurityButton } = useSecurity()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [aliasData, setAliasData] = useState<any>([])
   const [isLoad, setIsLoad] = useState(false)
   const [selectedAlias, setSelectedAlias] = useState('')
 
   const handleCreateAlias = async () => {
-    if(aliasData.length > 0) {
+    if (aliasData.length > 0) {
       setContentNotification({
         ...contentNotification,
         title: 'Limite de chave Pix atingida',
-        message: "N~ao foi poss'ivel cadastrar uma nova chaves Pix!" ,
+        message: "N~ao foi poss'ivel cadastrar uma nova chaves Pix!",
         type: 'warning'
       })
       setShowNotification(true)
@@ -37,13 +32,14 @@ export function ManageAlias() {
     setIsLoad(true)
     let create = await win.api.createAlias()
     setTimeout(async () => {
-      if(create == 'CREATED') {
+      if (create == 'CREATED') {
         let resp = await win.api.verifyAlias()
         setAliasData(resp)
         setContentNotification({
           ...contentNotification,
           title: 'Chave Pix registrada com sucesso!',
-          message: 'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
+          message:
+            'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
           type: 'confirm'
         })
         setShowNotification(true)
@@ -68,9 +64,9 @@ export function ManageAlias() {
     setAliasData(resp)
     setContentNotification({
       ...contentNotification,
-      title: "Chave Pix deletada",
-      message: "Sua chave Pix foi deletada com sucesso!",
-      type: "warning"
+      title: 'Chave Pix deletada',
+      message: 'Sua chave Pix foi deletada com sucesso!',
+      type: 'warning'
     })
     setShowNotification(true)
     setSelectedAlias('')
@@ -91,7 +87,6 @@ export function ManageAlias() {
           setTimeout(async () => {
             let resp = await win.api.verifyAlias()
             setAliasData(resp)
-            
           }, 3000)
         }
         setContentNotification({
@@ -102,17 +97,16 @@ export function ManageAlias() {
         })
         setShowNotification(true)
         setIsLoad(false)
-      break
+        break
     }
   }
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       setIsLoad(true)
       let resp = await win.api.verifyAlias()
       setAliasData(resp)
       setIsLoad(false)
-
     })()
     window.addEventListener('keydown', handleKeyButton)
     return () => {
@@ -125,7 +119,7 @@ export function ManageAlias() {
   }, [])
 
   useEffect(() => {
-    if(security.confirmed && security.context === 'deleteAlias') {
+    if (security.confirmed && security.context === 'deleteAlias') {
       handleDeleteAlias()
     }
   }, [security.confirmed])
@@ -141,14 +135,14 @@ export function ManageAlias() {
       }}
     >
       {isLoad && <Loading />}
-      {
-        showSecurity &&
-        <ShowPassword />
-      }
-      <Button style={{ position: 'absolute', right: 40, top: 150 }} onClick={() => handleKeyButton('F5')} >
+      {showSecurity && <ShowPassword />}
+      <Button
+        style={{ position: 'absolute', right: 40, top: 150 }}
+        onClick={() => handleKeyButton('F5')}
+      >
         <code>F5</code> - Atualizar
       </Button>
-      
+
       <h1> Chave Pix </h1>
       <>
         <Table>
@@ -165,7 +159,13 @@ export function ManageAlias() {
                 <Td>{data.status}</Td>
                 <Td>{data.alias}</Td>
                 <Td>
-                  <DeleteIcon size={24} onClick={() => {callSecurityButton('deleteAlias'); setSelectedAlias(data.alias)} }/>
+                  <DeleteIcon
+                    size={24}
+                    onClick={() => {
+                      callSecurityButton('deleteAlias')
+                      setSelectedAlias(data.alias)
+                    }}
+                  />
                 </Td>
               </Tr>
             ))}
@@ -176,7 +176,7 @@ export function ManageAlias() {
         {accState.status == 'REGULAR' && <Button onClick={handleCreateAlias}>Add Chave</Button>}
       </>
       <span style={{ color: '#999', textAlign: 'end' }}>
-        Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o 
+        Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o
         banco central possa registrar a nova chave corretamente.
       </span>
       <Notification />

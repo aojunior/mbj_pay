@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, Checkbox, CheckboxContainer, Container, TermsText, Title } from '../styles'
 import { useNavigate } from 'react-router-dom'
 
+const win: any = window
 export const TermsOfUse = () => {
   const navigate = useNavigate()
   const [accepted, setAccepted] = useState(false)
@@ -10,8 +11,10 @@ export const TermsOfUse = () => {
     setAccepted(!accepted)
   }
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
     if (accepted) {
+      const terms = await win.api.acceptTermsOfService()
+      console.log(terms)
       // lógica para iniciar a criação da conta
       navigate('/create-account')
       console.log('Iniciando criação da conta...')

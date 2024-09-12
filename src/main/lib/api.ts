@@ -5,9 +5,9 @@ import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { readFileSync } from 'fs'
 import { z } from 'zod'
-import { accountSchema } from './schemas'
-import { getClientDB } from './database/actions'
-import { today } from './utils'
+import { accountSchema } from '../../shared/schemas'
+import { getClientDB } from './actions'
+import { today } from '../../shared/utils'
 
 const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID
@@ -47,6 +47,11 @@ const api = axios.create({
   baseURL: 'https://mtls-mp.hml.flagship.maas.link',
   httpsAgent
 })
+
+export async function getLocationAndIPV6() {
+  const api = await axios.get('https://api.ipbase.com/v1/json/').then((e) => e.data)
+  return api
+}
 
 export async function tokenGenerator() {
   let token
@@ -231,7 +236,6 @@ export async function DeleteAccountAPI(token, AccId) {
         console.log(error.response.data)
         console.log(error.response)
         console.log('Error', error.message)
-
       } else {
         console.log(error.response.data)
 
@@ -251,25 +255,25 @@ export async function createAliasesAPI(token: string, AccId: string) {
     }
   }
   let response = await api
-  .post(`/v1/accounts/${AccId}/aliases`, data, {
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${token}`,
-      Accept: '*/*',
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
-  })
-  .then((res): any => {
-    if (res.status == 202) return res.data
-  })
-  .catch((error) => {
-    if (error.response) {
-      console.log(error.response.data)
-    } else {
-      console.log('Error', error.message)
-    }
-  })
+    .post(`/v1/accounts/${AccId}/aliases`, data, {
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+        Accept: '*/*',
+        'Transaction-Hash': sha_signature
+      },
+      httpsAgent
+    })
+    .then((res): any => {
+      if (res.status == 202) return res.data
+    })
+    .catch((error) => {
+      if (error.response) {
+        console.log(error.response.data)
+      } else {
+        console.log('Error', error.message)
+      }
+    })
 
   return response.data
 }
@@ -278,25 +282,25 @@ export async function deleteAliases(token: string, AccId: string, alias: string)
   const sha_signature = await encrypt_string(`delete:/v1/accounts/${AccId}/aliases/${alias}`)
 
   let response = await api
-  .delete(`/v1/accounts/${AccId}/aliases/${alias}`, {
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${token}`,
-      Accept: '*/*',
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
-  })
-  .then((res: any) => {
-    if (res.status == 202) return res.status
-  })
-  .catch((error) => {
-    if (error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error', error.message)
-    }
-  })
+    .delete(`/v1/accounts/${AccId}/aliases/${alias}`, {
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+        Accept: '*/*',
+        'Transaction-Hash': sha_signature
+      },
+      httpsAgent
+    })
+    .then((res: any) => {
+      if (res.status == 202) return res.status
+    })
+    .catch((error) => {
+      if (error.response) {
+        console.error(error.response.data)
+      } else {
+        console.error('Error', error.message)
+      }
+    })
 
   return response
 }
@@ -401,24 +405,24 @@ export async function createInstantPayment(
   }
 
   response = await api
-  .post(`/v1/payments`, paymentData, {
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${token}`,
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
-  })
-  .then((res): any => {
-    if (res.status == 200 || res.status == 202) return res.data
-  })
-  .catch((error) => {
-    if (error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error: ', error.message)
-    }
-  })
+    .post(`/v1/payments`, paymentData, {
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+        'Transaction-Hash': sha_signature
+      },
+      httpsAgent
+    })
+    .then((res): any => {
+      if (res.status == 200 || res.status == 202) return res.data
+    })
+    .catch((error) => {
+      if (error.response) {
+        console.error(error.response.data)
+      } else {
+        console.error('Error: ', error.message)
+      }
+    })
 
   return response.data
 }
@@ -507,7 +511,12 @@ export async function extractBalanceToday(token: string, AccId: string) {
   return response.data
 }
 
-export async function extractBalanceFilter(token: string, dateStart: string, dateEnd: string, AccId: string) {
+export async function extractBalanceFilter(
+  token: string,
+  dateStart: string,
+  dateEnd: string,
+  AccId: string
+) {
   let response
   const sha_signature = await encrypt_string(AccId)
   response = await api

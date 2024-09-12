@@ -4,18 +4,14 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   main: {
-    build: {
-      rollupOptions: {
-        external: ['better-sqlite3']
-      }
-    },
+    envPrefix: 'MAIN_VITE_',
     resolve: {
       alias: {
         '@/lib': resolve('src/main/lib'),
         '@shared': resolve('src/shared')
       }
     },
-    plugins: [externalizeDepsPlugin()]
+    plugins: []
   },
   preload: {
     plugins: [externalizeDepsPlugin()]
@@ -42,6 +38,9 @@ export default defineConfig({
           preload: 'out/preload/index.js'
         }
       }
+    },
+    server: {
+      port: 5173 // Aqui você define a porta
     }
   }
 })

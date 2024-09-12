@@ -12,7 +12,12 @@ export const createPath = () => {
   const ResPath = rootDir + '/Res'
   const PrintPath = rootDir + '/Print'
 
-  if (!existsSync(rootDir) || !existsSync(ReqPath) || !existsSync(ResPath) || !existsSync(PrintPath)) {
+  if (
+    !existsSync(rootDir) ||
+    !existsSync(ReqPath) ||
+    !existsSync(ResPath) ||
+    !existsSync(PrintPath)
+  ) {
     console.log(`Creating path ...`)
     Promise.all([mkdir(rootDir), mkdir(ReqPath), mkdir(ResPath), mkdir(PrintPath)])
       .then(() => console.log(`Succssesfull `))

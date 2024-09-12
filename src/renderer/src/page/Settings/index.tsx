@@ -3,7 +3,7 @@ import { SidebarComponent } from './_components/Sidebar'
 import { useState } from 'react'
 import { AddBank } from './_components/AddBank'
 import { ManageAlias } from './_components/manageAliases'
-import {  } from './styles'
+import {} from './styles'
 import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
 
@@ -24,9 +24,7 @@ export default function Settings() {
   return (
     <Container style={{ flexDirection: 'row' }}>
       <SidebarComponent onSelect={setSelectedSection} select={selectedSection} />
-      <Section>
-        {renderContent()}
-      </Section>
+      <Section>{renderContent()}</Section>
     </Container>
   )
 }

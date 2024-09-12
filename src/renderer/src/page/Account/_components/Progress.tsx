@@ -27,7 +27,6 @@ export function Progress({ data }: any) {
   )
 }
 
-
 const Div = styled.div`
   width: 40px;
   height: 40px;

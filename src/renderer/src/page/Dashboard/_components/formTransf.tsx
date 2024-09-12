@@ -24,7 +24,6 @@ import { useSecurity } from '@renderer/context/security.context'
 import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 
-const win: any = window
 
 type BalanceProps = {
   balance: any
@@ -32,16 +31,16 @@ type BalanceProps = {
 }
 
 export function FormTransf({ balance, extract }: BalanceProps) {
-  const { contentNotification, setContentNotification, setShowNotification,  } = useNotification()
-  const { security, setSecurity, showSecurity, setShowSecurity, callSecurityButton } = useSecurity()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
+  const { security, setSecurity, showSecurity, callSecurityButton } = useSecurity()
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
-  
+
   const handleCurrencyChange = (event) => {
-    maskCurrencyInput(event);
-    setAmount(event.target.value.replace(/\D/g, '')/100)
-  };
+    maskCurrencyInput(event)
+    setAmount(event.target.value.replace(/\D/g, '') / 100)
+  }
 
   function toggleExtractDialog() {
     setDialogExtractOpen(!dialogExtractOpen)
@@ -52,7 +51,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }
 
   function handleTransactionToOwnAccount() {
-    if(handleTransactionBalance()) {
+    if (handleTransactionBalance()) {
       console.log(amount)
       // win.api.verifyAccount()
       setContentNotification({
@@ -66,8 +65,8 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }
 
   function handleTransactionBalance() {
-    if(balance?.available) {
-      if(Number(balance?.available) < Number(amount)) {
+    if (balance?.available) {
+      if (Number(balance?.available) < Number(amount)) {
         setContentNotification({
           ...contentNotification,
           type: 'warning',
@@ -76,8 +75,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
         })
         setShowNotification(true)
         return false
-      }
-      if(Number(balance?.available) >= Number(amount)) {
+      } else {
         setContentNotification({
           ...contentNotification,
           type: 'confirm',
@@ -100,7 +98,9 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }
 
   function showBalance() {
-    return balance?.available ? `R$  ${Number(balance?.available).toFixed(2) || 0}` : 'Carregando ...'
+    return balance?.available
+      ? `R$  ${Number(balance?.available).toFixed(2) || 0}`
+      : 'Carregando ...'
   }
 
   useEffect(() => {
@@ -111,17 +111,14 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }, [])
 
   useEffect(() => {
-    if(security.confirmed && security.context == 'transaction') {
+    if (security.confirmed && security.context == 'transaction') {
       handleTransactionToOwnAccount()
     }
   }, [security.confirmed])
 
   return (
     <Container style={{ paddingLeft: 15, paddingRight: 15 }}>
-      {
-        showSecurity &&
-        <ShowPassword />
-      }
+      {showSecurity && <ShowPassword />}
       <ContentInRow>
         <div style={{ display: 'flex', flexDirection: 'column', width: '50%', gap: 25 }}>
           <Card style={{ width: '100%', height: 430 }}>
@@ -143,11 +140,11 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
               <FormInput>
                 <Label>Informe o Valor:</Label>
-                  <Input
-                    style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
-                    onChange={handleCurrencyChange}
-                    placeholder="R$ 0,00"
-                  />
+                <Input
+                  style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
+                  onChange={handleCurrencyChange}
+                  placeholder="R$ 0,00"
+                />
               </FormInput>
 
               <FormInput>
@@ -155,7 +152,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 <TextArea />
               </FormInput>
 
-              <Button onClick={()=> callSecurityButton('transaction')}> Confirmar </Button>
+              <Button onClick={() => callSecurityButton('transaction')}> Confirmar </Button>
             </CardContent>
           </Card>
 
@@ -181,25 +178,23 @@ export function FormTransf({ balance, extract }: BalanceProps) {
             <Label>Extrato</Label>
             <div style={{ width: '100%' }}>
               {extract.map(
-                (data: any, i) => i < 10 && (
-                  <RowDetails>
-                    <p>{data.description}</p>
-                    <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green' }}>
-                      <p>{data.type !== 'C' ? '-' : ''}</p>
-                      <p style={{ fontWeight: '700' }}>R$ {data.amount.toFixed(2)}</p>
-                    </DetailContent>
-                  </RowDetails>
-                )
+                (data: any, i) =>
+                  i < 10 && (
+                    <RowDetails>
+                      <p>{data.description}</p>
+                      <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green' }}>
+                        <p>{data.type !== 'C' ? '-' : ''}</p>
+                        <p style={{ fontWeight: '700' }}>R$ {data.amount.toFixed(2)}</p>
+                      </DetailContent>
+                    </RowDetails>
+                  )
               )}
             </div>
           </CardContent>
 
           <CardFooter style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             <Button onClick={toggleExtractDialog}> Extrato </Button>
-            <Button 
-              style={{ backgroundColor: 'red' }} 
-              onClick={toggleRefundDialog}
-            >
+            <Button style={{ backgroundColor: 'red' }} onClick={toggleRefundDialog}>
               Devolução
             </Button>
           </CardFooter>

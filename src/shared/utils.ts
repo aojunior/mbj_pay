@@ -1,11 +1,14 @@
-import crypto from "crypto";
+import crypto from 'crypto'
 import cryptoJs from 'crypto-js'
 
+const date = new Date()
 export const formatDate = (date: Date) => {
-  if(date !== undefined) {
+  if (date !== undefined) {
     let d = date.toISOString().split('T')
     let format = d[0].split('-')
     return format[2] + '/' + format[1] + '/' + format[0]
+  } else {
+    return
   }
 }
 
@@ -20,21 +23,22 @@ export const formatCNPJandCPF = (data: string) => {
 }
 
 export const maskCurrencyInput = (event) => {
-  let value = event.target.value;
+  let value = event.target.value
 
   // Remove todos os caracteres que não sejam números
-  value = value.replace(/\D/g, '');
+  value = value.replace(/\D/g, '')
 
   // Converte para número e formata como moeda
   value = (Number(value) / 100).toLocaleString('pt-BR', {
     style: 'currency',
-    currency: 'BRL',
-  });
+    currency: 'BRL'
+  })
 
-  event.target.value = value;
+  event.target.value = value
 }
 
 export const today = new Date().toISOString().split('T')[0]
+export const currentTime = date.toLocaleTimeString('pt-br')
 
 //  FUNCTIONS UTILITARIES
 export function HashConstructor(password: string) {
@@ -42,15 +46,15 @@ export function HashConstructor(password: string) {
   let concat = password + saltKey
   let hashPassword = cryptoJs.SHA256(concat)
   return {
-      saltKey: saltKey,
-      hashPassword: hashPassword.toString(cryptoJs.enc.Hex)
+    saltKey: saltKey,
+    hashPassword: hashPassword.toString(cryptoJs.enc.Hex)
   }
 }
 
 export function HashComparator(password: string, data: any) {
   let concat = password + data.saltKey
   let hash = cryptoJs.SHA256(concat)
-  if(hash.toString(cryptoJs.enc.Hex) !== data.hashPassword) {
+  if (hash.toString(cryptoJs.enc.Hex) !== data.hashPassword) {
     return false
   }
   return true

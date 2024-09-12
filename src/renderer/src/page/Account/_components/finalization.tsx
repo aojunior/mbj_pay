@@ -7,7 +7,7 @@ import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 export function Finalization() {
-  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [isLoad, setIsLoad] = useState(false)
 
   async function handleVerifyAccount() {

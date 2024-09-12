@@ -6,6 +6,8 @@
 
 generator client {
   provider = "prisma-client-js"
+  engineType = "binary"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "windows", "darwin", "darwin-arm64"]
 }
 
 datasource db {
@@ -28,6 +30,18 @@ model Client {
   createdAT       DateTime  @default(now())
   aliases         Aliases[] 
   transactions    Transactions[]
+}
+
+model Information {
+  latitude    Float
+  longitude   Float
+  city        String
+  state       String
+  contry      String
+  createdAT   DateTime @default(now())
+  time        String
+  ip          String      
+  idDevice    String  @unique
 }
 
 model Aliases {
@@ -53,7 +67,7 @@ model Transactions {
 }
 
 model Mediator {
-  id          String @id @default(cuid())
-  MediatorAccountId String
-  MediatroFee Float
+  id                String @id @default(cuid())
+  mediatorAccountId String
+  mediatorFee       Float
 }

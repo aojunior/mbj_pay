@@ -6,6 +6,10 @@ export const API = {
   navigate: (route) => ipcRenderer.send('navigate', route),
   reciveFile: (callback) => ipcRenderer.on('file', (_, args) => callback(args)),
   cancelPayment: () => ipcRenderer.send('cancel_payment'),
+  acceptTermsOfService: async () => {
+    const a = await ipcRenderer.invoke('accept_terms_of_service')
+    return a
+  },
   tokenGenerator: async () => {
     const newToken = await ipcRenderer.invoke('token_generator')
     return newToken
@@ -53,7 +57,7 @@ export const API = {
   },
 
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
-  cancelInstantPayment: async () => { 
+  cancelInstantPayment: async () => {
     const cancelPayment = await ipcRenderer.send('cancel_instantpayment')
     return cancelPayment
   },
@@ -63,11 +67,12 @@ export const API = {
   },
 
   refundCodes: () => ipcRenderer.send('refund_codes'),
-  responseRefundCodes: (callback) => ipcRenderer.on('respose_refund_codes', (_, args) => callback(args)),
+  responseRefundCodes: (callback) =>
+    ipcRenderer.on('respose_refund_codes', (_, args) => callback(args)),
 
   refundInstantPayment: (item, reasonCode) => ipcRenderer.send('refund', [item, reasonCode]),
-  responseRefundInstantPayment: (callback) => ipcRenderer.on('response_refund', (_, args) => callback(args)),
-
+  responseRefundInstantPayment: (callback) =>
+    ipcRenderer.on('response_refund', (_, args) => callback(args)),
 
   verifyBalance: async () => {
     const verifyBalance = await ipcRenderer.invoke('verify_balance')
@@ -80,7 +85,7 @@ export const API = {
   extractBalanceFilter: async (start, end) => {
     const extractFilter = await ipcRenderer.invoke('extract_balance_filter', [start, end])
     return extractFilter
-  },
+  }
 }
 
 contextBridge.exposeInMainWorld('api', API)

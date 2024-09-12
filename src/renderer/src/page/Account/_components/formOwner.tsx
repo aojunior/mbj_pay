@@ -29,36 +29,36 @@ export function FormOwner({ ownerData, setOwnerData }: ownerProps) {
   watch((e) => setOwnerData(e))
 
   const maskDateInput = (event) => {
-    let value = event.target.value.replace(/\D/g, '');
-    if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2');
-    if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
-    setValue('ownerBirthday', value, { shouldValidate: true });
-  };
+    let value = event.target.value.replace(/\D/g, '')
+    if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2')
+    if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
+    setValue('ownerBirthday', value, { shouldValidate: true })
+  }
 
   function maskCPFInput(event) {
-    let value = event.target.value.replace(/\D/g, '');
+    let value = event.target.value.replace(/\D/g, '')
     // Formato 000.000.000-00
     if (value.length <= 11) {
-      value = value.replace(/^(\d{3})(\d)/, '$1.$2');
-      value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
-      value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
+      value = value.replace(/^(\d{3})(\d)/, '$1.$2')
+      value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      value = value.replace(/(\d{3})(\d{2})$/, '$1-$2')
     }
-  
-    setValue('ownerDocument', value, { shouldValidate: true });
+
+    setValue('ownerDocument', value, { shouldValidate: true })
   }
 
   function maskPhoneInput(event) {
-    let value = event.target.value.replace(/\D/g, '');
-  
+    let value = event.target.value.replace(/\D/g, '')
+
     if (value.length <= 10) {
       // Formato para telefone fixo (00)0000-0000
-      value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3');
+      value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
     } else {
       // Formato para celular (00)00000-0000
-      value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3');
+      value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
     }
-  
-    setValue('ownerPhoneNumber', value, { shouldValidate: true });
+
+    setValue('ownerPhoneNumber', value, { shouldValidate: true })
   }
 
   return (
@@ -113,13 +113,23 @@ export function FormOwner({ ownerData, setOwnerData }: ownerProps) {
 
               <FormInput style={{ width: '30%' }}>
                 <Label>Data de Nascimento</Label>
-                <Input {...register('ownerBirthday')} type="text" placeholder="Ex: 01/01/2024" onChange={maskDateInput}/>
+                <Input
+                  {...register('ownerBirthday')}
+                  type="text"
+                  placeholder="Ex: 01/01/2024"
+                  onChange={maskDateInput}
+                />
               </FormInput>
             </ContentInRow>
 
             <FormInput style={{ width: 200, alignSelf: 'flex-start' }}>
               <Label>Telefone</Label>
-              <Input {...register('ownerPhoneNumber')} type="text" placeholder="(xx) 9999-9999" onChange={maskPhoneInput}/>
+              <Input
+                {...register('ownerPhoneNumber')}
+                type="text"
+                placeholder="(xx) 9999-9999"
+                onChange={maskPhoneInput}
+              />
             </FormInput>
           </CardContent>
         </Card>

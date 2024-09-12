@@ -1,6 +1,17 @@
-import { Aliases } from '@prisma/client';
-import { prisma } from './databaseConnect';
-import { HashConstructor, HashComparator } from '../utils';
+import { Information } from '@prisma/client'
+import { prisma } from '@shared/database/databaseConnect'
+import { HashConstructor } from '@shared/utils'
+
+// ACTION TO ACCEPT TERMS OF SERVICES
+export async function setDataToTermsOfService(data: Information) {
+  try {
+    await prisma.information.create({
+      data: data
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 // ACTION TO CLIENT
 export async function createClientDB(data: any) {
@@ -16,42 +27,46 @@ export async function createClientDB(data: any) {
         taxId: data.Cnpj,
         phoneNumber: data.Tel,
         email: data.Email,
-        hashPassword: hash.hashPassword, 
+        hashPassword: hash.hashPassword,
         saltKey: hash.saltKey,
         status: data.Status
-      },
+      }
     })
     return account
   } catch (error) {
     console.log(error)
+    return
   }
 }
 
 export async function updateClientDB(data: any) {
   try {
-    const upsert = await prisma.client.update({
-      where: { accountId: data.AccId },
-      data: {
-        accountBank: data.AccBank,
-        branchBank: data.Branch,
-        status: data.Status,
-      },
-    }).then( async e => {
-      if(e.status === 'REGULAR') {
-        const insertMediator = await prisma.mediator.create({
-          data: {
-            MediatorAccountId: data.MedAccId,
-            MediatroFee: 0.5
-          }
-        })
-        return insertMediator
-      } else {
-        return e.status
-      }
-    })
+    await prisma.client
+      .update({
+        where: { accountId: data.AccId },
+        data: {
+          accountBank: data.AccBank,
+          branchBank: data.Branch,
+          status: data.Status
+        }
+      })
+      .then(async (e) => {
+        if (e.status === 'REGULAR') {
+          const insertMediator = await prisma.mediator.create({
+            data: {
+              mediatorAccountId: data.MedAccId,
+              mediatorFee: 0.5
+            }
+          })
+          return insertMediator
+        } else {
+          return e.status
+        }
+      })
     return 'UPDATED'
   } catch (error) {
     console.log(error)
+    return
   }
 }
 
@@ -62,9 +77,10 @@ export async function clientExists() {
       return true
     } else {
       return false
-    }    
+    }
   } catch (error) {
     console.error(error)
+    return
   }
 }
 
@@ -88,19 +104,20 @@ export async function getClientDB() {
     })
     return account
   } catch (error) {
-    console.error(error) 
+    console.error(error)
+    return
   }
 }
 
 export async function verifyClientDB(data, accountId: string) {
   try {
-    const aliases = await prisma.aliases.create({
+    await prisma.aliases.create({
       data: {
         accountId: accountId,
         alias: data.alias,
         status: '',
         active: '',
-        type: '',
+        type: ''
       }
     })
   } catch (error) {
@@ -108,14 +125,15 @@ export async function verifyClientDB(data, accountId: string) {
   }
 }
 
-export async function deleteClientDB(accountId: string)  {
+export async function deleteClientDB(accountId: string) { 
   try {
-    const del = await prisma.client.delete({
-      where: { accountId: accountId },
-    })    
+    await prisma.client.delete({
+      where: { accountId: accountId }
+    })
     return 'DELETED'
   } catch (error) {
     console.error(error)
+    return
   }
 }
 
@@ -129,25 +147,27 @@ export async function credentialsDB() {
     })
     return credentials
   } catch (error) {
-    console.error(error) 
+    console.error(error)
+    return
   }
 }
-
+ 
 export async function alterPasswordDB(password, accountId) {
   try {
     const data = HashConstructor(password)
-    const credentials = await prisma.client.update({
+    await prisma.client.update({
       where: {
         accountId: accountId
       },
       data: {
         hashPassword: data.hashPassword,
         saltKey: data.saltKey
-      },
+      }
     })
-    return "CHANGED"
+    return 'CHANGED'
   } catch (error) {
-    console.error(error) 
+    console.error(error)
+    return
   }
 }
 // ----------------------------------------------------------------
@@ -155,7 +175,7 @@ export async function alterPasswordDB(password, accountId) {
 // ACTION TO ALIASES
 export async function createAliasDB(data, accountId: string) {
   try {
-    if(data.status == 'CLEARING_REGISTRATION_PENDING') {
+    if (data.status == 'CLEARING_REGISTRATION_PENDING') {
       data.status = 'PENDING'
     }
     const alias = await prisma.aliases.create({
@@ -164,40 +184,44 @@ export async function createAliasDB(data, accountId: string) {
         alias: data.name,
         status: data.status,
         active: '',
-        type: data.type,
+        type: data.type
       }
     })
     return alias
   } catch (error) {
     console.error(error)
+    return
   }
 }
 
 export async function deleteAliasDB(alias: string, accountId: string) {
   try {
-    const del = await prisma.aliases.deleteMany({
-      where: {
-        AND: [
-          {
-            accountId: accountId,
-          },
-          {
-            alias: alias
-          }
-        ]
-      },
-    }).then(async () => {
-      return await prisma.aliases.findMany()
-    })
+    const del = await prisma.aliases
+      .deleteMany({
+        where: {
+          AND: [
+            {
+              accountId: accountId
+            },
+            {
+              alias: alias
+            }
+          ]
+        }
+      })
+      .then(async () => {
+        return await prisma.aliases.findMany()
+      })
     return del
   } catch (error) {
     console.error(error)
+    return
   }
 }
 
-export async function updateAliasDB(data: any, accountId: string) {
+export async function updateAliasDB(data: any) {
   try {
-    const upsert = await prisma.aliases.update({
+    await prisma.aliases.update({
       where: {
         alias: data.alias
       },
@@ -212,31 +236,36 @@ export async function updateAliasDB(data: any, accountId: string) {
 
 export async function activeAliasDB(alias: string, accountId: string) {
   try {
-    const disableAll = await prisma.aliases.updateMany({
-      where: {
-        accountId: accountId
-      },
-      data: {
-        active: ''
-      }
-    }).then(async () => {
-      return await prisma.aliases.update({
+    await prisma.aliases
+      .updateMany({
         where: {
-          alias: alias
+          accountId: accountId
         },
         data: {
-          active: 'true'
+          active: ''
         }
-    })
-  })
+      })
+      .then(async () => {
+        return await prisma.aliases.update({
+          where: {
+            alias: alias
+          },
+          data: {
+            active: 'true'
+          }
+        })
+      })
   } catch (error) {
-    console.log(error) 
+    console.log(error)
   }
 }
 
-export async function readAliasesDB() {
-  const aliasesAll = await prisma.aliases.findMany()
-
+export async function getAliasesDB() {
+  const aliasesAll = await prisma.aliases.findMany({
+    where: {
+      status: 'ACTIVE'
+    }
+  })
   return aliasesAll
 }
 
@@ -246,8 +275,12 @@ export async function readAliasesActiveDB() {
       alias: 'alias'
     }
   })
-
   return aliasesAll
 }
 // ----------------------------------------------------------------
 
+// ACTION TO Mediator
+export async function getMediatorDB() {
+  const mediator = await prisma.mediator.findFirst()
+  return mediator
+}

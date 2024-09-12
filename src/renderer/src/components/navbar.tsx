@@ -28,7 +28,6 @@ const Link = styled.button`
   &:hover {
     cursor: pointer;
     background-color: #1b75ab;
-
   }
 `
 

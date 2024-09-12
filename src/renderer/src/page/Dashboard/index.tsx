@@ -8,7 +8,7 @@ import { useNotification } from '@renderer/context/notification.context'
 const win: any = window
 
 export default function Dashboard() {
-  const {contentNotification, setContentNotification, setShowNotification} = useNotification()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [balance, setBalance] = useState({})
   const [extract, setExtract] = useState<any>([])
   const [isLoad, setIsLoad] = useState(false)
@@ -29,14 +29,14 @@ export default function Dashboard() {
       return
     }
     setBalance(data)
-    setExtract(extractToday.statement as any[])  
+    setExtract(extractToday.statement as any[])
     setIsLoad(false)
   }
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
       case 'F5':
         getBalance()
-      break
+        break
     }
   }
 

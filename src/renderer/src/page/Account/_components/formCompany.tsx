@@ -31,35 +31,35 @@ export function FormCompany({ companyData, setCompanyData }: companyProps) {
   })
 
   const maskDateInput = (event) => {
-    let value = event.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-    if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2');
-    if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
-    setValue('companyDateCreated', value, { shouldValidate: true }); // Atualiza o valor do input e dispara a validação
-  };
+    let value = event.target.value.replace(/\D/g, '') // Remove caracteres não numéricos
+    if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2')
+    if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
+    setValue('companyDateCreated', value, { shouldValidate: true }) // Atualiza o valor do input e dispara a validação
+  }
 
   function maskCNPJInput(event) {
-    let value = event.target.value.replace(/\D/g, '');
+    let value = event.target.value.replace(/\D/g, '')
     // Formato 00.000.000/0000-00
     if (value.length <= 14) {
-      value = value.replace(/^(\d{2})(\d)/, '$1.$2');
-      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
-      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+      value = value.replace(/^(\d{2})(\d)/, '$1.$2')
+      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2')
+      value = value.replace(/(\d{4})(\d)/, '$1-$2')
     }
-    setValue('companyDocument', value, { shouldValidate: true });
+    setValue('companyDocument', value, { shouldValidate: true })
   }
 
   function maskPhoneInput(event) {
-    let value = event.target.value.replace(/\D/g, '');
-  
+    let value = event.target.value.replace(/\D/g, '')
+
     if (value.length <= 10) {
       // Formato para telefone fixo (00)0000-0000
-      value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3');
+      value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
     } else {
       // Formato para celular (00)00000-0000
-      value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3');
+      value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
     }
-    setValue('companyPhoneNumber', value, { shouldValidate: true });
+    setValue('companyPhoneNumber', value, { shouldValidate: true })
   }
 
   return (
@@ -109,13 +109,23 @@ export function FormCompany({ companyData, setCompanyData }: companyProps) {
 
               <FormInput style={{ width: '30%' }}>
                 <Label>Data Fundacao</Label>
-                <Input {...register('companyDateCreated')} type="text" placeholder="01/01/2024" onChange={maskDateInput} />
+                <Input
+                  {...register('companyDateCreated')}
+                  type="text"
+                  placeholder="01/01/2024"
+                  onChange={maskDateInput}
+                />
               </FormInput>
             </ContentInRow>
 
             <FormInput style={{ width: 200, alignSelf: 'flex-start' }}>
               <Label>Telefone</Label>
-              <Input {...register('companyPhoneNumber')} type="text" placeholder="(xx) 9999-9999" onChange={maskPhoneInput} />
+              <Input
+                {...register('companyPhoneNumber')}
+                type="text"
+                placeholder="(xx) 9999-9999"
+                onChange={maskPhoneInput}
+              />
             </FormInput>
           </CardContent>
         </Card>

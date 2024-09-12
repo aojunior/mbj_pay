@@ -3,7 +3,9 @@ import { z } from 'zod'
 export const accountSchema = z.object({
   companyName: z.string(),
   companyDocument: z.string(),
-  companyDateCreated: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Data inválida, use o formato DD/MM/AAAA"),
+  companyDateCreated: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Data inválida, use o formato DD/MM/AAAA'),
   companyEmailAddress: z.string(),
   companyPhoneNumber: z.string(),
   companyPhoneNumber2: z.string().optional(),
@@ -18,7 +20,9 @@ export const accountSchema = z.object({
   ownerDocument: z.string(),
   ownerMotherName: z.string(),
   ownerEmailAddress: z.string(),
-  ownerBirthday: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Data inválida, use o formato DD/MM/AAAA"),
+  ownerBirthday: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, 'Data inválida, use o formato DD/MM/AAAA'),
   ownerPhoneNumber: z.string(),
   ownerPhoneNumber2: z.string().optional(),
   ownerAddress: z.string(),

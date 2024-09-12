@@ -3,9 +3,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { bankSchema } from '../schema'
 import { ContantImg, ImgPreview, InputImg, PlaceholderImage, UploadImg } from '../styles'
-import { Card, CardHeader, CardTitle, CardContent, FormInput, Label, Input, ContentInRow } from '../../../styles/global'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  FormInput,
+  Label,
+  Input,
+  ContentInRow
+} from '../../../styles/global'
 import { useState } from 'react'
-import { AiFillEye, AiFillEyeInvisible,  } from 'react-icons/ai'
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 
 type bankProps = {
   bankData: z.infer<typeof bankSchema>
@@ -19,7 +28,7 @@ export function FormBank({ bankData, setBankData }: bankProps) {
   })
   const [showPassword, setShowPassword] = useState(false)
 
-  watch((e) => setBankData({...bankData, password: e.password}))
+  watch((e) => setBankData({ ...bankData, password: e.password }))
 
   function getImg(e) {
     if (e.files[0]) {
@@ -41,7 +50,8 @@ export function FormBank({ bankData, setBankData }: bankProps) {
     }
   }
 
-  function togglePassword() {7
+  function togglePassword() {
+    7
     setShowPassword(!showPassword)
   }
 
@@ -62,18 +72,34 @@ export function FormBank({ bankData, setBankData }: bankProps) {
             <CardTitle>Anexo de Documento</CardTitle>
           </CardHeader>
           <CardContent>
-            <FormInput style={{ width: 450, marginTop: 20, marginBottom: 20}}>
+            <FormInput style={{ width: 450, marginTop: 20, marginBottom: 20 }}>
               <Label>Crie uma Senha da Aplicação</Label>
-              <Label style={{fontSize: 11, fontWeight: 500, color: '#4f4f4f'}}>Essa senha será usada para transferências, criação de chave pix e alterações de dados</Label>
+              <Label style={{ fontSize: 11, fontWeight: 500, color: '#4f4f4f' }}>
+                Essa senha será usada para transferências, criação de chave pix e alterações de
+                dados
+              </Label>
 
               <ContentInRow style={{ justifyContent: 'flex-start', alignItems: 'center', gap: 10 }}>
-                <Input {...register('password')} type={ showPassword ? "text" : "password"}placeholder="Digite aqui"  />
-                {
-                  showPassword ?
-                  <AiFillEyeInvisible size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
-                  :
-                  <AiFillEye size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
-                }
+                <Input
+                  {...register('password')}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Digite aqui"
+                />
+                {showPassword ? (
+                  <AiFillEyeInvisible
+                    size={24}
+                    color="#4f4f4f"
+                    onClick={togglePassword}
+                    style={{ cursor: 'pointer' }}
+                  />
+                ) : (
+                  <AiFillEye
+                    size={24}
+                    color="#4f4f4f"
+                    onClick={togglePassword}
+                    style={{ cursor: 'pointer' }}
+                  />
+                )}
               </ContentInRow>
             </FormInput>
 

@@ -1,6 +1,6 @@
 import { Button, ContentInRow, Separator } from '@renderer/styles/global'
 import { Input, Label, WrapIpunt } from '../styles'
-import { formatCNPJandCPF, formatDate, HashConstructor } from '@shared/utils'
+import { formatCNPJandCPF, formatDate } from '@shared/utils'
 import { useEffect, useState } from 'react'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
@@ -13,7 +13,7 @@ const win: any = window
 
 export function MyAccount() {
   const { setShowSecurity, showSecurity, security, setSecurity } = useSecurity()
-  const { contentNotification, setContentNotification, setShowNotification} = useNotification()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [account, setAccount] = useState<Client>({} as Client)
   const [isLoad, setIsLoad] = useState(false)
 
@@ -46,7 +46,7 @@ export function MyAccount() {
     } else {
       setContentNotification({
         ...contentNotification,
-        title:"Erro",
+        title: 'Erro',
         message: 'Houve um erro ao tentar verificar a conta, tente novamente!',
         type: 'error'
       })
@@ -58,25 +58,24 @@ export function MyAccount() {
   const handleDeleteAccount = async () => {
     setIsLoad(true)
     const del = await win.api.deleteAccount()
-    if(del == 'DELETED') {
+    if (del == 'DELETED') {
       setContentNotification({
         ...contentNotification,
-        title: "Conta inativada!",
+        title: 'Conta inativada!',
         message: 'Sua conta foi inativada com sucesso!',
         type: 'warning'
       })
-    } else if(del == 'Alias Registered') {
+    } else if (del == 'Alias Registered') {
       setContentNotification({
         ...contentNotification,
-        title: "Conta ainda possui alias registrado ",
+        title: 'Conta ainda possui alias registrado ',
         message: "E' necessa'rio excluir todos os alias antes de inativar a conta!",
         type: 'error'
-      }) 
-    }
-    else {
+      })
+    } else {
       setContentNotification({
         ...contentNotification,
-        title: "Erro",
+        title: 'Erro',
         message: 'Houve um erro ao tentar inativar a conta, tente novamente!',
         type: 'error'
       })
@@ -86,7 +85,7 @@ export function MyAccount() {
   }
 
   const handleChangePassword = async () => {
-    if(pass.length < 4) {
+    if (pass.length < 4) {
       setContentNotification({
         ...contentNotification,
         title: "Senha Inva'lida",
@@ -97,7 +96,7 @@ export function MyAccount() {
       return
     }
     const alter = await win.api.alterPassword(pass)
-    if(alter == 'CHANGED') {
+    if (alter == 'CHANGED') {
       setContentNotification({
         ...contentNotification,
         title: 'Nova Senha',
@@ -134,36 +133,27 @@ export function MyAccount() {
       {isLoad && <Loading />}
       <h1> Informações da Conta</h1>
 
-      {
-        showSecurity &&
-        <ShowPassword />
-      }
+      {showSecurity && <ShowPassword />}
       <ContentInRow>
         <WrapIpunt>
           <Label>Razão Social</Label>
-          <Input type="text"
-            value={account?.companyName}
-          />
+          <Input type="text" value={account?.companyName} />
         </WrapIpunt>
 
         <WrapIpunt>
-          {security.confirmed ?
+          {security.confirmed ? (
             <>
               <Input
                 type="text"
-                placeholder='Digite a Nova Senha'
+                placeholder="Digite a Nova Senha"
                 value={pass}
-                onChange={e => setPass(e.target.value)}
+                onChange={(e) => setPass(e.target.value)}
               />
-              <Button onClick={handleChangePassword}>
-                Salvar
-              </Button>
+              <Button onClick={handleChangePassword}>Salvar</Button>
             </>
-          :
-            <Button onClick={() => setShowSecurity(true)}>
-              Alterar Senha
-            </Button>
-          }
+          ) : (
+            <Button onClick={() => setShowSecurity(true)}>Alterar Senha</Button>
+          )}
         </WrapIpunt>
       </ContentInRow>
 
@@ -181,8 +171,8 @@ export function MyAccount() {
         <Input type="text" value={account?.accountId} />
       </WrapIpunt>
 
-      <Label style={{color: '#444', marginTop: 15}}>Detalhes Bancário</Label>
-      <ContentInRow style={{ width: '50%',  }}>
+      <Label style={{ color: '#444', marginTop: 15 }}>Detalhes Bancário</Label>
+      <ContentInRow style={{ width: '50%' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Conta</Label>
           <Input type="text" value={account?.accountBank} style={{ width: 120 }} />

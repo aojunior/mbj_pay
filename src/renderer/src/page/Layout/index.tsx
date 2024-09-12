@@ -35,7 +35,7 @@ export default function Layout() {
   const [isLoad, setIsLoad] = useState<boolean>(false)
   const navigate = useNavigate()
 
-  //Refresh Token in 5 minutes and storage in SessionStorage 
+  //Refresh Token in 5 minutes and storage in SessionStorage
   const refreshAndStorageToken = useCallback(async () => {
     const newToken = await win.api.tokenGenerator()
     if (newToken == undefined || newToken == null) {
@@ -72,7 +72,16 @@ export default function Layout() {
   }, [])
 
   return (
-    <div style={{ width: '100vw', alignItems: 'center', display: 'flex', flexDirection: 'column', margin:0, padding:0 }}>
+    <div
+      style={{
+        width: '100vw',
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        margin: 0,
+        padding: 0
+      }}
+    >
       {isLoad && <Loading />}
       {accState && <Navbar />}
       <Header />

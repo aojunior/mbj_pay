@@ -1,6 +1,6 @@
 import { styled } from 'styled-components'
 import { IoIosWarning } from 'react-icons/io'
-import {AiFillEyeInvisible, AiFillEye} from 'react-icons/ai'
+import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai'
 import { Input } from '@renderer/styles/global'
 import { useState } from 'react'
 import { ContantRow } from '@renderer/page/Home/StandBy/styles'
@@ -47,7 +47,7 @@ const Footer = styled.div`
   align-items: center;
   justify-content: space-evenly;
   padding: 5px;
-  gap: 15px
+  gap: 15px;
 `
 const Button = styled.button`
   border: 1px solid #e4e4e7;
@@ -74,8 +74,8 @@ export function ShowPassword() {
   async function checkPassword() {
     const securityData = await win.api.security(textPassword)
     console.log(securityData)
-    setSecurity({...security, confirmed: securityData})
-    if(securityData) {
+    setSecurity({ ...security, confirmed: securityData })
+    if (securityData) {
       setShowSecurity(false)
     } else {
       setError({
@@ -84,13 +84,13 @@ export function ShowPassword() {
       })
     }
   }
-  
+
   function togglePassword() {
     setShowTextPassword(!showTextPassword)
   }
 
   function handleChange(e) {
-    setTextPassword(e.target.value); 
+    setTextPassword(e.target.value)
     setError({
       message: '',
       borderColor: '#c4c4c7'
@@ -100,27 +100,44 @@ export function ShowPassword() {
   return (
     <Container>
       <Section>
-        <span style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }} onClick={() => setShowSecurity(false)}>X</span>
+        <span
+          style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }}
+          onClick={() => setShowSecurity(false)}
+        >
+          X
+        </span>
         <Header>
           <Title>Confirmação de senha</Title>
           <IoIosWarning size={28} color="#FFA500" />
         </Header>
         <p>Para contiuar, digite sua senha:</p>
-        <ContantRow style={{justifyContent: 'flex-end', alignItems: 'center'}}>
-          <Input style={{width: '75%', borderColor: error.borderColor}} type={showTextPassword ? "text":"password"} placeholder="Confirme a senha" onChange={handleChange} />
-          {
-          showTextPassword ?
-          <AiFillEyeInvisible size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
-          :
-          <AiFillEye size={24} color='#4f4f4f' onClick={togglePassword} style={{cursor: 'pointer'}} />
-          }
+        <ContantRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+          <Input
+            style={{ width: '75%', borderColor: error.borderColor }}
+            type={showTextPassword ? 'text' : 'password'}
+            placeholder="Confirme a senha"
+            onChange={handleChange}
+          />
+          {showTextPassword ? (
+            <AiFillEyeInvisible
+              size={24}
+              color="#4f4f4f"
+              onClick={togglePassword}
+              style={{ cursor: 'pointer' }}
+            />
+          ) : (
+            <AiFillEye
+              size={24}
+              color="#4f4f4f"
+              onClick={togglePassword}
+              style={{ cursor: 'pointer' }}
+            />
+          )}
         </ContantRow>
 
         <Footer>
-          <p style={{color: 'red'}}>{error.message}</p>
-          <Button onClick={checkPassword}>
-            Confirmar
-          </Button>
+          <p style={{ color: 'red' }}>{error.message}</p>
+          <Button onClick={checkPassword}>Confirmar</Button>
         </Footer>
       </Section>
     </Container>

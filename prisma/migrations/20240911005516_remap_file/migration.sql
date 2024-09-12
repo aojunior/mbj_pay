@@ -2,11 +2,29 @@
 CREATE TABLE "Client" (
     "accountId" TEXT NOT NULL,
     "accountHolderId" TEXT NOT NULL,
-    "accountBank" TEXT NOT NULL,
-    "branchBank" TEXT NOT NULL,
+    "accountBank" INTEGER NOT NULL,
+    "branchBank" INTEGER NOT NULL,
+    "companyName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
     "taxId" TEXT NOT NULL,
     "phoneNumber" TEXT NOT NULL,
+    "saltKey" TEXT NOT NULL,
+    "hashPassword" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
     "createdAT" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "Information" (
+    "latitude" REAL NOT NULL,
+    "longitude" REAL NOT NULL,
+    "city" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "contry" TEXT NOT NULL,
+    "createdAT" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "time" TEXT NOT NULL,
+    "ip" TEXT NOT NULL,
+    "idDevice" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -36,12 +54,15 @@ CREATE TABLE "Transactions" (
 -- CreateTable
 CREATE TABLE "Mediator" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "MediatorAccountId" TEXT NOT NULL,
-    "MediatroFee" REAL NOT NULL
+    "mediatorAccountId" TEXT NOT NULL,
+    "mediatorFee" REAL NOT NULL
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_accountId_key" ON "Client"("accountId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Information_idDevice_key" ON "Information"("idDevice");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Aliases_alias_key" ON "Aliases"("alias");
