@@ -39,9 +39,10 @@ import {
   setDataToTermsOfService,
   updateAliasDB,
   updateClientDB
-} from './lib/actions'
+} from '../shared/database/actions'
 import { currentTime, HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
+import url from 'node:url'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -67,6 +68,34 @@ function createWindow(): void {
       devTools: true
     }
   })
+  const isDev = process.env.NODE_ENV === 'development';
+  // const indexPath = isDev
+  // ? path.join(__dirname, '../renderer/index.html')  // Em desenvolvimento
+  // : `file://${path.join(app.getAppPath(), 'renderer/index.html')}`; // Em produção
+
+  // mainWindow.loadURL(indexPath);
+  // if (process.env.NODE_ENV === 'development') {
+  //   mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
+  //   mainWindow.webContents.openDevTools(); // Abre as DevTools para debugar
+  // } else {
+  //   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  // }
+
+  if (isDev) {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
+    mainWindow.webContents.openDevTools();
+  } else {
+    // Carrega o arquivo HTML de produção
+    mainWindow.loadURL(
+      url.format(
+        {
+          pathname: path.join(__dirname, '../renderer/index.html'),
+          protocol: 'file:',
+          slashes: true
+        }
+      )
+    );
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -76,14 +105,6 @@ function createWindow(): void {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
-
-
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
-    mainWindow.webContents.openDevTools(); // Abre as DevTools para debugar
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-  }
 
   mainWindow.on('minimize', function (event) {
     event.preventDefault()
@@ -156,18 +177,21 @@ app.whenReady().then(() => {
   // Monitora a pasta de recebimento do arquivo, vindo do sistema
   // Formata e envia para criar pagamento
   watchFileAndFormat(async (formatData) => {
-    if (!formatData) mainWindow.webContents.send('file', null)
-      
+    if (!formatData) {
+      ipcMain.handle('watch_file', async() => {
+        return
+      })
+    } else {
       const db = await getAliasesDB()
       const client = await getClientDB()
       const mediator = await getMediatorDB()
-
-    let token = await mainWindow.webContents
+  
+      let token = await mainWindow.webContents
       .executeJavaScript(`sessionStorage.getItem('token')`)
       .then((response) => response)
-
+  
       mainWindow.show()
-      
+        
       let response = await createInstantPayment(
         formatData,
         token,
@@ -175,13 +199,16 @@ app.whenReady().then(() => {
         String(db[0]?.alias),
         mediator?.mediatorAccountId,
         mediator?.mediatorFee
-    )
-    mainWindow.webContents.send('file', response)
+      )
+      ipcMain.handle('watch_file', async() => {
+        return response
+      })
+    }
   })
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
+  })
 })
 
 app.on('window-all-closed', async () => {
@@ -194,9 +221,9 @@ app.on('window-all-closed', async () => {
 // Prisma
 const platformToExecutables: Record<string, any> = {
   win32: {
-    migrationEngine:
-      'node_modules/@prisma/engines/migration-engine-windows.exe',
-    queryEngine: 'node_modules/@prisma/engines/query_engine-windows.dll.node',
+    migrationEngine: 'node_modules/@prisma/engines/migration-engine-windows.exe',
+    // queryEngine: 'node_modules/@prisma/engines/query_engine-windows.dll.node',
+    
   },
   linux: {
     migrationEngine:
@@ -233,12 +260,12 @@ const mePath = path.join(
   extraResourcesPath,
   platformToExecutables[platformName].migrationEngine
 );
-const qePath = path.join(
-  extraResourcesPath,
-  platformToExecutables[platformName].queryEngine
-);
+// const qePath = path.join(
+//   extraResourcesPath,
+//   platformToExecutables[platformName].queryEngine
+// );
 
-process.env.PRISMA_QUERY_ENGINE_BINARY = qePath
+// process.env.PRISMA_QUERY_ENGINE_BINARY = qePath
 
 ipcMain.on('config:get-app-path', (event) => {
   event.returnValue = app.getAppPath();

@@ -1,28 +1,31 @@
 import { PrismaClient } from '@prisma/client';
-import { app } from 'electron';
 import path from 'node:path';
 import fs from 'fs';
+
 
 const isDev = process.env.NODE_ENV === 'development'
 
 const dbPath = isDev
   ? path.join(__dirname, '../../prisma/dev.db')
-  : path.join(app.getPath('userData'), 'database.db');
+  : path.join(process.resourcesPath, 'database.db');
 
 if (!isDev) {
   try {
     // database file does not exist, need to create
-    fs.copyFileSync(
-      path.join(process.resourcesPath, 'prisma/dev.db'),
-      dbPath,
-      fs.constants.COPYFILE_EXCL
-    );
-    console.log(
-      `DB does not exist. Create new DB from ${path.join(
-        process.resourcesPath,
-        'prisma/dev.db'
-      )}`
-    );
+    if(!fs.existsSync(dbPath)) {
+      process.env.DATABASE_URL = dbPath;
+      fs.copyFileSync(
+        path.join(process.resourcesPath, 'prisma/dev.db'),
+        dbPath,
+        fs.constants.COPYFILE_EXCL
+      );
+      console.log(
+        `DB does not exist. Create new DB from ${path.join(
+          process.resourcesPath,
+          'prisma/dev.db'
+        )}`
+      ); 
+    }
   } catch (err) {
     if (
       err &&

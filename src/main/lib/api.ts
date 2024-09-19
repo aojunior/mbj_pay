@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { readFileSync } from 'fs'
 import { z } from 'zod'
 import { accountSchema } from '../../shared/schemas'
-import { getClientDB } from './actions'
+import { getClientDB } from '../../shared/database/actions'
 import { today } from '../../shared/utils'
 
 const now = new Date().toISOString()

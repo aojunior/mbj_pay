@@ -4,7 +4,10 @@ export const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
   navigate: (route) => ipcRenderer.send('navigate', route),
-  reciveFile: (callback) => ipcRenderer.on('file', (_, args) => callback(args)),
+  reciveFile: async (callback) => {
+    const data = await ipcRenderer.invoke('watch_file', (_, args) => callback(args))
+    return data
+  },
   cancelPayment: () => ipcRenderer.send('cancel_payment'),
   acceptTermsOfService: async () => {
     const a = await ipcRenderer.invoke('accept_terms_of_service')
@@ -14,7 +17,6 @@ export const API = {
     const newToken = await ipcRenderer.invoke('token_generator')
     return newToken
   },
-
   createAccount: async (clientData) => {
     const response = await ipcRenderer.invoke('create-account', clientData)
     return response

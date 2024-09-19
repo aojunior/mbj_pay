@@ -1,15 +1,17 @@
 import { Information } from '@prisma/client'
-import { prisma } from '@shared/database/databaseConnect'
+import { prisma } from './databaseConnect'
 import { HashConstructor } from '@shared/utils'
 
 // ACTION TO ACCEPT TERMS OF SERVICES
 export async function setDataToTermsOfService(data: Information) {
   try {
-    await prisma.information.create({
+   const save = await prisma.information.create({
       data: data
     })
+    return save
   } catch (error) {
     console.log(error)
+    return error
   }
 }
 

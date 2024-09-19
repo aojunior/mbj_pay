@@ -11,7 +11,7 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
-    plugins: []
+    plugins: [externalizeDepsPlugin()]
   },
   preload: {
     plugins: [externalizeDepsPlugin()]
@@ -29,18 +29,12 @@ export default defineConfig({
         '@/util': resolve('src/shared')
       }
     },
-    plugins: [react()],
     build: {
-      outDir: 'dist',
-      rollupOptions: {
-        input: {
-          main: 'out/main/index.js',
-          preload: 'out/preload/index.js'
-        }
-      }
+      outDir: 'out/renderer'
     },
     server: {
       port: 5173 // Aqui você define a porta
-    }
+    },
+    plugins: [react()],
   }
 })
