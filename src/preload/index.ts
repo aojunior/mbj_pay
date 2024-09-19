@@ -4,8 +4,8 @@ export const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
   navigate: (route) => ipcRenderer.send('navigate', route),
-  reciveFile: async (callback) => {
-    const data = await ipcRenderer.invoke('watch_file', (_, args) => callback(args))
+  reciveFile: async () => {
+    const data = await ipcRenderer.invoke('watch_file')
     return data
   },
   cancelPayment: () => ipcRenderer.send('cancel_payment'),

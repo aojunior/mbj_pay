@@ -5,9 +5,9 @@ import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { readFileSync } from 'fs'
 import { z } from 'zod'
-import { accountSchema } from '../../shared/schemas'
-import { getClientDB } from '../../shared/database/actions'
-import { today } from '../../shared/utils'
+import { accountSchema } from './schemas'
+import { getClientDB } from './database/actions'
+import { today } from './utils'
 
 const now = new Date().toISOString()
 const client_id = import.meta.env.MAIN_VITE_CLIENTEID

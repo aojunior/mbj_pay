@@ -22,7 +22,7 @@ import {
   getLocationAndIPV6,
   createInstantPayment,
   DeleteAccountAPI
-} from './lib/api'
+} from '../shared/api'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
 import {
@@ -174,38 +174,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // Monitora a pasta de recebimento do arquivo, vindo do sistema
-  // Formata e envia para criar pagamento
-  watchFileAndFormat(async (formatData) => {
-    if (!formatData) {
-      ipcMain.handle('watch_file', async() => {
-        return
-      })
-    } else {
-      const db = await getAliasesDB()
-      const client = await getClientDB()
-      const mediator = await getMediatorDB()
-  
-      let token = await mainWindow.webContents
-      .executeJavaScript(`sessionStorage.getItem('token')`)
-      .then((response) => response)
-  
-      mainWindow.show()
-        
-      let response = await createInstantPayment(
-        formatData,
-        token,
-        String(client?.accountId),
-        String(db[0]?.alias),
-        mediator?.mediatorAccountId,
-        mediator?.mediatorFee
-      )
-      ipcMain.handle('watch_file', async() => {
-        return response
-      })
-    }
-  })
-
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
@@ -289,6 +257,38 @@ ipcMain.on('config:get-prisma-me-path', (event) => {
 ipcMain.on('navigate', (_, route) => {
   mainWindow.loadURL(`http://localhost:5173${route}`)
 })
+
+  // Monitora a pasta de recebimento do arquivo, vindo do sistema
+  // Formata e envia para criar pagamento
+  watchFileAndFormat(async (formatData) => {
+    ipcMain.handle('watch_file', async() => {
+      if (!formatData) {
+        return
+      } else {
+        const db = await getAliasesDB()
+        const client = await getClientDB()
+        const mediator = await getMediatorDB()
+    
+        let token = await mainWindow.webContents
+        .executeJavaScript(`sessionStorage.getItem('token')`)
+        .then((response) => response)
+    
+        let response = await createInstantPayment(
+          formatData,
+          token,
+          String(client?.accountId),
+          String(db[0]?.alias),
+          mediator?.mediatorAccountId,
+          mediator?.mediatorFee
+        )
+
+        mainWindow.show()
+
+        return response
+      }
+    })
+  })
+
 
 ipcMain.handle('accept_terms_of_service', async () => {
   const fetch = await getLocationAndIPV6()
