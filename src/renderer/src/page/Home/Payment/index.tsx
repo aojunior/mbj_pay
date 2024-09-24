@@ -79,7 +79,7 @@ function PaymentScreen({ file }) {
         win.api.cancelPayment()
         break
       case 'F1':
-        ;(async () => {
+        (async () => {
           try {
             await navigator.clipboard.writeText(file.instantPayment.textContent)
             setContentNotification({

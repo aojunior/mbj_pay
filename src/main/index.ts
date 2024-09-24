@@ -4,7 +4,7 @@ import os from 'node:os'
 import { machineIdSync } from 'node-machine-id'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png'
-import { createPath, removeReqAndCreateRes, watchFileAndFormat } from './lib'
+import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile} from './lib'
 import {
   tokenGenerator,
   createAccountAPI,
@@ -36,6 +36,7 @@ import {
   // deleteClientDB,
   getClientDB,
   getMediatorDB,
+  insertExistingClientDB,
   setDataToTermsOfService,
   updateAliasDB,
   updateClientDB
@@ -124,6 +125,7 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.mbjpay')
   createWindow()
   createPath() // Cria as pastas necessarias para receber e enviar arquivos de leitura
+  removeReqFile()
 
   // Configuração do auto launch (iniciar com windows)
   let electronAutoLauncher = new AutoLaunch({
@@ -176,6 +178,48 @@ app.whenReady().then(() => {
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+
+  // Monitora a pasta de recebimento do arquivo, vindo do sistema
+  // Formata e envia para criar pagamento
+  watchFileAndFormat(async (formatData) => {
+    try {
+      if (!formatData) {
+        return {
+          error: 'Arquivo não encontrado no diretório de recebimento.',
+          success: false
+        }
+      } else {
+        const db = await getAliasesDB()
+        const client = await getClientDB()
+        const mediator = await getMediatorDB()
+        if(client?.status === 'ERROR') {
+          mainWindow.webContents.send('watch_file', {
+            error: 'Não é possível gerar venda!',
+            success: false
+          });
+          return 
+        }
+
+        let token = await mainWindow.webContents
+        .executeJavaScript(`sessionStorage.getItem('token')`)
+        .then((response) => response)
+
+        let response = await createInstantPayment(
+          formatData,
+          token,
+          String(client?.accountId),
+          String(db[0]?.alias),
+          mediator?.mediatorAccountId,
+          mediator?.mediatorFee
+        )
+
+        mainWindow.show()
+        mainWindow.webContents.send('watch_file', response);
+      }
+    } catch (error) {
+      console.log(error)
+    }
   })
 })
 
@@ -258,38 +302,6 @@ ipcMain.on('navigate', (_, route) => {
   mainWindow.loadURL(`http://localhost:5173${route}`)
 })
 
-  // Monitora a pasta de recebimento do arquivo, vindo do sistema
-  // Formata e envia para criar pagamento
-  watchFileAndFormat(async (formatData) => {
-    ipcMain.handle('watch_file', async() => {
-      if (!formatData) {
-        return
-      } else {
-        const db = await getAliasesDB()
-        const client = await getClientDB()
-        const mediator = await getMediatorDB()
-    
-        let token = await mainWindow.webContents
-        .executeJavaScript(`sessionStorage.getItem('token')`)
-        .then((response) => response)
-    
-        let response = await createInstantPayment(
-          formatData,
-          token,
-          String(client?.accountId),
-          String(db[0]?.alias),
-          mediator?.mediatorAccountId,
-          mediator?.mediatorFee
-        )
-
-        mainWindow.show()
-
-        return response
-      }
-    })
-  })
-
-
 ipcMain.handle('accept_terms_of_service', async () => {
   const fetch = await getLocationAndIPV6()
   function getIPs() {
@@ -341,7 +353,7 @@ ipcMain.handle('token_generator', async () => {
 })
 
 // HANDLE ACCOUNT
-ipcMain.handle('create-account', async (_, formData) => {
+ipcMain.handle('create_account', async (_, formData) => {
   try {
     let token = await mainWindow.webContents
       .executeJavaScript(`sessionStorage.getItem('token')`)
@@ -362,8 +374,9 @@ ipcMain.handle('create-account', async (_, formData) => {
       Tel: formData.companyPhoneNumber,
       Pass: formData.password
     }
+    let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
+    await encriptoFile(fileEncript)
     let saveClientInDb = await createClientDB(data)
-    console.log(newAccount)
     console.log(saveClientInDb)
     return 1
   } catch (error) {
@@ -372,12 +385,12 @@ ipcMain.handle('create-account', async (_, formData) => {
   }
 })
 
-ipcMain.handle('get-account', async () => {
+ipcMain.handle('get_account', async () => {
   const db = await getClientDB()
   return db
 })
 
-ipcMain.handle('verify-account', async () => {
+ipcMain.handle('verify_account', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
@@ -400,7 +413,7 @@ ipcMain.handle('verify-account', async () => {
   }
 })
 
-ipcMain.handle('delete-account', async () => {
+ipcMain.handle('delete_account', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
@@ -415,6 +428,43 @@ ipcMain.handle('delete-account', async () => {
     return deletionConfirmed
   } else {
     return 'Alias Registered'
+  }
+})
+
+ipcMain.handle('signIn', async (_, formData) => {
+  try {
+    const result = await readEncriptoFile(formData)
+    let token = await mainWindow.webContents
+    .executeJavaScript(`sessionStorage.getItem('token')`)
+    .then((response) => response)
+    if(result) {
+      let consulta = await VerifyAccountAPI(token, result.account)
+      if (consulta.error) return 'Error'
+
+      let data = {
+        AccHId: consulta.accountHolderId,
+        AccId: consulta.account.accountId,
+        AccBank: 0,
+        Branch: 0,
+        Name: consulta.additionalDetailsCorporate.companyName,
+        Email: consulta.client.email,
+        TaxId: consulta.client.taxIdentifier.taxId,
+        Phone: consulta.client.mobilePhone.phoneNumber,
+        Status: consulta.accountStatus,
+        Key: result.saltKey,
+        Pass: result.hashPassword
+      }
+      if(consulta.account.branch) {
+        data.AccBank = consulta.account.account
+        data.Branch = consulta.account.branch
+      }
+      
+      console.log(data)
+      let update = await insertExistingClientDB(data)
+      return update
+    }
+  } catch(error) {
+    console.log(error)
   }
 })
 
@@ -533,7 +583,8 @@ ipcMain.on('verify_instantpayment', async () => {
 })
 
 ipcMain.on('cancel_payment', async () => {
-  removeReqAndCreateRes()
+  removeReqFile()
+  createResFile()
   mainWindow.webContents.send('file', null)
 })
 // ----------------------------------------------------------------

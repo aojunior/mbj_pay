@@ -54,3 +54,8 @@ export const bankSchema = z.object({
   imgRgBack: z.string(),
   password: z.string().min(4)
 })
+
+export const signInSchema = z.object({
+  taxId: z.string(),
+  password: z.string().min(4)
+})

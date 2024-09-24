@@ -51,7 +51,6 @@ export function FormBank({ bankData, setBankData }: bankProps) {
   }
 
   function togglePassword() {
-    7
     setShowPassword(!showPassword)
   }
 

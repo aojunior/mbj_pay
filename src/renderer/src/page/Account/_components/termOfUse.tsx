@@ -13,12 +13,13 @@ export const TermsOfUse = () => {
 
   const handleButtonClick = async () => {
     if (accepted) {
-      const terms = await win.api.acceptTermsOfService()
-      console.log(terms)
-      // lógica para iniciar a criação da conta
-      navigate('/create-account')
-      console.log('Iniciando criação da conta...')
-    }
+      try {
+        await win.api.acceptTermsOfService()
+        navigate('/create-account')
+      } catch (error) {
+        console.log(error)
+      }
+    } 
   }
 
   return (
@@ -51,6 +52,7 @@ export const TermsOfUse = () => {
           conforme descrito acima e em conformidade com a LGPD.
         </p>
       </TermsText>
+
       <CheckboxContainer>
         <Checkbox
           id="checkbox"
@@ -60,8 +62,9 @@ export const TermsOfUse = () => {
         />
         <label htmlFor="checkbox">Eu aceito os Termos de Uso</label>
       </CheckboxContainer>
+
       <Button disabled={!accepted} onClick={handleButtonClick}>
-        Criar Conta
+        Prosseguir
       </Button>
     </Container>
   )

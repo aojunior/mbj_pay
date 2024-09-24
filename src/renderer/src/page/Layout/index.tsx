@@ -12,6 +12,7 @@ import { Header } from '@renderer/components/header'
 import { Finalization } from '../Account/_components/finalization'
 import { useAccount } from '@renderer/context/account.context'
 import { useNotification } from '@renderer/context/notification.context'
+import { SignIn } from '../Account/_components/formSignIn'
 
 const win: any = window
 function Root(): JSX.Element {
@@ -19,6 +20,7 @@ function Root(): JSX.Element {
     <Routes>
       <Route path="/home" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/signin" element={<SignIn />} />
       <Route path="/create-account" element={<CreateAccount />} />
       <Route path="/terms" element={<TermsOfUse />} />
       <Route path="/finalization" element={<Finalization />} />
@@ -30,7 +32,7 @@ function Root(): JSX.Element {
 
 export default function Layout() {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const { setAccState, accState } = useAccount()
+  const { accState, setAccState } = useAccount()
   // const [showNotification, setShowNotification] = useState(false)
   const [isLoad, setIsLoad] = useState<boolean>(false)
   const navigate = useNavigate()
@@ -59,12 +61,13 @@ export default function Layout() {
   useEffect(() => {
     const checkClient = async () => {
       setIsLoad(true)
-      const exists = await win.api.getAccount()
+      const exists = await win.api.getAccount() 
       if (exists) {
         setAccState(exists)
         navigate('/home')
       } else {
-        navigate('/terms')
+        setAccState(null)
+        navigate('/signin')
       }
       setIsLoad(false)
     }

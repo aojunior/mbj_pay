@@ -1,6 +1,10 @@
 import { appDirectoryName, fileEncoding } from '@shared/constants'
+import { HashComparator, HashConstructor } from '@shared/utils'
 import { readFile, unwatchFile, watchFile, writeFile, unlink } from 'fs'
 import { ensureDir, existsSync, mkdir } from 'fs-extra'
+import { promisify } from 'util';
+
+import { join } from 'path'
 
 export const getRootDirectory = () => {
   return `${appDirectoryName}`
@@ -58,6 +62,7 @@ export const watchFileAndFormat = async (callback: (formatData: any) => void) =>
         }
 
         if (filePath.fileType === '0') {
+          return
         }
       })
     } else {
@@ -71,19 +76,82 @@ export const watchFileAndFormat = async (callback: (formatData: any) => void) =>
   }
 }
 
-export const removeReqAndCreateRes = async () => {
+export const removeReqFile = async () => {
   const rootDir = getRootDirectory()
   await ensureDir(rootDir)
   const ReqFile = rootDir + '/Req/001.int'
+  if(existsSync(ReqFile)) {
+    await unlink(ReqFile, (err) => {
+      if (err) throw err
+      console.log(`Remove file Succssesfull `)
+    })
+  }
+}
+
+export const createResFile = async () => {
+  const rootDir = getRootDirectory()
+  await ensureDir(rootDir)
   const ResFile = rootDir + '/Res/001.pos'
   const data = '000 = 0\n001=OPERACAO CANCELADA\n999'
 
-  await unlink(ReqFile, (err) => {
-    if (err) throw err
-    console.log(`Remove file Succssesfull `)
-  })
   await writeFile(ResFile, data, (err) => {
     if (err) throw err
     console.log(`Create file Succssesfull `)
   })
+}
+
+type props= {
+  ktax: string  // saltKey
+  dataT: string // taxId
+  kpass: string // saltKey
+  dataP: string // password
+  accID: string
+}
+export const encriptoFile = async ({Cnpj, Pass, Account}) => {
+  const pathFile = join(__dirname, '../encript.pos')
+  const TaxID = await HashConstructor(Cnpj)
+  const Password = await HashConstructor(Pass)
+  const dataEncript: props = {
+    ktax: TaxID.saltKey,
+    dataT: TaxID.hashPassword,
+    kpass: Password.saltKey,
+    dataP: Password.hashPassword,
+    accID: Account
+  }
+  await writeFile(pathFile, JSON.stringify(dataEncript), (err) => {
+    if (err) throw err
+    console.log(`Encript file Succssesfull `)
+  })
+}
+
+const readFileAsync = promisify(readFile);
+export const readEncriptoFile = async ({taxId, password}) => {
+  try {
+    const pathFile = join(__dirname, '../encript.pos')
+    if(existsSync(pathFile)) {
+      const data = await readFileAsync(pathFile, fileEncoding)
+      const parse = JSON.parse(data);
+      let txHash = {
+            saltKey: parse.ktax,
+            hashPassword: parse.dataT
+      }
+      let passHash = {
+        saltKey: parse.kpass,
+        hashPassword: parse.dataP
+      }
+      const verifyT = await HashComparator(taxId, txHash)
+      const verifyP = await HashComparator(password, passHash)
+      
+      if(verifyT && verifyP) { 
+        return {
+          account: parse.accID,
+          saltKey: parse.kpass,
+          hashPassword: parse.dataP
+        }
+      }
+    }
+    return null; 
+  } catch(err) {
+    console.log(err)
+  }
 }

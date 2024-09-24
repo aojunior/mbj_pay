@@ -200,7 +200,6 @@ export async function VerifyAccountAPI(token, AccId) {
       httpsAgent
     })
     .then((res: any) => {
-      console.log(res.data)
       if (res.status === 200) return res.data
     })
     .catch((error) => {

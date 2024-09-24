@@ -41,6 +41,30 @@ export async function createClientDB(data: any) {
   }
 }
 
+export async function insertExistingClientDB(data: any) {
+  try {
+    const account = await prisma.client.create({
+      data: {
+        accountId: data.AccId,
+        accountHolderId: data.AccHId,
+        accountBank: data.AccBank,
+        branchBank: data.Branch,
+        companyName: data.Name,
+        taxId: data.TaxId,
+        phoneNumber: data.Phone,
+        email: data.Email,
+        hashPassword: data.Pass,
+        saltKey: data.Key,
+        status: data.Status
+      }
+    })
+    return account
+  } catch (error) {
+    console.log(error)
+    return
+  }
+}
+
 export async function updateClientDB(data: any) {
   try {
     await prisma.client
@@ -88,7 +112,7 @@ export async function clientExists() {
 
 export async function getClientDB() {
   try {
-    const account = await prisma.client.findFirst({
+    const account = await prisma.client.findFirstOrThrow({
       select: {
         accountId: true,
         accountBank: true,

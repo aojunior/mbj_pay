@@ -4,10 +4,7 @@ export const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
   navigate: (route) => ipcRenderer.send('navigate', route),
-  reciveFile: async () => {
-    const data = await ipcRenderer.invoke('watch_file')
-    return data
-  },
+  reciveFile: (callback: (data: any) => void) => ipcRenderer.on('watch_file', (event, data) => callback(data)),
   cancelPayment: () => ipcRenderer.send('cancel_payment'),
   acceptTermsOfService: async () => {
     const a = await ipcRenderer.invoke('accept_terms_of_service')
@@ -18,20 +15,24 @@ export const API = {
     return newToken
   },
   createAccount: async (clientData) => {
-    const response = await ipcRenderer.invoke('create-account', clientData)
+    const response = await ipcRenderer.invoke('create_account', clientData)
     return response
   },
   deleteAccount: async () => {
-    const del = await ipcRenderer.invoke('delete-account')
+    const del = await ipcRenderer.invoke('delete_account')
     return del
   },
   verifyAccount: async () => {
-    const verify = await ipcRenderer.invoke('verify-account')
+    const verify = await ipcRenderer.invoke('verify_account')
     return verify
   },
   getAccount: async () => {
-    const account = ipcRenderer.invoke('get-account')
+    const account = ipcRenderer.invoke('get_account')
     return account
+  },
+  signIn: async (signInData) => {
+    const response = await ipcRenderer.invoke('signIn', signInData)
+    return response
   },
   alterPassword: async (password) => {
     const alterPass = await ipcRenderer.invoke('alter_password', password)
