@@ -4,7 +4,7 @@ export const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
   navigate: (route) => ipcRenderer.send('navigate', route),
-  reciveFile: (callback: (data: any) => void) => ipcRenderer.on('watch_file', (event, data) => callback(data)),
+  reciveFile: (callback: (data: any) => void) => ipcRenderer.on('watch_file', (_, data) => callback(data)),
   cancelPayment: () => ipcRenderer.send('cancel_payment'),
   acceptTermsOfService: async () => {
     const a = await ipcRenderer.invoke('accept_terms_of_service')

@@ -41,10 +41,10 @@ if (!isDev) {
 
 export const prisma = new PrismaClient({
   datasources: {
-    db: {
-      url: `file:${dbPath}`, // Defina aqui o caminho para o banco conforme a lógica que você já criou
-    },
+    // db: {
+    //   url: `file:${dbPath}`, // Defina aqui o caminho para o banco conforme a lógica que você já criou
+    // },
   },
-  log: ['query', 'info', 'warn'], // Para debug
+  log: ['info', 'warn'], // Para debug
 });
 

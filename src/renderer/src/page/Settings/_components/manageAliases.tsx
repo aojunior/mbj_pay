@@ -82,7 +82,7 @@ export function ManageAlias() {
     switch (event.key || event) {
       case 'F5':
         setIsLoad(true)
-        if (accState.status == 'REGULAR') {
+        if (accState?.status == 'REGULAR') {
           await win.api.updateAlias()
           setTimeout(async () => {
             let resp = await win.api.verifyAlias()
@@ -173,7 +173,7 @@ export function ManageAlias() {
         </Table>
 
         <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/1</span>
-        {accState.status == 'REGULAR' && <Button onClick={handleCreateAlias}>Add Chave</Button>}
+        {accState?.status == 'REGULAR' && <Button onClick={handleCreateAlias}>Add Chave</Button>}
       </>
       <span style={{ color: '#999', textAlign: 'end' }}>
         Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o

@@ -2,5 +2,5 @@
 001 = 12
 002 = 50
 003 = 131
-004 = a comment for recipient
-999
+004 = a comment for recipient  "electron": "^28.2.0",     "@types/node": "^18.19.9", "prisma": "^5.19.1",  "@prisma/client": "^5.19.1",
+999 

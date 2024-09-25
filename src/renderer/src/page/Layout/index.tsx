@@ -61,7 +61,7 @@ export default function Layout() {
   useEffect(() => {
     const checkClient = async () => {
       setIsLoad(true)
-      const exists = await win.api.getAccount() 
+      const exists = await win.api.getAccount()
       if (exists) {
         setAccState(exists)
         navigate('/home')

@@ -57,7 +57,10 @@ export async function insertExistingClientDB(data: any) {
         saltKey: data.Key,
         status: data.Status
       }
+    }).then(() => {
+      return getClientDB()
     })
+
     return account
   } catch (error) {
     console.log(error)
@@ -98,7 +101,7 @@ export async function updateClientDB(data: any) {
 
 export async function clientExists() {
   try {
-    const account = await prisma.client.findFirstOrThrow()
+    const account = await prisma.client.findFirst()
     if (account) {
       return true
     } else {
@@ -112,7 +115,7 @@ export async function clientExists() {
 
 export async function getClientDB() {
   try {
-    const account = await prisma.client.findFirstOrThrow({
+    const account = await prisma.client.findFirst({
       select: {
         accountId: true,
         accountBank: true,

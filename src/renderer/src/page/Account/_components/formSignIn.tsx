@@ -18,10 +18,14 @@ import {
   Button
 } from '../../../styles/global'
 import { useNavigate } from 'react-router-dom'
+import { useAccount } from '@renderer/context/account.context'
+import { Loading } from '@renderer/components/loading'
 
 const win: any = window
 export function SignIn() {
+  const { setAccState } = useAccount()
   const [signInData, setSignInData] = useState<any>()
+  const [isLoad, setIsLoad] = useState<boolean>(false)
 
   const { register, watch, setValue, getValues } = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -46,14 +50,17 @@ export function SignIn() {
   }
 
   async function handleSubmitForm() {
-    // console.log(getValues())
+    setIsLoad(true)
     setValue('taxId', getValues().taxId.replace(/\D/g, ''))
-    const da = await win.api.signIn(getValues())
-    console.log(da)
+    const acc = await win.api.signIn(getValues())
+    setAccState(acc)
+    setIsLoad(false)
+    navigate('/home')
   }
 
   return (
     <form>
+      {isLoad && <Loading />}
       <div
         style={{
           display: 'flex',
