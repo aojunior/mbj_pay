@@ -29,7 +29,7 @@ export default function Dashboard() {
       return
     }
     setBalance(data)
-    setExtract(extractToday.statement as any[])
+    setExtract(extractToday as any[])
     setIsLoad(false)
   }
   const handleKeyButton = async (event) => {

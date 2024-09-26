@@ -11,17 +11,22 @@ import {
   FormInput,
   Label,
   Input,
-  ContentInRow
+  ContentInRow,
+  Container,
+  IconEyeInvisible,
+  IconEye
 } from '../../../styles/global'
 import { useState } from 'react'
-import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
+import { useAccount } from '@renderer/context/account.context'
 
 type bankProps = {
   bankData: z.infer<typeof bankSchema>
   setBankData: any
 }
 
-export function FormBank({ bankData, setBankData }: bankProps) {
+export function FormBank() {
+  const { bankData, setBankData } = useAccount()
+
   const { control, register, watch } = useForm<z.infer<typeof bankSchema>>({
     resolver: zodResolver(bankSchema),
     defaultValues: bankData
@@ -37,13 +42,13 @@ export function FormBank({ bankData, setBankData }: bankProps) {
       lerImg.onload = () => {
         switch (e.name) {
           case 'imgSelfie':
-            setBankData({ ...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result)) })
+            // setBankData({ ...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result)) })
             break
           case 'imgRgFront':
-            setBankData({ ...bankData, imgRgFront: JSON.parse(JSON.stringify(lerImg.result)) })
+            // setBankData({ ...bankData, imgRgFront: JSON.parse(JSON.stringify(lerImg.result)) })
             break
           case 'imgRgBack':
-            setBankData({ ...bankData, imgRgBack: JSON.parse(JSON.stringify(lerImg.result)) })
+            // setBankData({ ...bankData, imgRgBack: JSON.parse(JSON.stringify(lerImg.result)) })
             break
         }
       }
@@ -56,17 +61,8 @@ export function FormBank({ bankData, setBankData }: bankProps) {
 
   return (
     <form>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 20,
-          marginTop: 30
-        }}
-      >
-        <Card style={{ width: '80%' }}>
+      <Container style={{height: '80vh', gap: 20, marginTop: 30, width: '65vw' }}>
+        <Card style={{width: '100%'}}>
           <CardHeader>
             <CardTitle>Anexo de Documento</CardTitle>
           </CardHeader>
@@ -78,25 +74,24 @@ export function FormBank({ bankData, setBankData }: bankProps) {
                 dados
               </Label>
 
-              <ContentInRow style={{ justifyContent: 'flex-start', alignItems: 'center', gap: 10 }}>
+              <ContentInRow style={{ width: '70%', justifyContent: 'flex-end', alignItems: 'center', gap: 10 }}>
                 <Input
                   {...register('password')}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Digite aqui"
+                  style={{ width: '100%', boxSizing: 'border-box', justifySelf: 'flex-end'}}
                 />
                 {showPassword ? (
-                  <AiFillEyeInvisible
+                  <IconEyeInvisible
                     size={24}
-                    color="#4f4f4f"
                     onClick={togglePassword}
-                    style={{ cursor: 'pointer' }}
+                    style={{position: 'relative', right: 40}}
                   />
                 ) : (
-                  <AiFillEye
+                  <IconEye
                     size={24}
-                    color="#4f4f4f"
                     onClick={togglePassword}
-                    style={{ cursor: 'pointer' }}
+                    style={{position: 'relative', right: 40}}
                   />
                 )}
               </ContentInRow>
@@ -159,7 +154,7 @@ export function FormBank({ bankData, setBankData }: bankProps) {
             </ContantImg>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </form>
   )
 }

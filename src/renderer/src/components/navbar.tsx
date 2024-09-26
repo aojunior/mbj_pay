@@ -38,13 +38,13 @@ export function Navbar() {
     <Container>
       <ul style={{ display: 'flex', flexDirection: 'row', gap: 20, justifyContent: 'center' }}>
         <li>
-          <Link onClick={() => navigate('/home')}>Home</Link>
+          <Link onClick={() => navigate('/home', { replace: true })}>Home</Link>
         </li>
         <li>
-          <Link onClick={() => navigate('/dashboard')}>Dashboard</Link>
+          <Link onClick={() => navigate('/dashboard', { replace: true })}>Dashboard</Link>
         </li>
         <li>
-          <Link onClick={() => navigate('/settings')}>Settings</Link>
+          <Link onClick={() => navigate('/settings', { replace: true })}>Settings</Link>
         </li>
       </ul>
     </Container>

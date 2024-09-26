@@ -4,7 +4,7 @@ import os from 'node:os'
 import { machineIdSync } from 'node-machine-id'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png'
-import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile} from './lib'
+import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile, encriptoTest} from './lib'
 import {
   tokenGenerator,
   createAccountAPI,
@@ -126,6 +126,9 @@ app.whenReady().then(() => {
   createWindow()
   createPath() // Cria as pastas necessarias para receber e enviar arquivos de leitura
   removeReqFile()
+
+  // Usado apenas para criar arquivo de conta com status Regular
+  // encriptoTest({Cnpj:'14787479000162', Pass:'12345', Account:"27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C"})
 
   // Configuração do auto launch (iniciar com windows)
   let electronAutoLauncher = new AutoLaunch({
@@ -302,6 +305,11 @@ ipcMain.on('navigate', (_, route) => {
   mainWindow.loadURL(`http://localhost:5173${route}`)
 })
 
+ipcMain.handle('reload-app', () => {
+  const window = BrowserWindow.getAllWindows()[0];
+  window.reload(); // Recarrega a aplicação
+});
+
 ipcMain.handle('accept_terms_of_service', async () => {
   const fetch = await getLocationAndIPV6()
   function getIPs() {
@@ -428,83 +436,6 @@ ipcMain.handle('delete_account', async () => {
     return deletionConfirmed
   } else {
     return 'Alias Registered'
-  }
-})
-
-ipcMain.handle('signIn', async (_, formData) => {
-  try {
-    const result = await readEncriptoFile(formData)
-    let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
-    if(result) {
-      let consulta = await VerifyAccountAPI(token, result.account)
-      if (consulta.error) return 'Error'
-
-      let data = {
-        AccHId: consulta.accountHolderId,
-        AccId: consulta.account.accountId,
-        AccBank: 0,
-        Branch: 0,
-        Name: consulta.additionalDetailsCorporate.companyName,
-        Email: consulta.client.email,
-        TaxId: consulta.client.taxIdentifier.taxId,
-        Phone: consulta.client.mobilePhone.phoneNumber,
-        Status: consulta.accountStatus,
-        Key: result.saltKey,
-        Pass: result.hashPassword
-      }
-      if(consulta.account.branch) {
-        data.AccBank = consulta.account.account
-        data.Branch = consulta.account.branch
-      }
-      let update = await insertExistingClientDB(data)
-
-      const fetch = await getLocationAndIPV6()
-      function getIPs() {
-        let ifaces: any = os.networkInterfaces()
-        let ipAdresse: any = {}
-        Object.keys(ifaces).forEach(function (ifname) {
-          let alias = 0
-          ifaces[ifname].forEach(function (iface) {
-            if ('IPv4' !== iface.family || iface.internal !== false) {
-              // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-              return
-            }
-    
-            if (alias >= 1) {
-              // this single interface has multiple ipv4 addresses
-              // console.log(ifname + ':' + alias, iface.address);
-            } else {
-              // this interface has only one ipv4 adress
-              // console.log(ifname, iface.address);
-              ipAdresse = { IP: iface.address, MAC: iface.mac }
-            }
-            ++alias
-          })
-        })
-        return ipAdresse.IP
-      }
-      let ipNet = getIPs()
-      let idDevice = machineIdSync(true)
-      const infos = {
-        time: currentTime,
-        createdAT: new Date(),
-        latitude: fetch.latitude,
-        longitude: fetch.longitude,
-        city: fetch.city,
-        state: fetch.region_name,
-        contry: fetch.country_name,
-        // ipv6: fetch.ip,
-        ip: ipNet,
-        idDevice: idDevice
-      }
-      await setDataToTermsOfService(infos)
-
-      return update
-    }
-  } catch(error) {
-    console.log(error)
   }
 })
 
@@ -648,7 +579,7 @@ ipcMain.handle('extract_balance_today', async () => {
   return response
 })
 
-ipcMain.on('extract_balance_filter', async (_, args) => {
+ipcMain.handle('extract_balance_filter', async (_, args) => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
@@ -688,4 +619,81 @@ ipcMain.handle('alter_password', async (_, passData) => {
   const db = await getClientDB()
   const alterPassword = await alterPasswordDB(passData, db?.accountId)
   return alterPassword
+})
+
+ipcMain.handle('signIn', async (_, formData) => {
+  try {
+    const result = await readEncriptoFile(formData)
+    let token = await mainWindow.webContents
+    .executeJavaScript(`sessionStorage.getItem('token')`)
+    .then((response) => response)
+    if(result) {
+      let consulta = await VerifyAccountAPI(token, result.account)
+      if (consulta.error) return 'Error'
+
+      let data = {
+        AccHId: consulta.accountHolderId,
+        AccId: consulta.account.accountId,
+        AccBank: 0,
+        Branch: 0,
+        Name: consulta.additionalDetailsCorporate.companyName,
+        Email: consulta.client.email,
+        TaxId: consulta.client.taxIdentifier.taxId,
+        Phone: consulta.client.mobilePhone.phoneNumber,
+        Status: consulta.accountStatus,
+        Key: result.saltKey,
+        Pass: result.hashPassword
+      }
+      if(consulta.account.branch) {
+        data.AccBank = consulta.account.account
+        data.Branch = consulta.account.branch
+      }
+      let update = await insertExistingClientDB(data)
+
+      const fetch = await getLocationAndIPV6()
+      function getIPs() {
+        let ifaces: any = os.networkInterfaces()
+        let ipAdresse: any = {}
+        Object.keys(ifaces).forEach(function (ifname) {
+          let alias = 0
+          ifaces[ifname].forEach(function (iface) {
+            if ('IPv4' !== iface.family || iface.internal !== false) {
+              // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+              return
+            }
+    
+            if (alias >= 1) {
+              // this single interface has multiple ipv4 addresses
+              // console.log(ifname + ':' + alias, iface.address);
+            } else {
+              // this interface has only one ipv4 adress
+              // console.log(ifname, iface.address);
+              ipAdresse = { IP: iface.address, MAC: iface.mac }
+            }
+            ++alias
+          })
+        })
+        return ipAdresse.IP
+      }
+      let ipNet = getIPs()
+      let idDevice = machineIdSync(true)
+      const infos = {
+        time: currentTime,
+        createdAT: new Date(),
+        latitude: fetch.latitude,
+        longitude: fetch.longitude,
+        city: fetch.city,
+        state: fetch.region_name,
+        contry: fetch.country_name,
+        // ipv6: fetch.ip,
+        ip: ipNet,
+        idDevice: idDevice
+      }
+      await setDataToTermsOfService(infos)
+
+      return update
+    }
+  } catch(error) {
+    console.log(error)
+  }
 })

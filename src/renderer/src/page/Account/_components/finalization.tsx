@@ -1,14 +1,16 @@
 import { Notification } from '@renderer/components/notification'
 import { useState } from 'react'
-import { Container, Message, Title } from '../styles'
-import { Button } from '@renderer/styles/global'
+import {  Message, Title } from '../styles'
+import { Button, Container } from '@renderer/styles/global'
 import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
+import { useNavigate } from 'react-router-dom'
 
 const win: any = window
 export function Finalization() {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [isLoad, setIsLoad] = useState(false)
+  const navigate = useNavigate()
 
   async function handleVerifyAccount() {
     setIsLoad(true)
@@ -37,7 +39,7 @@ export function Finalization() {
           alignItems: 'center',
           justifyContent: 'center',
           gap: 40,
-          height: '60vh'
+          height: '84vh'
         }}
       >
         <Title>Finalização do Cadastro</Title>

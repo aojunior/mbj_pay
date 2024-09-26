@@ -12,21 +12,22 @@ import {
   Separator,
   CardContent,
   ContentInRow,
-  Input
+  Input,
+  Container
 } from '../../../styles/global'
+import { useAccount } from '@renderer/context/account.context'
 
-type ownerProps = {
-  ownerData: z.infer<typeof ownerSchema>
-  setOwnerData: any
-}
 
-export function FormOwner({ ownerData, setOwnerData }: ownerProps) {
+
+export function FormOwner() {
+  const { ownerData, setOwnerData } = useAccount()
+
   const { register, watch, setValue } = useForm<z.infer<typeof ownerSchema>>({
     resolver: zodResolver(ownerSchema),
     defaultValues: ownerData
   })
 
-  watch((e) => setOwnerData(e))
+  watch(a => setOwnerData(a) )
 
   const maskDateInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
@@ -63,16 +64,7 @@ export function FormOwner({ ownerData, setOwnerData }: ownerProps) {
 
   return (
     <form>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 20,
-          marginTop: 30
-        }}
-      >
+      <Container style={{height: '80vh', gap: 20, marginTop: 30}}>
         <Card>
           <CardHeader>
             <CardTitle> Dados do Representante</CardTitle>
@@ -189,7 +181,7 @@ export function FormOwner({ ownerData, setOwnerData }: ownerProps) {
             </ContentInRow>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </form>
   )
 }

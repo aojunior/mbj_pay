@@ -12,23 +12,18 @@ import {
   Separator,
   CardContent,
   ContentInRow,
-  Input
+  Input,
+  Container
 } from '../../../styles/global'
+import { useAccount } from '@renderer/context/account.context'
 
-type companyProps = {
-  companyData: z.infer<typeof companySchema>
-  setCompanyData: (data: any) => void
-}
-
-export function FormCompany({ companyData, setCompanyData }: companyProps) {
+export function FormCompany() {
+  const { companyData, setCompanyData } = useAccount()
   const { register, watch, setValue } = useForm<z.infer<typeof companySchema>>({
     resolver: zodResolver(companySchema),
     defaultValues: companyData
   })
-
-  watch((a) => {
-    setCompanyData(a)
-  })
+  watch(register => setCompanyData(register))
 
   const maskDateInput = (event) => {
     let value = event.target.value.replace(/\D/g, '') // Remove caracteres não numéricos
@@ -64,16 +59,8 @@ export function FormCompany({ companyData, setCompanyData }: companyProps) {
 
   return (
     <form>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 20,
-          marginTop: 30
-        }}
-      >
+      <Container style={{height: '80vh', gap: 20, marginTop: 30}}>
+
         <Card>
           <CardHeader>
             <CardTitle> Dados da Empresa</CardTitle>
@@ -185,7 +172,7 @@ export function FormCompany({ companyData, setCompanyData }: companyProps) {
             </ContentInRow>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </form>
   )
 }

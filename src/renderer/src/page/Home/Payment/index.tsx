@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { useEffect, useState } from 'react'
-import { Container, FormInput, Label, TextArea } from '@renderer/styles/global'
+import { Container, ContentInRow, FormInput, Label, TextArea } from '@renderer/styles/global'
 // import QRCode from '../../../assets/images.png'
 import {
   Button,
@@ -15,7 +15,7 @@ import {
   ValueDisplay,
   ValueLabel
 } from './styles'
-import { ContantRow, DotWave } from '../StandBy/styles'
+import { DotWave } from '../StandBy/styles'
 import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 
@@ -141,11 +141,11 @@ function PaymentScreen({ file }) {
                 <h3>{transactionStatus.toUpperCase()}</h3>
                 <LoadInfo style={{ marginBottom: 25 }}>
                   <h3>Aguardando Pagamento </h3>
-                  <ContantRow>
+                  <ContentInRow>
                     <DotWave />
                     <DotWave />
                     <DotWave />
-                  </ContantRow>
+                  </ContentInRow>
                 </LoadInfo>
               </>
             )}

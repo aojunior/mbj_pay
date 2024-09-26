@@ -1,4 +1,5 @@
 import { styled } from 'styled-components'
+import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai'
 
 export const Container = styled.div`
   width: 100%;
@@ -121,4 +122,17 @@ export const TextArea = styled.textarea`
   border: 1px solid #c7c7c4;
   padding: 10px;
   border-radius: 8px;
+`
+
+export const IconEye = styled(AiFillEye)`
+  color: #4f4f4f;
+  position: absolute;
+  margin-right: 5px;
+  cursor: pointer;
+`
+export const IconEyeInvisible = styled(AiFillEyeInvisible)`
+  color: #4f4f4f;
+  position: absolute;
+  margin-right: 5px;
+  cursor: pointer;
 `

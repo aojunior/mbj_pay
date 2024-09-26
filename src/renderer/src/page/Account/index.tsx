@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { Progress } from './_components/Progress'
@@ -10,6 +10,7 @@ import { Button, Container, ContentInRow } from '../../styles/global'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
+
 const win: any = window
 
 export default function CreateAccount() {
@@ -57,7 +58,7 @@ export default function CreateAccount() {
       setIsLoad(true)
       setContentNotification({
         ...contentNotification,
-        title: "Necessa'rio criar uma Senha",
+        title: "Necessário criar uma Senha",
         message: 'Por favor, preencha o campo de senha com no mínimo 4 caracteres',
         type: 'error'
       })
@@ -88,7 +89,7 @@ export default function CreateAccount() {
         type: 'confirm'
       })
       setShowNotification(true)
-      setTimeout(() => navigate('/finalization'), 2000)
+      setTimeout(() => navigate('/account/complete'), 2000)
     } else {
       setContentNotification({
         ...contentNotification,
@@ -100,10 +101,15 @@ export default function CreateAccount() {
     }
   }
 
+  // useEffect(() => {
+  //   navigate('/account/terms')
+  // }, [])
+
   return (
     <>
       {isLoad && <Loading />}
-      <Progress data={pages[select]} />
+      {/* <Progress data={pages[select]} />
+
       <Container style={{ backgroundColor: '#0', height: 600 }}>
         {pages[select] == 0 && (
           <FormCompany companyData={companyData} setCompanyData={setCompanyData} />
@@ -123,8 +129,7 @@ export default function CreateAccount() {
         ) : (
           <Button onClick={onSubmit}> Finalizar </Button>
         )}
-      </ContentInRow>
-
+      </ContentInRow> */}
       <Notification />
     </>
   )

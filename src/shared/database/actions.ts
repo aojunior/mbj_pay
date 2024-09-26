@@ -5,7 +5,16 @@ import { HashConstructor } from '@shared/utils'
 // ACTION TO ACCEPT TERMS OF SERVICES
 export async function setDataToTermsOfService(data: Information) {
   try {
-   const save = await prisma.information.create({
+    const info = await prisma.information.findFirst()
+    if(info) {
+      await prisma.information.delete({
+        where: {
+          idDevice: info.idDevice
+        }
+      })
+    }
+
+    const save = await prisma.information.create({
       data: data
     })
     return save

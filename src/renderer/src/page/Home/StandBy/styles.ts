@@ -1,10 +1,5 @@
 import { styled, keyframes } from 'styled-components'
 
-export const ContantRow = styled.div`
-  display: flex;
-  flex: row;
-  gap: 5px;
-`
 
 const dotWaveAnimation = keyframes`
     0%, 100% {

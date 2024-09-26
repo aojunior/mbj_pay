@@ -10,6 +10,7 @@ import {
   Separator
 } from '../../../styles/global'
 import { DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
+import { Loading } from '@renderer/components/loading'
 
 type dialogProps = {
   toggle: () => void
@@ -20,6 +21,7 @@ export function DialogExtract({ toggle }: dialogProps) {
   const [input, setInput] = useState('')
   const dateFilter = { start: '', end: '' }
   const [extract, setExtract] = useState<any>([])
+  const [isLoad, setIsLoad] = useState(false)
 
   const formatDate = (date: string) => {
     let format = date.split('T')
@@ -39,20 +41,20 @@ export function DialogExtract({ toggle }: dialogProps) {
   }
 
   async function filterExtract() {
+    setIsLoad(true)
     let date = new Date().toISOString()
     let now = date.split('T')
 
     if (input == 'other') {
-      await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end)
+      setExtract(await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end))
     }
     if (input == '7day') {
-      await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0])
+      setExtract(await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0]))
     }
     if (input == 'now') {
-      await win.api.extractBalanceFilter(now[0], now[0])
+      setExtract(await win.api.extractBalanceFilter(now[0], now[0]))
     }
-
-    await win.api.responseExtractFilter((data) => setExtract(data.statement))
+    setIsLoad(false)
   }
 
   const handleKeyButton = async (event) => {
@@ -155,6 +157,8 @@ export function DialogExtract({ toggle }: dialogProps) {
         </Card>
         <Button onClick={toggle}> Fechar </Button>
       </DialogContext>
+
+      {isLoad && <Loading />}
     </Dialog>
   )
 }

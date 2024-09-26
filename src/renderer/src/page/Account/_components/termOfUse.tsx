@@ -15,7 +15,7 @@ export const TermsOfUse = () => {
     if (accepted) {
       try {
         await win.api.acceptTermsOfService()
-        navigate('/create-account')
+        navigate('/account/company')
       } catch (error) {
         console.log(error)
       }
@@ -23,9 +23,9 @@ export const TermsOfUse = () => {
   }
 
   return (
-    <Container>
+    <Container style={{ backgroundColor: '#0'}}>
       <Title>Termos de Uso</Title>
-      <TermsText>
+      <TermsText >
         <p>Bem-vindo à nossa aplicação. Leia atentamente os seguintes termos de uso:</p>
         <p>
           Nossa aplicação enviará os dados para a API da Matera para validação junto ao Banco
@@ -65,6 +65,9 @@ export const TermsOfUse = () => {
 
       <Button disabled={!accepted} onClick={handleButtonClick}>
         Prosseguir
+      </Button>
+      <Button style={{marginTop: 10}} onClick={() => navigate('/')}>
+        Voltar
       </Button>
     </Container>
   )

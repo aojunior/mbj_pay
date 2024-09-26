@@ -1,17 +1,15 @@
 import { Notification } from '@renderer/components/notification'
+import { useNavigate } from 'react-router-dom'
 // import { useNotification } from '@renderer/context/notification.context'
 
+const win : any = window
 export function AddBank() {
   // const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-
+  let nav = useNavigate()
+ 
   async function handleNotification() {
-    // setContentNotification({
-    //   ...contentNotification,
-    //   title: 'Test Notification',
-    //   message: 'Only a Test Notification!',
-    //   type: 'info'
-    // })
-    // setShowNotification(true)
+    window.location.reload();
+
   }
 
   return (

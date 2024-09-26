@@ -107,6 +107,7 @@ type props= {
   dataP: string // password
   accID: string
 }
+
 export const encriptoFile = async ({Cnpj, Pass, Account}) => {
   const pathFile = join(__dirname, '../encript.pos')
   const TaxID = await HashConstructor(Cnpj)
@@ -154,4 +155,21 @@ export const readEncriptoFile = async ({taxId, password}) => {
   } catch(err) {
     console.log(err)
   }
+}
+
+export const encriptoTest = async ({Cnpj, Pass, Account}) => {
+  const pathFile = join(__dirname, '../teste.pos')
+  const TaxID = await HashConstructor(Cnpj)
+  const Password = await HashConstructor(Pass)
+  const dataEncript: props = {
+    ktax: TaxID.saltKey,
+    dataT: TaxID.hashPassword,
+    kpass: Password.saltKey,
+    dataP: Password.hashPassword,
+    accID: Account
+  }
+  await writeFile(pathFile, JSON.stringify(dataEncript), (err) => {
+    if (err) throw err
+    console.log(`Encript file Succssesfull `)
+  })
 }

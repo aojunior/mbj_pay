@@ -15,17 +15,23 @@ import {
   ContentInRow,
   Input,
   CardFooter,
-  Button
+  Button,
+  IconEyeInvisible,
+  IconEye
 } from '../../../styles/global'
 import { useNavigate } from 'react-router-dom'
 import { useAccount } from '@renderer/context/account.context'
 import { Loading } from '@renderer/components/loading'
+import { Notification } from '@renderer/components/notification'
+import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 export function SignIn() {
   const { setAccState } = useAccount()
+  const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [signInData, setSignInData] = useState<any>()
   const [isLoad, setIsLoad] = useState<boolean>(false)
+  const [showTextPassword, setShowTextPassword] = useState(false)
 
   const { register, watch, setValue, getValues } = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -55,61 +61,85 @@ export function SignIn() {
     const acc = await win.api.signIn(getValues())
     setAccState(acc)
     setIsLoad(false)
-    navigate('/home')
+    if(acc) {
+      navigate('/home')
+    } else {
+      setContentNotification({
+        ...contentNotification,
+        type: 'error',
+        title: 'Erro de Login',
+        message: 'Não foi possível logar na conta, tente novamente.'
+      })
+      setShowNotification(true)
+    }
+  }
+
+  function togglePassword() {
+    setShowTextPassword(!showTextPassword)
   }
 
   return (
     <form>
       {isLoad && <Loading />}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 20,
-          marginTop: 30
-        }}
-      >
-        <Card>
+
+        <Card style={{marginTop: '25%'}}>
           <CardHeader>
-            <CardTitle> Fazer o Login</CardTitle>
+            <CardTitle> Entra na Conta MBJ PAY </CardTitle>
             <Separator />
           </CardHeader>
           
-          <CardContent>
-            <ContentInRow style={{ gap: 10 }}>
-              <FormInput style={{ width: 400 }}>
+          <CardContent style={{padding: 30}} >
+              <FormInput style={{ width: 300 }}>
                 <Label>CNPJ</Label>
                 <Input 
                 {...register('taxId')} 
                 type="text"
-                placeholder="Ex: 12.345.678/0009-00"
+                placeholder="Digite o CNPJ"
                 onChange={maskCNPJInput}
                 />
               </FormInput>
 
-              <FormInput style={{ width: '40%' }}>
-                <Label>Senha da Aplicação</Label>
-                <Input
-                  {...register('password')}
-                  type="text"
-                />
+              <FormInput style={{ width: 300}}>
+                <Label>Senha</Label>
+                <ContentInRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+                  <Input
+                    style={{ width: '100%', boxSizing: 'border-box'}}
+                    {...register('password')}
+                    placeholder="Digite a Senha"
+                    type={showTextPassword ? 'text' : 'password'}
+
+                    
+                  />
+                  {showTextPassword ? (
+                    <IconEyeInvisible
+                      size={24}
+                      onClick={togglePassword}
+                    />
+                  ) : (
+                    <IconEye
+                      size={24}
+                      onClick={togglePassword}
+                    />
+                  )}
+                </ContentInRow>
               </FormInput>
-            </ContentInRow>
           </CardContent>
 
-          <CardFooter>
+          <CardFooter style={{marginTop: 10, alignItems: 'center'}}>
             <Button onClick={handleSubmitForm} type='button'>
-                Entrar
+              Entrar
             </Button>
-            <p>OU</p>
-            <Button onClick={() => navigate('/terms')} >
-                Novo Cadastro
+            <br />
+            
+            <hr style={{borderTop: '1px dashed #c7c7c4', width: '100%'}}/>
+            <p style={{color:'#c4c4c7'}}>ou</p>
+            
+            <Button style={{marginTop: 0}} onClick={() => navigate('/account/terms')} >
+              Criar Conta
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      <Notification />
     </form>
   )
 }

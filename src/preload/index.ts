@@ -83,11 +83,11 @@ export const API = {
   },
   extractBalanceToday: async () => {
     const extractToday = await ipcRenderer.invoke('extract_balance_today')
-    return extractToday
+    return extractToday.statement
   },
   extractBalanceFilter: async (start, end) => {
     const extractFilter = await ipcRenderer.invoke('extract_balance_filter', [start, end])
-    return extractFilter
+    return extractFilter.statement
   }
 }
 

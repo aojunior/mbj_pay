@@ -4,6 +4,7 @@ import { styled } from 'styled-components'
 export const ProgressHeader = styled.div`
   border: 1 solid black;
   width: 80%;
+  
 `
 
 export const ProgressBar = styled.div`
@@ -67,15 +68,21 @@ export const Title = styled.h1`
 `
 
 export const TermsText = styled.div`
-  margin: 20px 0;
+  margin: 0;
   line-height: 1.6;
+  height: 400px;
   color: #555;
+  overflow-y: scroll;
+  border: 1px solid #c7c7c4;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 5px;
 `
 
 export const CheckboxContainer = styled.div`
   display: flex;
   align-items: center;
-  margin: 40px 0;
+  margin: 10px 0 40px 0;
 `
 
 export const Checkbox = styled.input`

@@ -1,9 +1,8 @@
 import { styled } from 'styled-components'
 import { IoIosWarning } from 'react-icons/io'
-import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai'
-import { Input } from '@renderer/styles/global'
+import { AiFillCloseSquare } from 'react-icons/ai'
+import { ContentInRow, IconEye, IconEyeInvisible, Input } from '@renderer/styles/global'
 import { useState } from 'react'
-import { ContantRow } from '@renderer/page/Home/StandBy/styles'
 import { useSecurity } from '@renderer/context/security.context'
 
 const Container = styled.dialog`
@@ -61,6 +60,7 @@ const Button = styled.button`
     cursor: pointer;
   }
 `
+
 const win: any = window
 
 export function ShowPassword() {
@@ -100,40 +100,39 @@ export function ShowPassword() {
   return (
     <Container>
       <Section>
-        <span
+        {/* <span
           style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }}
           onClick={() => setShowSecurity(false)}
         >
           X
-        </span>
+        </span> */}
+        <AiFillCloseSquare color='#777' size={24} onClick={() => setShowSecurity(false)} cursor='pointer'/>
         <Header>
           <Title>Confirmação de senha</Title>
           <IoIosWarning size={28} color="#FFA500" />
         </Header>
         <p>Para contiuar, digite sua senha:</p>
-        <ContantRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+        <ContentInRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
           <Input
-            style={{ width: '75%', borderColor: error.borderColor }}
+            style={{ width: '75%', borderColor: error.borderColor, boxSizing: 'border-box' }}
             type={showTextPassword ? 'text' : 'password'}
             placeholder="Confirme a senha"
             onChange={handleChange}
           />
           {showTextPassword ? (
-            <AiFillEyeInvisible
+            <IconEyeInvisible
               size={24}
-              color="#4f4f4f"
               onClick={togglePassword}
-              style={{ cursor: 'pointer' }}
             />
           ) : (
-            <AiFillEye
+            <IconEye
               size={24}
-              color="#4f4f4f"
+              
               onClick={togglePassword}
-              style={{ cursor: 'pointer' }}
+             
             />
           )}
-        </ContantRow>
+        </ContentInRow>
 
         <Footer>
           <p style={{ color: 'red' }}>{error.message}</p>

@@ -1,16 +1,16 @@
 import React from 'react'
-import { ContantRow, DotWave } from './styles'
-import { Container } from '@renderer/styles/global'
+import { DotWave } from './styles'
+import { Container, ContentInRow } from '@renderer/styles/global'
 
 const StandBy: React.FC = () => {
   return (
     <Container style={{ alignItems: 'center', justifyContent: 'center', gap: 40 }}>
       <h2>Aguardando Arquivo</h2>
-      <ContantRow>
+      <ContentInRow>
         <DotWave />
         <DotWave />
         <DotWave />
-      </ContantRow>
+      </ContentInRow>
     </Container>
   )
 }
