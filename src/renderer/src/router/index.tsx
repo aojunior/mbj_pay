@@ -6,21 +6,20 @@ import Dashboard from '@renderer/page/Dashboard'
 import Home from '@renderer/page/Home/Index'
 import Settings from '@renderer/page/Settings'
 import { Route, Routes, useNavigate } from 'react-router-dom'
-import AccountRouter from './account.router'
-import { AccountLayout, AppLayout } from '@renderer/page/Layout'
+import { AppLayout } from '@renderer/page/Layout'
 import { useCallback, useEffect, useState } from 'react'
 import { useAccount } from '@renderer/context/account.context'
 import { useNotification } from '@renderer/context/notification.context'
-import { Loading } from '@renderer/components/loading'
 import { FormCompany } from '@renderer/page/Account/_components/formCompany'
 import { FormOwner } from '@renderer/page/Account/_components/formOwner'
 import { FormBank } from '@renderer/page/Account/_components/formBank'
+import { Loading } from '@renderer/components/loading'
 
 const win: any = window
 export default function Root(): JSX.Element {
     const navigate = useNavigate()
     const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-    const { accState, setAccState } = useAccount()
+    const { setAccState } = useAccount()
     // const [showNotification, setShowNotification] = useState(false)
     const [isLoad, setIsLoad] = useState<boolean>(false)
 
@@ -46,43 +45,44 @@ export default function Root(): JSX.Element {
     }, [refreshAndStorageToken])
     
     useEffect(() => {
-        const checkClient = async () => {
-          setIsLoad(true)
-          const exists = await win.api.getAccount()
-          if (exists) {
-            setAccState(exists)
-            navigate('/home', { replace: true })
-          } else {
-            setAccState(null)
-            navigate('/account/signin', { replace: true })
-          }
-          setIsLoad(false)
+      const checkClient = async () => {
+        setIsLoad(true)
+        const exists = await win.api.getAccount()
+        if (exists) {
+          setAccState(exists)
+          navigate('/home', { replace: true })
+        } else {
+          setAccState(null)
+          navigate('/account/signin', { replace: true })
         }
-        checkClient()
+        setIsLoad(false)
+      }
+      checkClient()
     }, [])
+
+    if(isLoad) {
+      <Loading />
+    }
 
     return (
       <Routes>
+        <Route element={<CreateAccount />} >
+            <Route path="/" element={<SignIn />} />
+            <Route path="/account/signin" element={<SignIn />} />
+            <Route path="/account/create" element={<CreateAccount />} />
+            <Route path="/account/terms" element={<TermsOfUse />} />
+            <Route path="/account/company" element={<FormCompany />} />
+            <Route path="/account/owner" element={<FormOwner /> } />
+            <Route path="/account/bank" element={<FormBank />} />
+            <Route path="/account/complete" element={<Finalization />} />
+        </Route>
       
-          <Route element={<AccountLayout />} >
-              <Route path="/" element={<SignIn />} />
-              <Route path="/account/signin" element={<SignIn />} />
-              <Route path="/account/create" element={<CreateAccount />} />
-              <Route path="/account/terms" element={<TermsOfUse />} />
-              <Route path="/account/company" element={<FormCompany />} />
-              <Route path="/account/owner" element={<FormOwner /> } />
-              <Route path="/account/bank" element={<FormBank />} />
-              <Route path="/account/complete" element={<Finalization />} />
-          </Route>
-        
-          <Route element={<AppLayout />} >
-              <Route path="/" element={<Home />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/settings" element={<Settings />} />
-          </Route>
-        
-
+        <Route element={<AppLayout />} >
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<Settings />} />
+        </Route>
       </Routes>
     )
   }

@@ -4,7 +4,7 @@ import os from 'node:os'
 import { machineIdSync } from 'node-machine-id'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png'
-import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile, encriptoTest} from './lib'
+import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile } from './lib'
 import {
   tokenGenerator,
   createAccountAPI,

@@ -19,11 +19,6 @@ import {
 import { useState } from 'react'
 import { useAccount } from '@renderer/context/account.context'
 
-type bankProps = {
-  bankData: z.infer<typeof bankSchema>
-  setBankData: any
-}
-
 export function FormBank() {
   const { bankData, setBankData } = useAccount()
 
@@ -42,13 +37,13 @@ export function FormBank() {
       lerImg.onload = () => {
         switch (e.name) {
           case 'imgSelfie':
-            // setBankData({ ...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result)) })
+            setBankData({ ...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result)) })
             break
           case 'imgRgFront':
-            // setBankData({ ...bankData, imgRgFront: JSON.parse(JSON.stringify(lerImg.result)) })
+            setBankData({ ...bankData, imgRgFront: JSON.parse(JSON.stringify(lerImg.result)) })
             break
           case 'imgRgBack':
-            // setBankData({ ...bankData, imgRgBack: JSON.parse(JSON.stringify(lerImg.result)) })
+            setBankData({ ...bankData, imgRgBack: JSON.parse(JSON.stringify(lerImg.result)) })
             break
         }
       }
@@ -70,8 +65,8 @@ export function FormBank() {
             <FormInput style={{ width: 450, marginTop: 20, marginBottom: 20 }}>
               <Label>Crie uma Senha da Aplicação</Label>
               <Label style={{ fontSize: 11, fontWeight: 500, color: '#4f4f4f' }}>
-                Essa senha será usada para transferências, criação de chave pix e alterações de
-                dados
+                Essa senha será usada para transferências, criação de chave pix, alterações de
+                dados, entre outros.
               </Label>
 
               <ContentInRow style={{ width: '70%', justifyContent: 'flex-end', alignItems: 'center', gap: 10 }}>

@@ -61,6 +61,7 @@ export function SignIn() {
     const acc = await win.api.signIn(getValues())
     setAccState(acc)
     setIsLoad(false)
+    console.log(acc)
     if(acc) {
       navigate('/home')
     } else {

@@ -4,14 +4,12 @@ import {  Message, Title } from '../styles'
 import { Button, Container } from '@renderer/styles/global'
 import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
-import { useNavigate } from 'react-router-dom'
 
 const win: any = window
 export function Finalization() {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [isLoad, setIsLoad] = useState(false)
-  const navigate = useNavigate()
-
+ 
   async function handleVerifyAccount() {
     setIsLoad(true)
     const verify = await win.api.verifyAccount()

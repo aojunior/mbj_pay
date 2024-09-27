@@ -1,57 +1,39 @@
-import { useEffect, useState } from 'react'
-import { z } from 'zod'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Progress } from './_components/Progress'
-import { FormCompany } from './_components/formCompany'
-import { FormOwner } from './_components/formOwner'
-import { FormBank } from './_components/formBank'
-import { bankSchema, companySchema, ownerSchema } from './schema'
-import { Button, Container, ContentInRow } from '../../styles/global'
+import { Button, ContentInRow } from '../../styles/global'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
+import { useAccount } from '@renderer/context/account.context'
+import { Header } from '@renderer/components/header'
 
 const win: any = window
 
 export default function CreateAccount() {
-  const navigate = useNavigate()
+  const { companyData, bankData, ownerData } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const pages = [0, 1, 2]
-  const [select, setSelect] = useState(0)
-  const [isLoad, setIsLoad] = useState(false)
 
-  const [companyData, setCompanyData] = useState({
-    companyAddress: 'rua galaxia',
-    companyAddressComplement: '',
-    companyAddressNumber: '272',
-    companyNeighborhood: 'Jardim da Gloria',
-    companyCodezip: '03254770',
-    companyState: 'SP',
-    companyCity: 'Cotia',
-    companyDateCreated: '01/05/2020',
-    companyDocument: '81667817000110',
-    companyEmailAddress: 'empresa@email.com',
-    companyName: 'Empresa Teste',
-    companyPhoneNumber: '1127024478'
-  } as z.infer<typeof companySchema>)
+  const [ isLoad, setIsLoad ] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  const [ownerData, setOwnerData] = useState({
-    ownerAddress: 'rua galaxia',
-    ownerAddressComplement: '',
-    ownerAddressNumber: '272',
-    ownerNeighborhood: 'Jardim da Gloria',
-    ownerCodezip: '03254770',
-    ownerState: 'SP',
-    ownerCity: 'Cotia',
-    ownerBirthday: '01/05/1994',
-    ownerDocument: '13585366864',
-    ownerEmailAddress: 'cliente@email.com',
-    ownerName: 'Cliente Teste',
-    ownerMotherName: 'Mae Cliente',
-    ownerPhoneNumber: '1127024478'
-  } as z.infer<typeof ownerSchema>)
-
-  const [bankData, setBankData] = useState({} as z.infer<typeof bankSchema>)
+  function nextPage() {
+    switch (location.pathname) {
+      case '/account/terms':
+        navigate('/account/company')
+        break
+      case '/account/company':
+        navigate('/account/owner')
+        break
+      case '/account/owner':
+        navigate('/account/bank')
+        break
+      case '/account/bank':
+        navigate('/account/complete')
+        break
+    }
+  }
 
   async function onSubmit() {
     if (bankData.password.length < 4) {
@@ -89,7 +71,7 @@ export default function CreateAccount() {
         type: 'confirm'
       })
       setShowNotification(true)
-      setTimeout(() => navigate('/account/complete'), 2000)
+      setTimeout(() => navigate('/account/complete', { replace: true }), 2000)
     } else {
       setContentNotification({
         ...contentNotification,
@@ -100,37 +82,41 @@ export default function CreateAccount() {
       setShowNotification(true)
     }
   }
-
-  // useEffect(() => {
-  //   navigate('/account/terms')
-  // }, [])
-
+  
   return (
-    <>
+    <div
+      style={{
+        width: '100vw',
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        margin: 0,
+        padding: 0
+      }}
+    >
+      <Header />
+      { location.pathname !== '/' && location.pathname !== '/account/signin' &&
+        <Progress />}
+    
+        <Outlet />
+
+      { location.pathname !== '/' && location.pathname !== '/account/signin' &&
+        <ContentInRow
+          style={
+            location.pathname === '/account/terms' ? { display: 'none' } : { width: '90%' }
+          }
+        >
+          <Button onClick={() => navigate(-1)}> Voltar </Button>
+          
+          {location.pathname !== '/account/bank' && location.pathname !== '/account/complete' ? (
+            <Button onClick={nextPage}> Continuar </Button>
+          ) : location.pathname == '/account/bank' && (
+            <Button onClick={onSubmit}> Finalizar </Button>
+          )}
+        </ContentInRow>
+      }
       {isLoad && <Loading />}
-      {/* <Progress data={pages[select]} />
-
-      <Container style={{ backgroundColor: '#0', height: 600 }}>
-        {pages[select] == 0 && (
-          <FormCompany companyData={companyData} setCompanyData={setCompanyData} />
-        )}
-        {pages[select] == 1 && <FormOwner ownerData={ownerData} setOwnerData={setOwnerData} />}
-        {pages[select] == 2 && <FormBank bankData={bankData} setBankData={setBankData} />}
-      </Container>
-
-      <ContentInRow
-        style={
-          pages[select] === 0 ? { justifyContent: 'flex-end', width: '80%' } : { width: '90%' }
-        }
-      >
-        {pages[select] > 0 && <Button onClick={() => setSelect(select - 1)}> Voltar </Button>}
-        {pages[select] < 2 ? (
-          <Button onClick={() => setSelect(select + 1)}> Continuar </Button>
-        ) : (
-          <Button onClick={onSubmit}> Finalizar </Button>
-        )}
-      </ContentInRow> */}
       <Notification />
-    </>
+    </div>
   )
 }

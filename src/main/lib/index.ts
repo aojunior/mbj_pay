@@ -129,29 +129,30 @@ const readFileAsync = promisify(readFile);
 export const readEncriptoFile = async ({taxId, password}) => {
   try {
     const pathFile = join(__dirname, '../encript.pos')
-    if(existsSync(pathFile)) {
-      const data = await readFileAsync(pathFile, fileEncoding)
-      const parse = JSON.parse(data);
-      let txHash = {
-            saltKey: parse.ktax,
-            hashPassword: parse.dataT
-      }
-      let passHash = {
-        saltKey: parse.kpass,
-        hashPassword: parse.dataP
-      }
-      const verifyT = await HashComparator(taxId, txHash)
-      const verifyP = await HashComparator(password, passHash)
-      
-      if(verifyT && verifyP) { 
-        return {
-          account: parse.accID,
-          saltKey: parse.kpass,
-          hashPassword: parse.dataP
-        }
-      }
+    if(!existsSync(pathFile)) {
+      console.log('File no exist')
+      return
     }
-    return null; 
+    const data = await readFileAsync(pathFile, fileEncoding)
+    const parse = JSON.parse(data);
+    let txHash = {
+      saltKey: parse.ktax,
+      hashPassword: parse.dataT
+    }
+    let passHash = {
+      saltKey: parse.kpass,
+      hashPassword: parse.dataP
+    }
+    const verifyT = await HashComparator(taxId, txHash)
+    const verifyP = await HashComparator(password, passHash)
+    
+    if(!verifyT || !verifyP) return null
+
+    return {
+      account: parse.accID,
+      saltKey: parse.kpass,
+      hashPassword: parse.dataP
+    }
   } catch(err) {
     console.log(err)
   }
