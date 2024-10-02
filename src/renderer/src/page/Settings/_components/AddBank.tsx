@@ -13,7 +13,6 @@ export function AddBank() {
 
   return (
     <>
-      <h1>yh</h1>
       <button onClick={handleNotification}>Add Bank</button>
     
       <Notification />

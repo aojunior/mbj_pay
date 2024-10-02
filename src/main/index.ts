@@ -366,6 +366,7 @@ ipcMain.handle('create_account', async (_, formData) => {
     let token = await mainWindow.webContents
       .executeJavaScript(`sessionStorage.getItem('token')`)
       .then((response) => response)
+      
     let newAccount = await createAccountAPI(formData, token)
     if (newAccount.error) {
       return 0
