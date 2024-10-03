@@ -55,8 +55,13 @@ export const API = {
     return aliases
   },
   security: async (password) => {
-    const credentials = ipcRenderer.invoke('security', password)
+    const credentials = await ipcRenderer.invoke('security', password)
     return credentials
+  },
+
+  verifyRecipientAlias: async (data) => {
+    const response = await ipcRenderer.invoke('verify_recipientAlias', data)
+    return response
   },
 
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
@@ -69,13 +74,16 @@ export const API = {
     return verifyPayment
   },
 
-  refundCodes: () => ipcRenderer.send('refund_codes'),
-  responseRefundCodes: (callback) =>
-    ipcRenderer.on('respose_refund_codes', (_, args) => callback(args)),
+  refundCodes: async () => {
+    const codes = await ipcRenderer.invoke('refund_codes')
+    return codes
+  },
+  refundInstantPayment: async (item, reasonCode) => {
+    const response = await ipcRenderer.invoke('refund', [item, reasonCode])
+    return response
+  },
 
-  refundInstantPayment: (item, reasonCode) => ipcRenderer.send('refund', [item, reasonCode]),
-  responseRefundInstantPayment: (callback) =>
-    ipcRenderer.on('response_refund', (_, args) => callback(args)),
+  responseRefundInstantPayment: (callback) => ipcRenderer.on('response_refund', (_, args) => callback(args)),
 
   verifyBalance: async () => {
     const verifyBalance = await ipcRenderer.invoke('verify_balance')

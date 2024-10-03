@@ -106,15 +106,15 @@ export function ShowPassword() {
         >
           X
         </span> */}
-        <AiFillCloseSquare color='#777' size={24} onClick={() => setShowSecurity(false)} cursor='pointer'/>
+        <AiFillCloseSquare style={{ alignSelf: 'flex-end', fontWeight: '700' }} color='#777' size={24} onClick={() => setShowSecurity(false)} cursor='pointer'/>
         <Header>
           <Title>Confirmação de senha</Title>
           <IoIosWarning size={28} color="#FFA500" />
         </Header>
         <p>Para contiuar, digite sua senha:</p>
-        <ContentInRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+        <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
           <Input
-            style={{ width: '75%', borderColor: error.borderColor, boxSizing: 'border-box' }}
+            style={{ width: '100%', borderColor: error.borderColor, boxSizing: 'border-box' }}
             type={showTextPassword ? 'text' : 'password'}
             placeholder="Confirme a senha"
             onChange={handleChange}
@@ -122,14 +122,14 @@ export function ShowPassword() {
           {showTextPassword ? (
             <IconEyeInvisible
               size={24}
+              style={{position: 'relative', right: 30}}
               onClick={togglePassword}
             />
           ) : (
             <IconEye
               size={24}
-              
+              style={{position: 'relative', right: 30}}
               onClick={togglePassword}
-             
             />
           )}
         </ContentInRow>

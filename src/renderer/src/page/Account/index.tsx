@@ -57,7 +57,7 @@ export default function CreateAccount() {
     concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated)
     concatAccount.companyDocument = companyData.companyDocument.replace(/\D/g, '')
     concatAccount.companyPhoneNumber = companyData.companyPhoneNumber.replace(/\D/g, '')
-
+    
     concatAccount.ownerBirthday = formatDateForSubmission(ownerData.ownerBirthday)
     concatAccount.ownerDocument = ownerData.ownerDocument.replace(/\D/g, '')
     concatAccount.ownerPhoneNumber = ownerData.ownerPhoneNumber.replace(/\D/g, '')

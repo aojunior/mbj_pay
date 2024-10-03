@@ -61,7 +61,6 @@ export function SignIn() {
     const acc = await win.api.signIn(getValues())
     setAccState(acc)
     setIsLoad(false)
-    console.log(acc)
     if(acc) {
       navigate('/home')
     } else {
@@ -82,7 +81,6 @@ export function SignIn() {
   return (
     <form>
       {isLoad && <Loading />}
-
         <Card style={{marginTop: '25%'}}>
           <CardHeader>
             <CardTitle> Entra na Conta MBJ PAY </CardTitle>

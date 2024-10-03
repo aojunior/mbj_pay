@@ -80,6 +80,7 @@ export function FormCompany() {
                   type="text"
                   placeholder="Ex: 12.345.678/0001-00"
                   onChange={maskCNPJInput}
+                  maxLength={18}
                 />
               </FormInput>
             </ContentInRow>
@@ -101,6 +102,7 @@ export function FormCompany() {
                   type="text"
                   placeholder="01/01/2024"
                   onChange={maskDateInput}
+                  maxLength={10}
                 />
               </FormInput>
             </ContentInRow>
@@ -112,6 +114,7 @@ export function FormCompany() {
                 type="text"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
+                maxLength={14}
               />
             </FormInput>
           </CardContent>

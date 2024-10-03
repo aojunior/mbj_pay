@@ -12,6 +12,9 @@ import {
 } from '../../../styles/global'
 import { ContentSelect, DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
 import { Alert } from '@renderer/components/alert'
+import { useNotification } from '@renderer/context/notification.context'
+import { Notification } from '@renderer/components/notification'
+
 
 type dialogProps = {
   toggle: () => void
@@ -19,6 +22,7 @@ type dialogProps = {
 const win: any = window
 
 export function DialogRefund({ toggle }: dialogProps) {
+  const { contentNotification, setContentNotification, setShowNotification  } = useNotification()
   const [arrCodes, setArrCodes] = useState<any>()
   const [reasonCodes, setReasonCodes] = useState('')
   const [input, setInput] = useState('')
@@ -72,12 +76,20 @@ export function DialogRefund({ toggle }: dialogProps) {
   }
 
   async function getRefundCodes() {
-    await win.api.refundCodes()
-    await win.api.responseRefundCodes((data) => setArrCodes(data.returnCodes))
+    setArrCodes(await win.api.refundCodes())
   }
 
   async function handleRefund(item) {
-    if (reasonCodes == '') return alert('Selecione um motivo')
+    if (reasonCodes == '') {
+      setContentNotification({
+        ...contentNotification,
+        title: 'Selecione o motivo',
+        message: 'O motivo da Devolução é obrigatório!',
+        type: 'error'
+      })
+      setShowNotification(true)
+      return
+    }
     setItem(item)
     toggleAlert()
   }
@@ -87,7 +99,8 @@ export function DialogRefund({ toggle }: dialogProps) {
   }
 
   async function handle() {
-    await win.api.refundInstantPayment(item, reasonCodes)
+    const res = await win.api.refundInstantPayment(item, reasonCodes)
+    console.log(res)
   }
 
   useEffect(() => {
@@ -185,7 +198,9 @@ export function DialogRefund({ toggle }: dialogProps) {
         </Card>
         <Button onClick={toggle}> Fechar </Button>
       </DialogContext>
-
+          
+      <Notification 
+      />
       {openAlert && (
         <Alert
           title="Confirmar Devolução?"

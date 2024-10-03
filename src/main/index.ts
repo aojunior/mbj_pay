@@ -21,7 +21,8 @@ import {
   // DeleteAccountAPI,
   getLocationAndIPV6,
   createInstantPayment,
-  DeleteAccountAPI
+  DeleteAccountAPI,
+  verifyRecipientAlias
 } from '../shared/api'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
@@ -310,6 +311,11 @@ ipcMain.handle('reload-app', () => {
   window.reload(); // Recarrega a aplicação
 });
 
+ipcMain.handle('token_generator', async () => {
+  let token = await tokenGenerator()
+  return token
+})
+
 ipcMain.handle('accept_terms_of_service', async () => {
   const fetch = await getLocationAndIPV6()
   function getIPs() {
@@ -355,11 +361,6 @@ ipcMain.handle('accept_terms_of_service', async () => {
   return saveInDB
 })
 
-ipcMain.handle('token_generator', async () => {
-  let token = await tokenGenerator()
-  return token
-})
-
 // HANDLE ACCOUNT
 ipcMain.handle('create_account', async (_, formData) => {
   try {
@@ -386,8 +387,28 @@ ipcMain.handle('create_account', async (_, formData) => {
     let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
     await encriptoFile(fileEncript)
     let saveClientInDb = await createClientDB(data)
-    console.log(saveClientInDb)
-    return 1
+
+    console.log('saveClientInDb: ' + saveClientInDb)
+    const createAlias = await createAliasesAPI(token, String(data.AccId))
+
+    if (createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
+      setTimeout(async () => {
+        const aliases = await getAliasesDB()
+        // Get all, filter and add new alias in the db
+        const verify = await verifyAliases(token, String(data.AccId))
+        const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
+          const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
+          return !matchingItem
+        })
+        filteredArrayAdd.map(async (alias) => {
+          await createAliasDB(alias, String(data.AccId))
+        })
+      }, 3000)
+      return 1
+    } else {
+      console.log(createAlias)
+      return 'ERROR'
+    }
   } catch (error) {
     console.error('Error creating account:', error);
     return { status: 'error', message: 'Failed to create account.' };
@@ -449,7 +470,7 @@ ipcMain.handle('create-alias', async () => {
     .then((response) => response)
   const db = await getClientDB()
   const createAlias = await createAliasesAPI(token, String(db?.accountId))
-  console.log('createAlias', createAlias)
+
   if (createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
     setTimeout(async () => {
       const aliases = await getAliasesDB()
@@ -462,7 +483,6 @@ ipcMain.handle('create-alias', async () => {
       filteredArrayAdd.map(async (alias) => {
         await createAliasDB(alias, String(db?.accountId))
       })
-      console.log('filteredArrayAdd1 ', filteredArrayAdd)
     }, 3000)
     return 'CREATED'
   } else {
@@ -590,24 +610,38 @@ ipcMain.handle('extract_balance_filter', async (_, args) => {
 })
 // ----------------------------------------------------------------
 
-ipcMain.on('refund_codes', async () => {
+// HANDLER REFUND
+ipcMain.handle('refund_codes', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const response = await refundCodes(token)
 
-  mainWindow.webContents.send('respose_refund_codes', response.data)
+  return response.data.returnCodes
 })
 
-ipcMain.on('refund', async (_, args) => {
+ipcMain.handle('refund', async (_, args) => {
   let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
   const db = await getClientDB()
   const response = await refundInstantPayment(args[0], args[1], token, String(db?.accountId))
-  console.log(response)
-  // mainWindow.webContents.send('respose_refund', response.data)
+
+  // Logic for refund in database
+  return response
 })
+// ----------------------------------------------------------------
+
+// HANDLER RECIPIENT ALIAS
+ipcMain.handle('verify_recipientAlias', async (_, data) => {
+  let token = await mainWindow.webContents
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
+  const response = await verifyRecipientAlias(data, token)
+
+  return response
+})
+// ----------------------------------------------------------------
 
 // UTILITY CONNECTION
 ipcMain.handle('security', async (_, password) => {
@@ -642,6 +676,7 @@ ipcMain.handle('signIn', async (_, formData) => {
         TaxId: consulta.client.taxIdentifier.taxId,
         Phone: consulta.client.mobilePhone.phoneNumber,
         Status: consulta.accountStatus,
+        MedAccId: consulta.mediatorId,
         Key: result.saltKey,
         Pass: result.hashPassword
       }

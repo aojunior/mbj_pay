@@ -67,19 +67,18 @@ export async function insertExistingClientDB(data: any) {
         status: data.Status
       }
     }).then(async (e) => {
-        if (e.status === 'REGULAR') {
-          await prisma.mediator.create({
-            data: {
-              mediatorAccountId: data.MedAccId,
-              mediatorFee: 0.5
-            }
-          })
-          return getClientDB()
-        } else {
-          return e.status
-        }
+      if (e.status === 'REGULAR') {
+        await prisma.mediator.create({
+          data: {
+            mediatorAccountId: data.MedAccId,
+            mediatorFee: 0.5
+          }
+        })
+        return getClientDB()
+      } else {
+        return e.status
+      }
     })
-
     return account
   } catch (error) {
     console.log(error)

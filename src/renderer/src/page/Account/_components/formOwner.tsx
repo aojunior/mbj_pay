@@ -84,6 +84,7 @@ export function FormOwner() {
                   type="text"
                   placeholder="Ex: 123.456.789-00"
                   onChange={maskCPFInput}
+                  maxLength={14}
                 />
               </FormInput>
             </ContentInRow>
@@ -110,6 +111,7 @@ export function FormOwner() {
                   type="text"
                   placeholder="Ex: 01/01/2024"
                   onChange={maskDateInput}
+                  maxLength={10}
                 />
               </FormInput>
             </ContentInRow>
@@ -121,6 +123,7 @@ export function FormOwner() {
                 type="text"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
+                maxLength={14}
               />
             </FormInput>
           </CardContent>
