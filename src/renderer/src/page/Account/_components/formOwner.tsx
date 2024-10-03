@@ -123,7 +123,7 @@ export function FormOwner() {
                 type="text"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
-                maxLength={14}
+                maxLength={15}
               />
             </FormInput>
           </CardContent>

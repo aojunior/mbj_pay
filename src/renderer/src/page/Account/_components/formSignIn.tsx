@@ -61,15 +61,20 @@ export function SignIn() {
     const acc = await win.api.signIn(getValues())
     setAccState(acc)
     setIsLoad(false)
-    if(acc) {
+    if(acc.data) {
       navigate('/home')
     } else {
-      setContentNotification({
-        ...contentNotification,
-        type: 'error',
-        title: 'Erro de Login',
-        message: 'Não foi possível logar na conta, tente novamente.'
-      })
+      if(acc.message === 'login_error') {
+        setContentNotification({
+          ...contentNotification,
+          type: 'error',
+          title: 'Erro de Login',
+          message: 'Por favor verifique o CNPJ e a Senha e tente novamente.'
+        })
+      }
+      if(acc.message === 'network_error') {
+        
+      }
       setShowNotification(true)
     }
   }

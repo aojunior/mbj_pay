@@ -23,7 +23,7 @@ export function ManageAlias() {
       setContentNotification({
         ...contentNotification,
         title: 'Limite de chave Pix atingida',
-        message: "N~ao foi poss'ivel cadastrar uma nova chaves Pix!",
+        message: "Não foi possível cadastrar uma nova chaves Pix!",
         type: 'warning'
       })
       setShowNotification(true)
@@ -31,10 +31,7 @@ export function ManageAlias() {
     }
     setIsLoad(true)
     let create = await win.api.createAlias()
-    setTimeout(async () => {
-      if (create == 'CREATED') {
-        let resp = await win.api.verifyAlias()
-        setAliasData(resp)
+      if (create === 'CREATED' ) {
         setContentNotification({
           ...contentNotification,
           title: 'Chave Pix registrada com sucesso!',
@@ -43,6 +40,12 @@ export function ManageAlias() {
           type: 'confirm'
         })
         setShowNotification(true)
+
+        
+        // AQUI VEM VAZIO
+        let resp = await win.api.getAlias()
+        console.log(resp)
+        setAliasData(resp)
       } else {
         setContentNotification({
           ...contentNotification,
@@ -52,15 +55,13 @@ export function ManageAlias() {
         })
         setShowNotification(true)
       }
-      setIsLoad(false)
-      return create
-    }, 3000)
+    setIsLoad(false)    
   }
 
   const handleDeleteAlias = async () => {
     setIsLoad(true)
     const del = await win.api.deleteAlias(selectedAlias)
-    let resp = await win.api.verifyAlias()
+    let resp = await win.api.getAlias()
     setAliasData(resp)
     setContentNotification({
       ...contentNotification,
@@ -85,7 +86,7 @@ export function ManageAlias() {
         if (accState?.status == 'REGULAR') {
           await win.api.updateAlias()
           setTimeout(async () => {
-            let resp = await win.api.verifyAlias()
+            let resp = await win.api.getAlias()
             setAliasData(resp)
           }, 3000)
         }
@@ -102,20 +103,20 @@ export function ManageAlias() {
   }
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       setIsLoad(true)
-      let resp = await win.api.verifyAlias()
+      let resp = await win.api.getAlias()
       setAliasData(resp)
       setIsLoad(false)
     })()
-    window.addEventListener('keydown', handleKeyButton)
-    return () => {
-      window.removeEventListener('keydown', handleKeyButton)
-    }
     setSecurity({
       context: '',
       confirmed: false
     })
+    window.addEventListener('keydown', handleKeyButton)
+    return () => {
+      window.removeEventListener('keydown', handleKeyButton)
+    }
   }, [])
 
   useEffect(() => {

@@ -152,7 +152,7 @@ export async function getClientDB() {
     return account
   } catch (error) {
     console.error(error)
-    return
+    return null
   }
 }
 

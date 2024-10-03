@@ -61,18 +61,28 @@ export function MyAccount() {
     if (del == 'DELETED') {
       setContentNotification({
         ...contentNotification,
-        title: 'Conta inativada!',
+        title: 'Conta desativada',
         message: 'Sua conta foi inativada com sucesso!',
-        type: 'warning'
+        type: 'info'
       })
-    } else if (del == 'Alias Registered') {
+    }
+    if (del == 'alias_registered') {
       setContentNotification({
         ...contentNotification,
         title: 'Conta ainda possui alias registrado ',
-        message: "E' necessa'rio excluir todos os alias antes de inativar a conta!",
+        message: "É necessário excluir todos os alias antes de inativar a conta!",
+        type: 'error'
+      })
+    }
+    if(del == 'balance_error') {
+      setContentNotification({
+        ...contentNotification,
+        title: 'Impossível desativar',
+        message: 'Você ainda possui saldo em conta!',
         type: 'error'
       })
     } else {
+      console.log(del)
       setContentNotification({
         ...contentNotification,
         title: 'Erro',
@@ -80,8 +90,8 @@ export function MyAccount() {
         type: 'error'
       })
     }
-    setShowNotification(true)
     setIsLoad(false)
+    setShowNotification(true)
   }
 
   const handleChangePassword = async () => {
@@ -204,7 +214,7 @@ export function MyAccount() {
       <ContentInRow>
         <Button onClick={handleVerifyAccount}>Verificar</Button>
 
-        <Button style={{ backgroundColor: 'red' }} onClick={handleDeleteAccount}>
+        <Button style={{ backgroundColor: account?.status !== 'CLOSED' ? 'red' : '#777',  }} onClick={handleDeleteAccount} disabled={account?.status === 'CLOSED'}>
           Inativar Conta
         </Button>
       </ContentInRow>

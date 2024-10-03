@@ -45,6 +45,7 @@ import {
 import { currentTime, HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
+import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -317,48 +318,7 @@ ipcMain.handle('token_generator', async () => {
 })
 
 ipcMain.handle('accept_terms_of_service', async () => {
-  const fetch = await getLocationAndIPV6()
-  function getIPs() {
-    let ifaces: any = os.networkInterfaces()
-    let ipAdresse: any = {}
-    Object.keys(ifaces).forEach(function (ifname) {
-      let alias = 0
-      ifaces[ifname].forEach(function (iface) {
-        if ('IPv4' !== iface.family || iface.internal !== false) {
-          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-          return
-        }
-
-        if (alias >= 1) {
-          // this single interface has multiple ipv4 addresses
-          // console.log(ifname + ':' + alias, iface.address);
-        } else {
-          // this interface has only one ipv4 adress
-          // console.log(ifname, iface.address);
-          ipAdresse = { IP: iface.address, MAC: iface.mac }
-        }
-        ++alias
-      })
-    })
-    return ipAdresse.IP
-  }
-  let ipNet = getIPs()
-  let idDevice = machineIdSync(true)
-
-  const infos = {
-    time: currentTime,
-    createdAT: new Date(),
-    latitude: fetch.latitude,
-    longitude: fetch.longitude,
-    city: fetch.city,
-    state: fetch.region_name,
-    contry: fetch.country_name,
-    // ipv6: fetch.ip,
-    ip: ipNet,
-    idDevice: idDevice
-  }
-  const saveInDB = await setDataToTermsOfService(infos)
-  return saveInDB
+  return await getInformationsFromMachine()
 })
 
 // HANDLE ACCOUNT
@@ -384,31 +344,11 @@ ipcMain.handle('create_account', async (_, formData) => {
       Tel: formData.companyPhoneNumber,
       Pass: formData.password
     }
+
     let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
     await encriptoFile(fileEncript)
     let saveClientInDb = await createClientDB(data)
-
-    console.log('saveClientInDb: ' + saveClientInDb)
-    const createAlias = await createAliasesAPI(token, String(data.AccId))
-
-    if (createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
-      setTimeout(async () => {
-        const aliases = await getAliasesDB()
-        // Get all, filter and add new alias in the db
-        const verify = await verifyAliases(token, String(data.AccId))
-        const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
-          const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
-          return !matchingItem
-        })
-        filteredArrayAdd.map(async (alias) => {
-          await createAliasDB(alias, String(data.AccId))
-        })
-      }, 3000)
-      return 1
-    } else {
-      console.log(createAlias)
-      return 'ERROR'
-    }
+    return saveClientInDb
   } catch (error) {
     console.error('Error creating account:', error);
     return { status: 'error', message: 'Failed to create account.' };
@@ -422,25 +362,30 @@ ipcMain.handle('get_account', async () => {
 
 ipcMain.handle('verify_account', async () => {
   let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
   const db = await getClientDB()
-  let consulta = await VerifyAccountAPI(token, db?.accountId)
-  if (consulta.error) return 'Error'
+  const data = await verify_account(token, db)
 
-  let data = {
-    AccId: consulta.account.accountId,
-    AccBank: consulta.account.account,
-    Branch: consulta.account.branch,
-    Status: consulta.accountStatus,
-    MedAccId: consulta.mediatorId
-  }
-  if (data.Status !== db?.status) {
-    let update = await updateClientDB(data)
-    return update
-  } else {
-    return 'RELOADED'
-  }
+  await create_alias(token, String(db?.accountId), db?.status)
+  return data
+  // const db = await getClientDB()
+  // let consulta = await VerifyAccountAPI(token, db?.accountId)
+  // if (consulta.error) return 'Error'
+
+  // let data = {
+  //   AccId: consulta.account.accountId,
+  //   AccBank: consulta.account.account,
+  //   Branch: consulta.account.branch,
+  //   Status: consulta.accountStatus,
+  //   MedAccId: consulta.mediatorId
+  // }
+  // if (data.Status !== db?.status) {
+  //   let update = await updateClientDB(data)
+  //   return update
+  // } else {
+  //   return 'RELOADED'
+  // }
 })
 
 ipcMain.handle('delete_account', async () => {
@@ -448,47 +393,32 @@ ipcMain.handle('delete_account', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const alias = await getAliasesDB()
-  console.log(alias)
+
   if (alias.length == 0) {
     const db = await getClientDB()
     let consulta = await DeleteAccountAPI(token, String(db?.accountId))
-    console.log(consulta)
-    if (consulta.error) return 'Error'
-    const deletionConfirmed = await deleteClientDB(String(db?.accountId))
-    return deletionConfirmed
+    if (consulta.error.code === '97') return 'balance_error'
+
+    if(consulta == 200) {
+      //const deletionConfirmed = await deleteClientDB(String(db?.accountId))
+      //return deletionConfirmed
+      return await verify_account(token, db)
+    } else {
+      return consulta.error.message
+    }
   } else {
-    return 'Alias Registered'
+    return 'alias_registered'
   }
 })
-
 // ----------------------------------------------------------------
 
 // HANDLE ALIASES
 ipcMain.handle('create-alias', async () => {
   let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
   const db = await getClientDB()
-  const createAlias = await createAliasesAPI(token, String(db?.accountId))
-
-  if (createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
-    setTimeout(async () => {
-      const aliases = await getAliasesDB()
-      // Get all, filter and add new alias in the db
-      const verify = await verifyAliases(token, String(db?.accountId))
-      const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
-        const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
-        return !matchingItem
-      })
-      filteredArrayAdd.map(async (alias) => {
-        await createAliasDB(alias, String(db?.accountId))
-      })
-    }, 3000)
-    return 'CREATED'
-  } else {
-    console.log(createAlias)
-    return 'ERROR'
-  }
+  return await create_alias(token, String(db?.accountId), db?.status)
 })
 
 ipcMain.handle('update-alias', async () => {
@@ -497,45 +427,10 @@ ipcMain.handle('update-alias', async () => {
     .then((response) => response)
   const client = await getClientDB()
   const aliases = await getAliasesDB()
-  let verify = await verifyAliases(token, String(client?.accountId))
-
-  const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
-    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
-    return !matchingItem
-  })
-  if (filteredArrayAdd.length > 0) {
-    filteredArrayAdd.map(async (alias) => {
-      await createAliasDB(alias, String(client?.accountId))
-    })
-  }
-
-  const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
-    const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
-    return matchingItem && matchingItem.status !== aliasAPI.status
-  })
-
-  if (filteredArrayUpdate.length > 0) {
-    filteredArrayUpdate.map(async (alias) => {
-      await updateAliasDB(alias)
-    })
-  }
-
-  const filteredArrayDelete = aliases.filter((aliasDB) => {
-    const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias)
-    return !matchingItem
-  })
-
-  if (filteredArrayDelete.length > 0) {
-    filteredArrayDelete.map(async (alias) => {
-      await deleteAliasDB(alias.alias, String(client?.accountId))
-    })
-  }
-  console.log('filteredArrayAdd ', filteredArrayAdd)
-  console.log('filteredArrayUpdate ', filteredArrayUpdate)
-  console.log('filteredArrayDelete ', filteredArrayDelete)
+  verifyAndUpdateAliases(token, String(client?.accountId), aliases)
 })
 
-ipcMain.handle('verify-alias', async () => {
+ipcMain.handle('get_alias', async () => {
   const aliases = await getAliasesDB()
   return aliases
 })
@@ -664,8 +559,8 @@ ipcMain.handle('signIn', async (_, formData) => {
     .then((response) => response)
     if(result) {
       let consulta = await VerifyAccountAPI(token, result.account)
-      if (consulta.error) return 'Error'
-
+      if (consulta.error) return {data: null, message: 'network_error'}
+      const aliases = await getAliasesDB()
       let data = {
         AccHId: consulta.accountHolderId,
         AccId: consulta.account.accountId,
@@ -686,48 +581,11 @@ ipcMain.handle('signIn', async (_, formData) => {
       }
       let update = await insertExistingClientDB(data)
 
-      const fetch = await getLocationAndIPV6()
-      function getIPs() {
-        let ifaces: any = os.networkInterfaces()
-        let ipAdresse: any = {}
-        Object.keys(ifaces).forEach(function (ifname) {
-          let alias = 0
-          ifaces[ifname].forEach(function (iface) {
-            if ('IPv4' !== iface.family || iface.internal !== false) {
-              // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-              return
-            }
-    
-            if (alias >= 1) {
-              // this single interface has multiple ipv4 addresses
-              // console.log(ifname + ':' + alias, iface.address);
-            } else {
-              // this interface has only one ipv4 adress
-              // console.log(ifname, iface.address);
-              ipAdresse = { IP: iface.address, MAC: iface.mac }
-            }
-            ++alias
-          })
-        })
-        return ipAdresse.IP
-      }
-      let ipNet = getIPs()
-      let idDevice = machineIdSync(true)
-      const infos = {
-        time: currentTime,
-        createdAT: new Date(),
-        latitude: fetch.latitude,
-        longitude: fetch.longitude,
-        city: fetch.city,
-        state: fetch.region_name,
-        contry: fetch.country_name,
-        // ipv6: fetch.ip,
-        ip: ipNet,
-        idDevice: idDevice
-      }
-      await setDataToTermsOfService(infos)
-
-      return update
+      getInformationsFromMachine()
+      verifyAndUpdateAliases(token, String(data.AccId), aliases)
+      return {data: update, message: ''}
+    } else {
+      return {data: null, message: 'login_error'}
     }
   } catch(error) {
     console.log(error)

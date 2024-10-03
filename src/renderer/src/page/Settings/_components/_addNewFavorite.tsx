@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { AiFillCloseSquare } from 'react-icons/ai';
-import { IoIosWarning } from 'react-icons/io';
 import styled from 'styled-components';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ContentInRow, FormInput, Input, Label } from '@renderer/styles/global';
-
 
 const Container = styled.dialog`
   width: 100%;
@@ -77,14 +75,16 @@ const schemaChavePix = z.object({
 
 function NewFavorite () {
   const [error, setError] = useState({
-      message: '',
-      borderColor: '#c4c4c7'
+    message: '',
+    borderColor: '#c4c4c7'
   })
   const [inputValue, setInputValue] = useState('')
 
   const { register, watch, setValue } = useForm<z.infer<typeof schemaChavePix>>({
     resolver: zodResolver(schemaChavePix),
   })
+
+  
 
   return (
     <Container>

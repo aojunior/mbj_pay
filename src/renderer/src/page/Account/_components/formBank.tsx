@@ -37,6 +37,7 @@ export function FormBank() {
       lerImg.onload = () => {
         switch (e.name) {
           case 'imgSelfie':
+            console.log(JSON.parse(JSON.stringify(lerImg.result)))
             setBankData({ ...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result)) })
             break
           case 'imgRgFront':
@@ -108,7 +109,6 @@ export function FormBank() {
                       type="file"
                       accept="image/x-png, image/jpeg, image/jpg"
                       onChange={(e) => {
-                        onChange(e.target)
                         getImg(e.target)
                       }}
                     />

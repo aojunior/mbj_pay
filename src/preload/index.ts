@@ -50,8 +50,8 @@ export const API = {
     const alias = await ipcRenderer.invoke('update-alias')
     return alias
   },
-  verifyAlias: async () => {
-    const aliases = await ipcRenderer.invoke('verify-alias')
+  getAlias: async () => {
+    const aliases = await ipcRenderer.invoke('get_alias')
     return aliases
   },
   security: async (password) => {

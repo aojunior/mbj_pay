@@ -61,7 +61,13 @@ export default function CreateAccount() {
     concatAccount.ownerBirthday = formatDateForSubmission(ownerData.ownerBirthday)
     concatAccount.ownerDocument = ownerData.ownerDocument.replace(/\D/g, '')
     concatAccount.ownerPhoneNumber = ownerData.ownerPhoneNumber.replace(/\D/g, '')
+
+    concatAccount.imgSelfie =  JSON.parse(JSON.stringify(concatAccount.imgSelfie))
+    concatAccount.imgRgFront =  JSON.parse(JSON.stringify(concatAccount.imgRgFront))
+    concatAccount.imgRgBack =  JSON.parse(JSON.stringify(concatAccount.imgRgBack))
+    
     let resp = await win.api.createAccount(concatAccount)
+    
     setIsLoad(false)
     if (resp == 1) {
       setContentNotification({

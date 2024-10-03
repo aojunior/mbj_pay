@@ -231,15 +231,15 @@ export async function DeleteAccountAPI(token, AccId) {
       if (res.status === 200 || res.status === 202) return res.status
     })
     .catch((error) => {
-      if (error.response) {
-        console.log(error.response.data)
-        console.log(error.response)
-        console.log('Error', error.message)
-      } else {
-        console.log(error.response.data)
+      // if (error.response) {
+      //   console.log(error.response.data)
+      //   console.log(error.response)
+      //   console.log('Error', error.message)
+      // } else {
+      //   console.log(error.response.data)
 
-        console.log('Error', error.message)
-      }
+      //   console.log('Error', error.message)
+      // }
       return error.response.data
     })
   return response
