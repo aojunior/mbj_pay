@@ -69,7 +69,7 @@ export default function CreateAccount() {
     let resp = await win.api.createAccount(concatAccount)
     
     setIsLoad(false)
-    if (resp == 1) {
+    if (resp) {
       setContentNotification({
         ...contentNotification,
         title: 'Conta criada com sucesso!',

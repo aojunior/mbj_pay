@@ -71,9 +71,9 @@ export function ShowPassword() {
     borderColor: '#c4c4c7'
   })
 
-  async function checkPassword() {
+  async function checkPassword(e) {
+    e.preventDefault()
     const securityData = await win.api.security(textPassword)
-    console.log(securityData)
     setSecurity({ ...security, confirmed: securityData })
     if (securityData) {
       setShowSecurity(false)
@@ -98,47 +98,50 @@ export function ShowPassword() {
   }
 
   return (
-    <Container>
-      <Section>
-        {/* <span
-          style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }}
-          onClick={() => setShowSecurity(false)}
-        >
-          X
-        </span> */}
-        <AiFillCloseSquare style={{ alignSelf: 'flex-end', fontWeight: '700' }} color='#777' size={24} onClick={() => setShowSecurity(false)} cursor='pointer'/>
-        <Header>
-          <Title>Confirmação de senha</Title>
-          <IoIosWarning size={28} color="#FFA500" />
-        </Header>
-        <p>Para contiuar, digite sua senha:</p>
-        <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <Input
-            style={{ width: '100%', borderColor: error.borderColor, boxSizing: 'border-box' }}
-            type={showTextPassword ? 'text' : 'password'}
-            placeholder="Confirme a senha"
-            onChange={handleChange}
-          />
-          {showTextPassword ? (
-            <IconEyeInvisible
-              size={24}
-              style={{position: 'relative', right: 30}}
-              onClick={togglePassword}
+    <form onSubmit={checkPassword}>
+      <Container>
+        <Section>
+          {/* <span
+            style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }}
+            onClick={() => setShowSecurity(false)}
+          >
+            X
+          </span> */}
+          <AiFillCloseSquare style={{ alignSelf: 'flex-end', fontWeight: '700' }} color='#777' size={24} onClick={() => setShowSecurity(false)} cursor='pointer'/>
+          <Header>
+            <Title>Confirmação de senha</Title>
+            <IoIosWarning size={28} color="#FFA500" />
+          </Header>
+          <p>Para contiuar, digite sua senha:</p>
+          <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <Input
+              style={{ width: '100%', borderColor: error.borderColor, boxSizing: 'border-box' }}
+              type={showTextPassword ? 'text' : 'password'}
+              placeholder="Confirme a senha"
+              onChange={handleChange}
+              autoFocus
             />
-          ) : (
-            <IconEye
-              size={24}
-              style={{position: 'relative', right: 30}}
-              onClick={togglePassword}
-            />
-          )}
-        </ContentInRow>
+            {showTextPassword ? (
+              <IconEyeInvisible
+                size={24}
+                style={{position: 'relative', right: 30}}
+                onClick={togglePassword}
+              />
+            ) : (
+              <IconEye
+                size={24}
+                style={{position: 'relative', right: 30}}
+                onClick={togglePassword}
+              />
+            )}
+          </ContentInRow>
 
-        <Footer>
-          <p style={{ color: 'red' }}>{error.message}</p>
-          <Button onClick={checkPassword}>Confirmar</Button>
-        </Footer>
-      </Section>
-    </Container>
+          <Footer>
+            <p style={{ color: 'red' }}>{error.message}</p>
+            <Button onClick={checkPassword}>Confirmar</Button>
+          </Footer>
+        </Section>
+      </Container>
+    </form>
   )
 }

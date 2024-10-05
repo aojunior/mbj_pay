@@ -1,7 +1,7 @@
 import { Container } from '@renderer/styles/global'
 import { SidebarComponent } from './_components/Sidebar'
 import { useState } from 'react'
-import { AddBank } from './_components/AddBank'
+import { AddFavoriteRecipient } from './_components/AddFavoriteRecipient'
 import { ManageAlias } from './_components/manageAliases'
 import {} from './styles'
 import { MyAccount } from './_components/myAccount'
@@ -13,7 +13,7 @@ export default function Settings() {
   const renderContent = (): any => {
     switch (selectedSection) {
       case 'AddBank':
-        return <AddBank />
+        return <AddFavoriteRecipient />
       case 'MyAccount':
         return <MyAccount />
       case 'ManageAlias':

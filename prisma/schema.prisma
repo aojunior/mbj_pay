@@ -18,8 +18,8 @@ datasource db {
 model Client {
   accountId       String @unique
   accountHolderId String
-  accountBank     Int
-  branchBank      Int
+  accountBank     Int?
+  branchBank      Int?
   companyName     String
   email           String
   taxId           String
@@ -64,6 +64,19 @@ model Transactions {
   status          String 
   createdAT       DateTime  @default(now())
   client          Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+}
+
+model FavoritesRecipients {
+  id          String @id @default(cuid())
+  nickname    String @unique
+  type        String
+  taxId       String
+  pixKey      String?
+  bankAgency  String?
+  bankAccount String?
+  bankBranch  String?
+  bankCode    String?
+  createdAT   DateTime @default(now())
 }
 
 model Mediator {

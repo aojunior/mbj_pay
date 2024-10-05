@@ -108,7 +108,6 @@ function PaymentScreen({ file }) {
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyButton)
-
     return () => {
       window.removeEventListener('keydown', handleKeyButton)
     }

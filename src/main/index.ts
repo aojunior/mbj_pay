@@ -30,6 +30,7 @@ import {
   alterPasswordDB,
   createAliasDB,
   createClientDB,
+  createfavoriteRecipientDB,
   credentialsDB,
   deleteAliasDB,
   deleteClientDB,
@@ -325,13 +326,11 @@ ipcMain.handle('accept_terms_of_service', async () => {
 ipcMain.handle('create_account', async (_, formData) => {
   try {
     let token = await mainWindow.webContents
-      .executeJavaScript(`sessionStorage.getItem('token')`)
-      .then((response) => response)
-      
+    .executeJavaScript(`sessionStorage.getItem('token')`)
+    .then((response) => response)
     let newAccount = await createAccountAPI(formData, token)
-    if (newAccount.error) {
-      return 0
-    }
+    if (newAccount.error) return null
+  
     let data = {
       AccId: newAccount.data.account.accountId,
       AccHId: newAccount.data.accountHolderId,
@@ -418,16 +417,15 @@ ipcMain.handle('create-alias', async () => {
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
   const db = await getClientDB()
-  return await create_alias(token, String(db?.accountId), db?.status)
+  const resp = await create_alias(token, String(db?.accountId), db?.status)
+  return resp
 })
 
 ipcMain.handle('update-alias', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-  const client = await getClientDB()
-  const aliases = await getAliasesDB()
-  verifyAndUpdateAliases(token, String(client?.accountId), aliases)
+  return await verifyAndUpdateAliases(token)
 })
 
 ipcMain.handle('get_alias', async () => {
@@ -443,14 +441,18 @@ ipcMain.handle('delete-alias', async (_, alias) => {
   let deleteAlias = await deleteAliases(token, String(client?.accountId), alias)
 
   async function deleteBD() {
-    const deleteA = await deleteAliasDB(alias, String(client?.accountId))
-    return deleteA
+    await deleteAliasDB(alias, String(client?.accountId))
   }
 
   if (deleteAlias == 202) {
-    return deleteBD()
+    await deleteBD()
+    return {data: await getAliasesDB(), message: 'SUCCESS'}
   } else {
-    return 'ERROR'
+    if(deleteAlias == 503) {
+      return {data: null, message: 'NETWORK_ERROR'}
+    } else {
+      return {data: null, message: 'GENERIC_ERROR'}
+    }
   }
 })
 // ----------------------------------------------------------------
@@ -528,6 +530,10 @@ ipcMain.handle('refund', async (_, args) => {
 // ----------------------------------------------------------------
 
 // HANDLER RECIPIENT ALIAS
+ipcMain.handle('create_favorite_recipient', async (_, data) => {
+  await createfavoriteRecipientDB(data)
+})
+
 ipcMain.handle('verify_recipientAlias', async (_, data) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
@@ -537,6 +543,8 @@ ipcMain.handle('verify_recipientAlias', async (_, data) => {
   return response
 })
 // ----------------------------------------------------------------
+
+
 
 // UTILITY CONNECTION
 ipcMain.handle('security', async (_, password) => {
@@ -560,7 +568,7 @@ ipcMain.handle('signIn', async (_, formData) => {
     if(result) {
       let consulta = await VerifyAccountAPI(token, result.account)
       if (consulta.error) return {data: null, message: 'network_error'}
-      const aliases = await getAliasesDB()
+      
       let data = {
         AccHId: consulta.accountHolderId,
         AccId: consulta.account.accountId,
@@ -575,14 +583,15 @@ ipcMain.handle('signIn', async (_, formData) => {
         Key: result.saltKey,
         Pass: result.hashPassword
       }
+
       if(consulta.account.branch) {
         data.AccBank = consulta.account.account
         data.Branch = consulta.account.branch
       }
-      let update = await insertExistingClientDB(data)
 
+      let update = await insertExistingClientDB(data)
       getInformationsFromMachine()
-      verifyAndUpdateAliases(token, String(data.AccId), aliases)
+      verifyAndUpdateAliases(token)
       return {data: update, message: ''}
     } else {
       return {data: null, message: 'login_error'}

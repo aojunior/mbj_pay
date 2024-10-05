@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ContentInRow, FormInput, Input, Label } from '@renderer/styles/global';
+import { useSecurity } from '@renderer/context/security.context';
+import { Loading } from '@renderer/components/loading';
 
 const Container = styled.dialog`
   width: 100%;
@@ -21,18 +23,17 @@ const Container = styled.dialog`
 `
 const Section = styled.div`
   width: 50%;
-  height: 450px;
+  height:auto;
   background-color: #fff;
   border: 1px solid #e7e7e4;
   border-radius: 8px;
   display: flex;
-  padding: 10px;
+  padding: 5px 40px;
   flex-direction: column;
-  align-items: center;
 `
 const Header = styled.div`
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,7 +47,6 @@ const Footer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
-  padding: 5px;
   gap: 15px;
 `
 const Button = styled.button`
@@ -61,115 +61,232 @@ const Button = styled.button`
     cursor: pointer;
   }
 `
+const ErrorMsg = styled.p`
+  font-size: 14px;
+  font-weight: 300;
+  color: red;  
+`
 
-const schemaChavePix = z.object({
-  favBank: z.string().min(3, 'Um apelido para a conta é obrigatória').max(50, 'O nome da conta deve ter no máximo 50 caracteres'),
-  taxID: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF inválido. Use o formato 000.000.000-00')
-  .regex(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, 'CNPJ inválido. Use o formato 00.000.000/0000-00'),
-  pixKey: z.string().min(3, 'O nome do titular deve ter no mínimo 3 caracteres').optional(),
-  account_type: z.string().min(3, 'O nome do titular deve ter no mínimo 3 caracteres'),
-  bank_name: z.string().min(3, 'O nome do titular deve ter no mínimo 3 caracteres').optional(),
-  bank_code: z.string().min(2, 'O nome do titular deve ter no mínimo 3 caracteres').optional(),
-  bank_branch: z.string().min(1,'').optional()
+const schemaFavoriteRecipient = z.object({
+  typeFavorite: z.string(),
+  nickname: z.string()
+    .min(3, 'Um apelido para a conta é obrigatório')
+    .max(50, 'O nome da conta deve ter no máximo 50 caracteres'),
+  taxID: z.string().refine((value) => {
+    const digitsOnly = value.replace(/\D/g, '');
+    // Verifica se tem 11 dígitos (CPF)
+    if (digitsOnly.length === 11) {
+      const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+      return cpfRegex.test(value);
+    }
+    // Verifica se tem 14 dígitos (CNPJ)
+    if (digitsOnly.length === 14) {
+      const cnpjRegex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
+      return cnpjRegex.test(value);
+    }
+    return false; // Se não for nem CPF nem CNPJ
+  }, {
+    message: 'CPF ou CNPJ inválido.'
+  }),
+  pixKey: z.string().optional().or(z.literal('')),
+  bankAgency: z.string().optional().or(z.literal('')),
+  backAccount: z.string().optional().or(z.literal('')),
+  bankBranch: z.string().optional().or(z.literal('')),
+  bankCode: z.string().optional().or(z.literal(''))
 })
 
 function NewFavorite () {
+  const { setSecurity } = useSecurity()
+  const [inputValue, setInputValue] = useState('1')
+  const [isLoad, setIsLoad] = useState(false)
   const [error, setError] = useState({
     message: '',
     borderColor: '#c4c4c7'
   })
-  const [inputValue, setInputValue] = useState('')
 
-  const { register, watch, setValue } = useForm<z.infer<typeof schemaChavePix>>({
-    resolver: zodResolver(schemaChavePix),
+  const { register, watch, setValue, getValues, handleSubmit, formState: {errors} } = useForm<z.infer<typeof schemaFavoriteRecipient>>({
+    resolver: zodResolver(schemaFavoriteRecipient),
+    defaultValues: {
+      typeFavorite: '1',
+    }
   })
 
-  
+  watch(register => {
+    if(register.pixKey && register.pixKey.length >= 11 ) {
+      setError({
+        message: '',
+        borderColor:''
+      })
+    }
+
+    if( (register.backAccount && register.backAccount.length >= 3) &&
+      (register.bankAgency && register.bankAgency.length >= 2) &&
+      (register.bankBranch && register.bankBranch.length >= 1) &&
+      (register.bankCode && register.bankCode.length >= 1)) {
+      setError({
+        message: '',
+        borderColor:''
+      })
+    }
+  })
+
+  function onClose() {
+    setSecurity({
+      confirmed: false,
+      context: ''
+    })
+  }
+
+  async function onSubmit() {
+    if(inputValue == '1' && String(getValues().pixKey).length < 11) {
+      setError({
+        message: 'Chave Pix é obrigatório para salvar.',
+        borderColor: 'red'
+      }) 
+      return
+    }
+    if(inputValue === '2' && 
+    (String(getValues().backAccount).length < 3 || String(getValues().bankAgency).length < 2 ||
+    String(getValues().bankBranch).length < 1 || String(getValues().bankCode).length < 1 )
+    ) {
+      setError({
+        message: 'Todos os campos são obrigatórios para salvar.',
+        borderColor: 'red'
+      }) 
+      return
+    }
+    setIsLoad(true)
+
+    console.log('submit');
+    setIsLoad(false)
+  }
+
+  function maskCPForCNPJInput(event) {
+    let value = event.target.value.replace(/\D/g, '');
+
+  // Máscara para CPF (000.000.000-00)
+  if (value.length <= 11) {
+    value = value.replace(/^(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+    value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
+  }
+  // Máscara para CNPJ (00.000.000/0000-00)
+  else if (value.length <= 14) {
+    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+  }
+
+  // Atualiza o valor do campo
+  setValue('taxID', value, { shouldValidate: true });
+  }
 
   return (
-    <Container>
-      <Section>
-        <AiFillCloseSquare style={{ alignSelf: 'flex-end', fontWeight: '700' }} color='#777' size={24}  cursor='pointer'/>
-        <Header>
-          <Title>Adicionar nova conta para Cash out</Title>
-        </Header>
-        <ContentInRow style={{width: 300}}>
-          <div>
-            <input type="radio" id="html" name="favType" value="1" checked onClick={() => setInputValue('1')} />
-            <label htmlFor="html"> Chave PIX </label>
-          </div>
-          <div>
-            <input type="radio" id="css" name="favType" value="2" onClick={() => setInputValue('2')}/>
-            <label htmlFor="css"> TED em Conta </label> 
-          </div>
-        </ContentInRow>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Container>
+        {isLoad && <Loading />}
+        <Section>
+          <AiFillCloseSquare style={{ alignSelf: 'flex-end' }} color='#777' size={24} onClick={onClose} cursor='pointer'/>
+          <Header>
+            <Title>Adicionar nova conta para Cash out</Title>
+          </Header>
+          <ContentInRow style={{width: 300, alignSelf: 'center'}}>
+            <div>
+              <input type="radio" id="html" value="1"  {...register('typeFavorite')} name='typeFavorite' onChange={(e) => setInputValue(e.target.value)} />
+              <label htmlFor="html"> Chave PIX </label>
+            </div>
+            <div>
+              <input type="radio" id="css" value="2" {...register('typeFavorite')}  name='typeFavorite' onChange={(e) => setInputValue(e.target.value)} />
+              <label htmlFor="css"> TED em Conta </label> 
+            </div>
+          </ContentInRow>
 
-        <FormInput style={{ width: 400 }}>
-          <Label>Apelido da Conta</Label>
-          <Input
-            {...register('favBank')}
-            type="text"
-            placeholder="Ex: Conta ITAU"
-          />
-        </FormInput>
-
-        <FormInput style={{ width: 400 }}>
-          <Label>CNPJ ou CPF do titular</Label>
-          <Input
-            {...register('taxID')}
-            type="text"
-            placeholder="Ex: 1234567890"
-          />
-        </FormInput>
-
-        {
-          inputValue == '1' ?
-          <>
-          <FormInput style={{ width: 400 }}>
-            <Label>Chave Pix</Label>
-            <Input
-              {...register('pixKey')}
-              type="text"
-              placeholder="Ex: 1234567890"
-            />
-          </FormInput>
-          </> 
-          :
-          <>
           <FormInput style={{ width: 400 }}>
             <Label>Apelido da Conta</Label>
             <Input
-              {...register('favBank')}
+              {...register('nickname')}
               type="text"
               placeholder="Ex: Conta ITAU"
+              autoFocus
             />
+            {errors.nickname?.message && (
+            <ErrorMsg>{errors.nickname?.message}</ErrorMsg>
+            )}
           </FormInput>
 
           <FormInput style={{ width: 400 }}>
-            <Label>Chave Pix</Label>
-            <Input
-              {...register('pixKey')}
-              type="text"
-              placeholder="Ex: 1234567890"
-            />
-          </FormInput>
-          
-          <FormInput style={{ width: 400 }}>
-            <Label>CNPJ ou CPF do titular</Label>
+            <Label>CPF ou CNPJ do titular</Label>
             <Input
               {...register('taxID')}
               type="text"
               placeholder="Ex: 1234567890"
+              onChange={maskCPForCNPJInput}
+              maxLength={18}
             />
+            {errors.taxID?.message && (
+            <ErrorMsg >{errors.taxID?.message}</ErrorMsg>
+            )}
           </FormInput>
-          </> 
-        }
-        <Footer>
-          <p style={{ color: 'red' }}>{error.message}</p>
-          <Button >Salvar</Button>
-        </Footer>
-      </Section>
-    </Container>
+          {
+            inputValue == '1' ?
+            <>
+            <FormInput style={{ width: 400 }}>
+              <Label>Chave Pix</Label>
+              <Input
+                {...register('pixKey')}
+                type="text"
+                placeholder="Ex: 1234567890"
+              />
+              <ErrorMsg >{error.message}</ErrorMsg>
+            </FormInput>
+            </> 
+            :
+            <>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15}}>
+              <FormInput style={{ width: 180 }}>
+                <Label>Conta</Label>
+                <Input
+                  {...register('backAccount')}
+                  type="text"
+                  placeholder="Ex: Conta ITAU"
+                />
+              </FormInput>
+
+              <FormInput style={{ width: 120 }}>
+                <Label>Digito</Label>
+                <Input
+                  {...register('bankBranch')}
+                  type="text"
+                  placeholder="Ex: 1234567890"
+                />
+              </FormInput>
+            </ContentInRow>
+            <FormInput style={{ width: 180, alignSelf: 'flex-start' }}>
+              <Label>Agência</Label>
+              <Input
+                {...register('bankAgency')}
+                type="text"
+                placeholder="Ex: 1234567890"
+              />
+            </FormInput>
+            <FormInput style={{ width: 400 }}>
+              <Label>Banco</Label>
+              <Input
+                {...register('bankCode')}
+                type="text"
+                placeholder="Ex: 1234567890"
+              />
+            </FormInput>
+            <ErrorMsg >{error.message}</ErrorMsg>
+            </> 
+          }
+          <Footer >
+            <Button type='submit' >Salvar</Button>
+          </Footer>
+        </Section>
+      </Container>
+    </form>
   )
 }
 

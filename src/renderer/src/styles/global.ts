@@ -83,6 +83,7 @@ export const FormInput = styled.div`
   flex-direction: column;
   gap: 3px;
   width: 80%;
+  margin-bottom: 5px;
 `
 
 export const Label = styled.label`

@@ -43,6 +43,7 @@ export async function createClientDB(data: any) {
         status: data.Status
       }
     })
+    console.log(account)
     return account
   } catch (error) {
     console.log(error)
@@ -252,12 +253,9 @@ export async function deleteAliasDB(alias: string, accountId: string) {
             },
             {
               alias: alias
-            }
+            } 
           ]
         }
-      })
-      .then(async () => {
-        return await prisma.aliases.findMany()
       })
     return del
   } catch (error) {
@@ -323,6 +321,30 @@ export async function readAliasesActiveDB() {
     }
   })
   return aliasesAll
+}
+// ----------------------------------------------------------------
+
+// ACTION TO Favorite Bank
+
+export async function createfavoriteRecipientDB(data: any) {
+  try {
+    const favorite = await prisma.favoritesRecipients.create({
+      data: {
+        nickname: data.nickname,
+        type: data.type,
+        taxId: data.taxId,
+        bankAccount: data.bankAccount,
+        bankAgency: data.bankAgency,
+        bankBranch: data.bankBranch,
+        bankCode: data.bankCode,
+        pixKey: data.pixKey
+      }
+    })
+    return favorite
+  } catch (error) {
+    console.error(error)
+    return
+  }
 }
 // ----------------------------------------------------------------
 
