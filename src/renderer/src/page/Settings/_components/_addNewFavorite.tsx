@@ -68,11 +68,11 @@ const ErrorMsg = styled.p`
 `
 
 const schemaFavoriteRecipient = z.object({
-  typeFavorite: z.string(),
+  type: z.string(),
   nickname: z.string()
     .min(3, 'Um apelido para a conta é obrigatório')
     .max(50, 'O nome da conta deve ter no máximo 50 caracteres'),
-  taxID: z.string().refine((value) => {
+  taxId: z.string().refine((value) => {
     const digitsOnly = value.replace(/\D/g, '');
     // Verifica se tem 11 dígitos (CPF)
     if (digitsOnly.length === 11) {
@@ -95,6 +95,8 @@ const schemaFavoriteRecipient = z.object({
   bankCode: z.string().optional().or(z.literal(''))
 })
 
+const win: any = window
+
 function NewFavorite () {
   const { setSecurity } = useSecurity()
   const [inputValue, setInputValue] = useState('1')
@@ -107,7 +109,7 @@ function NewFavorite () {
   const { register, watch, setValue, getValues, handleSubmit, formState: {errors} } = useForm<z.infer<typeof schemaFavoriteRecipient>>({
     resolver: zodResolver(schemaFavoriteRecipient),
     defaultValues: {
-      typeFavorite: '1',
+      type: '1',
     }
   })
 
@@ -156,8 +158,8 @@ function NewFavorite () {
       return
     }
     setIsLoad(true)
-
-    console.log('submit');
+    const a = await win.api.createFavoriteRecipient(getValues()) 
+    console.log(a)
     setIsLoad(false)
   }
 
@@ -179,7 +181,7 @@ function NewFavorite () {
   }
 
   // Atualiza o valor do campo
-  setValue('taxID', value, { shouldValidate: true });
+  setValue('taxId', value, { shouldValidate: true });
   }
 
   return (
@@ -193,11 +195,11 @@ function NewFavorite () {
           </Header>
           <ContentInRow style={{width: 300, alignSelf: 'center'}}>
             <div>
-              <input type="radio" id="html" value="1"  {...register('typeFavorite')} name='typeFavorite' onChange={(e) => setInputValue(e.target.value)} />
+              <input type="radio" id="html" value="1"  {...register('type')} name='type' onChange={(e) => setInputValue(e.target.value)} />
               <label htmlFor="html"> Chave PIX </label>
             </div>
             <div>
-              <input type="radio" id="css" value="2" {...register('typeFavorite')}  name='typeFavorite' onChange={(e) => setInputValue(e.target.value)} />
+              <input type="radio" id="css" value="2" {...register('type')}  name='type' onChange={(e) => setInputValue(e.target.value)} />
               <label htmlFor="css"> TED em Conta </label> 
             </div>
           </ContentInRow>
@@ -218,14 +220,14 @@ function NewFavorite () {
           <FormInput style={{ width: 400 }}>
             <Label>CPF ou CNPJ do titular</Label>
             <Input
-              {...register('taxID')}
+              {...register('taxId')}
               type="text"
               placeholder="Ex: 1234567890"
               onChange={maskCPForCNPJInput}
               maxLength={18}
             />
-            {errors.taxID?.message && (
-            <ErrorMsg >{errors.taxID?.message}</ErrorMsg>
+            {errors.taxId?.message && (
+            <ErrorMsg >{errors.taxId?.message}</ErrorMsg>
             )}
           </FormInput>
           {

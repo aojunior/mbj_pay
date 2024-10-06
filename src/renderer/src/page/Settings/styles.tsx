@@ -1,5 +1,5 @@
 import { styled } from 'styled-components'
-import { MdDeleteForever } from 'react-icons/md'
+import { MdDeleteForever, MdEdit } from 'react-icons/md'
 
 export const Section = styled.div`
   width: 100%;
@@ -44,6 +44,14 @@ export const Tbody = styled.tbody`
   & tr:nth-of-type(even) {
     background-color: #f3f3f3;
   }
+`
+
+export const EditIcon = styled(MdEdit)`
+  background-color: #e7e7e4;
+  padding: 2px;
+  border-radius: 4px;
+  color: #4422ee;
+  cursor: pointer;
 `
 
 export const DeleteIcon = styled(MdDeleteForever)`

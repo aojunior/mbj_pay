@@ -54,15 +54,24 @@ export const API = {
     const aliases = await ipcRenderer.invoke('get_alias')
     return aliases
   },
+  createFavoriteRecipient: async (data) => {
+    const resp = await ipcRenderer.invoke('create_favorite_recipient', data)
+    return resp
+  },
+  getFavoriteRecipients: async () => {
+    const data = await ipcRenderer.invoke('get_favorite_recipient')
+    return data
+  },
+  verifyRecipientAlias: async (data) => {
+    const response = await ipcRenderer.invoke('verify_recipientAlias', data)
+    return response
+  },
   security: async (password) => {
     const credentials = await ipcRenderer.invoke('security', password)
     return credentials
   },
 
-  verifyRecipientAlias: async (data) => {
-    const response = await ipcRenderer.invoke('verify_recipientAlias', data)
-    return response
-  },
+
 
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
   cancelInstantPayment: async () => {

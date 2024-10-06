@@ -34,9 +34,11 @@ import {
   credentialsDB,
   deleteAliasDB,
   deleteClientDB,
+  deleteFavoriteRecipientDB,
   getAliasesDB,
   // deleteClientDB,
   getClientDB,
+  getFavoriteRecipientDB,
   getMediatorDB,
   insertExistingClientDB,
   setDataToTermsOfService,
@@ -531,7 +533,8 @@ ipcMain.handle('refund', async (_, args) => {
 
 // HANDLER RECIPIENT ALIAS
 ipcMain.handle('create_favorite_recipient', async (_, data) => {
-  await createfavoriteRecipientDB(data)
+  const create = await createfavoriteRecipientDB(data)
+  return create
 })
 
 ipcMain.handle('verify_recipientAlias', async (_, data) => {
@@ -541,6 +544,16 @@ ipcMain.handle('verify_recipientAlias', async (_, data) => {
   const response = await verifyRecipientAlias(data, token)
 
   return response
+})
+
+ipcMain.handle('get_favorite_recipients', async () => {
+  const response = await getFavoriteRecipientDB()
+  return response
+})
+
+ipcMain.handle('delete_favorite_recipient', async (_, id) => {
+  const del = await deleteFavoriteRecipientDB(id)
+  return del
 })
 // ----------------------------------------------------------------
 

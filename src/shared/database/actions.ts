@@ -325,7 +325,6 @@ export async function readAliasesActiveDB() {
 // ----------------------------------------------------------------
 
 // ACTION TO Favorite Bank
-
 export async function createfavoriteRecipientDB(data: any) {
   try {
     const favorite = await prisma.favoritesRecipients.create({
@@ -345,6 +344,24 @@ export async function createfavoriteRecipientDB(data: any) {
     console.error(error)
     return
   }
+}
+
+export async function getFavoriteRecipientDB() {
+  try {
+    const data = await prisma.favoritesRecipients.findMany()
+    return data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export async function deleteFavoriteRecipientDB(id: string) {
+  const del = await prisma.favoritesRecipients.delete({
+    where: {
+      id: id
+    }
+  })
+  return del
 }
 // ----------------------------------------------------------------
 
