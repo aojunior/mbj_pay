@@ -46,13 +46,13 @@ export function DialogExtract({ toggle }: dialogProps) {
     let now = date.split('T')
 
     if (input == 'other') {
-      setExtract(await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end))
+      setExtract(await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end).statement)
     }
     if (input == '7day') {
-      setExtract(await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0]))
+      setExtract(await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0]).statement)
     }
     if (input == 'now') {
-      setExtract(await win.api.extractBalanceFilter(now[0], now[0]))
+      setExtract(await win.api.extractBalanceFilter(now[0], now[0]).statement)
     }
     setIsLoad(false)
   }

@@ -486,7 +486,6 @@ ipcMain.handle('verify_balance', async () => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
   const response = await verifyBalance(token)
-
   return response
 })
 

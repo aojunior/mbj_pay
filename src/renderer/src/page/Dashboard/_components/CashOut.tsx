@@ -24,18 +24,18 @@ import { useSecurity } from '@renderer/context/security.context'
 import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 
-
 type BalanceProps = {
   balance: any
   extract: any[]
 }
-
+const win: any = window
 export function FormTransf({ balance, extract }: BalanceProps) {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { security, setSecurity, showSecurity, callSecurityButton } = useSecurity()
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
+  const [favorites, setFavorites] = useState<any>([])
 
   const handleCurrencyChange = (event) => {
     maskCurrencyInput(event)
@@ -50,8 +50,18 @@ export function FormTransf({ balance, extract }: BalanceProps) {
     setDialogRefundOpen(!dialogRefundOpen)
   }
 
+  async function handleFavoritesRecipients() {
+    // setFavorites(await win.api.getFavoriteRecipients())
+    let tmp = [
+      {id: '1', nickname: 'Poupança'},
+      {id: '2', nickname: 'Meu Nubank'},
+      {id: '3', nickname: 'Conta ITAU'},
+    ]
+    setFavorites(tmp)
+  }
+
   function handleTransactionToOwnAccount() {
-    if (handleTransactionBalance()) {
+    if (handleAvalibleTransaction()) {
       console.log(amount)
       // win.api.verifyAccount()
       setContentNotification({
@@ -64,7 +74,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
     }
   }
 
-  function handleTransactionBalance() {
+  function handleAvalibleTransaction() {
     if (balance?.available) {
       if (Number(balance?.available) < Number(amount)) {
         setContentNotification({
@@ -100,10 +110,11 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   function showBalance() {
     return balance?.available
       ? `R$  ${Number(balance?.available).toFixed(2) || 0}`
-      : 'Carregando ...'
+      : ' - '
   }
 
   useEffect(() => {
+    handleFavoritesRecipients()
     setSecurity({
       context: '',
       confirmed: false
@@ -132,9 +143,13 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 <Label>Selecione a Conta:</Label>
                 <select>
                   <option value="">- SELECT -</option>
-                  <option value=""> ITAU S.A</option>
-                  <option value=""> BANCO INTER</option>
-                  <option value=""> NUBANK</option>
+                  {
+                    favorites.map(d => (
+                      <option value={d.id}> {d.nickname} </option>
+                    ))
+                  }
+                  {/* <option value=""> ITAU S.A</option>
+                  <option value=""> NUBANK</option> */}
                 </select>
               </FormInput>
 

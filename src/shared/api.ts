@@ -453,6 +453,7 @@ export async function verifyInstantPayment(transactionid: string, token: string,
     .catch((error) => {
       if (error.response) {
         console.error(error.response.data)
+        return 
       } else {
         console.error('Error: ', error.message)
       }
@@ -466,8 +467,7 @@ export async function verifyBalance(token: string) {
   const db = await getClientDB()
   const sha_signature = await encrypt_string(String(db?.accountId))
 
-  response = await api
-    .get(`/v2/accounts/${String(db?.accountId)}/balance`, {
+  response = await api.get(`/v2/accounts/${String(db?.accountId)}/balance`, {
       headers: {
         ...headers,
         Authorization: `Bearer ${token}`,
@@ -477,7 +477,7 @@ export async function verifyBalance(token: string) {
       httpsAgent
     })
     .then((res): any => {
-      if (res.status == 200 || res.status == 202) return res.data
+      if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
     })
     .catch((error) => {
       if (error.response) {
@@ -485,16 +485,20 @@ export async function verifyBalance(token: string) {
       } else {
         console.error('Error: ', error.message)
       }
+      if(error.response.status == 503) {
+        return {data: null, message: 'NETWORK_ERROR'}
+      } else {
+        return {data: null, message: 'GENERIC_ERROR'}
+      }
     })
 
-  return response.data
+  return response
 }
 
 export async function extractBalanceToday(token: string, AccId: string) {
   let response
   const sha_signature = await encrypt_string(AccId)
-  response = await api
-    .get(`/v1/accounts/${AccId}/statement?ending=${today}&start=${today}`, {
+  response = await api.get(`/v1/accounts/${AccId}/statement?ending=${today}&start=${today}`, {
       headers: {
         ...headers,
         Authorization: `Bearer ${token}`,
@@ -504,7 +508,7 @@ export async function extractBalanceToday(token: string, AccId: string) {
       httpsAgent
     })
     .then((res): any => {
-      if (res.status == 200 || res.status == 202) return res.data
+      if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
     })
     .catch((error) => {
       if (error.response) {
@@ -512,8 +516,13 @@ export async function extractBalanceToday(token: string, AccId: string) {
       } else {
         console.error('Error: ', error.message)
       }
+      if(error.response.status == 503) {
+        return {data: null, message: 'NETWORK_ERROR'}
+      } else {
+        return {data: null, message: 'GENERIC_ERROR'}
+      }
     })
-  return response.data
+  return response
 }
 
 export async function extractBalanceFilter(
@@ -564,6 +573,7 @@ export async function refundCodes(token: string) {
     .catch((error) => {
       if (error.response) {
         console.error(error.response.data)
+        return error.response.status
       } else {
         console.error('Error: ', error.message)
       }

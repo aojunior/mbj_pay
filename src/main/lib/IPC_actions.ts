@@ -98,7 +98,6 @@ export async function verifyAndUpdateAliases(token: string) {
   const aliases = await getAliasesDB()
   let verify = await verifyAliases(token, String(client?.accountId))
 
-  console.log(verify)
   if(!verify.aliases) {
     if(verify == 503) {
       return {data: null, message: 'NETWORK_ERROR'}
