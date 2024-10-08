@@ -1,6 +1,6 @@
 import { Button, ContentInRow, IconEye, IconEyeInvisible, Separator } from '@renderer/styles/global'
 import { Input, Label, WrapIpunt } from '../styles'
-import { formatCNPJandCPF, formatDate } from '@shared/utils'
+import { formatCNPJandCPF } from '@shared/utils'
 import { useEffect, useState } from 'react'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'

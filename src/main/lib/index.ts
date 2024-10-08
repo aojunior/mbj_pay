@@ -62,11 +62,11 @@ export const watchFileAndFormat = async (callback: (formatData: any) => void) =>
         }
 
         if (filePath.fileType === '0') {
-          return
+          return callback(null)
         }
       })
     } else {
-      return
+      return callback(null)
     }
   })
 
@@ -88,19 +88,72 @@ export const removeReqFile = async () => {
   }
 }
 
-export const createResFile = async () => {
+export const removeResFile = async () => {
+  const rootDir = getRootDirectory()
+  await ensureDir(rootDir)
+  const ReqFile = rootDir + '/Res/001.pos'
+  if(existsSync(ReqFile)) {
+    await unlink(ReqFile, (err) => {
+      if (err) throw err
+      console.log(`Remove file Succssesfull `)
+    })
+  }
+}
+
+export const createResFile = async (status: string) => {
   const rootDir = getRootDirectory()
   await ensureDir(rootDir)
   const ResFile = rootDir + '/Res/001.pos'
-  const data = '000 = 0\n001=OPERACAO CANCELADA\n999'
+  let contentInFile;
 
-  await writeFile(ResFile, data, (err) => {
+  switch (status) {
+    case 'APPROVED':
+      contentInFile = '000 = 1\n001=Pagamento Aprovado\n999'
+      break
+    case 'CANCELING':
+    
+      break
+    case 'CANCELED':
+      contentInFile = '000 = 0\n001=OPERACAO CANCELADA\n999'
+      break
+    case 'AUTHORIZED':
+      
+      break
+    case 'CAPTURED':
+      
+      break
+    case 'OVERFILLED':
+      
+      break
+    case 'FATAL_ERROR':
+      
+      break
+    case 'REJECTED':
+      
+      break
+    case 'EXPIRED':
+      
+      break
+    case 'PARTIAL':
+      
+      break
+    case 'UNFINISHED':
+      
+      break
+    case 'ERROR':
+      
+      break
+    default:
+      return
+  }
+
+  await writeFile(ResFile, contentInFile, (err) => {
     if (err) throw err
-    console.log(`Create file Succssesfull `)
+    console.log(`Create Res file Succssesfull `)
   })
 }
 
-type props= {
+type props = {
   ktax: string  // saltKey
   dataT: string // taxId
   kpass: string // saltKey

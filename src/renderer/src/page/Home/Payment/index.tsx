@@ -18,18 +18,21 @@ import {
 import { DotWave } from '../StandBy/styles'
 import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
+import {FaCheckCircle} from 'react-icons/fa'
+import { RiErrorWarningFill } from 'react-icons/ri'
+import { GiCancel } from 'react-icons/gi'
 
 const win: any = window
 
 function PaymentScreen({ file }) {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [transactionStatus, setTransactionStatus] = useState('')
+  const [isLoad, setIsLoad] = useState(false)
 
   function checkTransactionStatus(status: string) {
-    setTransactionStatus('')
     switch (status) {
       case 'CREATED':
-        setTransactionStatus('Aguardando...')
+        setTransactionStatus('Aguardando')
         break
       case 'APPROVED':
         setTransactionStatus('Aprovado')
@@ -73,14 +76,145 @@ function PaymentScreen({ file }) {
     }
   }
 
+  function renderIcon() {
+    switch (transactionStatus) {
+      case 'Aprovado':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+              <FaCheckCircle size={24} color="#4caf50" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Autorizado':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+              <FaCheckCircle size={24} color="#4caf50" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Capturado':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+              <FaCheckCircle size={24} color="#4caf50" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Cancelando':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+            <GiCancel size={24} color="#f44336" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Cancelada':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+            <GiCancel size={24} color="#f44336" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Cheio':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+            <RiErrorWarningFill size={24} color="#f4c836" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Erro Fatal':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+            <RiErrorWarningFill size={24} color="#f4c836" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Expirado':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+            <RiErrorWarningFill size={24} color="#f4c836" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+      case 'Erro':
+        return (
+          <div style={{marginBottom: 25, marginTop: 10}}>
+            <ContentInRow style={{justifyContent: 'flex-start', gap: 15, marginBottom: 25, marginTop: 10}}>
+            <RiErrorWarningFill size={24} color="#f4c836" />
+              <h3>{ transactionStatus.toUpperCase()}</h3>
+            </ContentInRow>
+              
+            <h4>
+              <code>Enter</code> - Finalizar
+            </h4>
+          </div>
+        )
+    }
+  }
+
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
+      case 'Enter':
+        if(transactionStatus == '' || transactionStatus == 'Aguardando') return
+        await win.api.finishInstantPayment(file)
+        break
       case 'Escape':
-        win.api.cancelPayment()
+        if(transactionStatus !== '' && transactionStatus !== 'Aguardando') return
+        const cancel = await win.api.cancelInstantPayment(file)
+        if(cancel.status == 'CANCELED') {
+          setTransactionStatus('Cancelada')
+        }
         break
       case 'F1':
         (async () => {
           try {
+            if(transactionStatus !== '' && transactionStatus !== 'Aguardando') return
             await navigator.clipboard.writeText(file.instantPayment.textContent)
             setContentNotification({
               ...contentNotification,
@@ -95,13 +229,16 @@ function PaymentScreen({ file }) {
         })()
         break
       case 'F2':
+        if(transactionStatus !== '' && transactionStatus !== 'Aguardando') return
+
         console.log('Print QRCODE')
         break
       case 'F3':
-        win.api.verifyInstantPayment()
-        win.api.responseVerifyInstantPayment((data) => {
-          checkTransactionStatus(data.transactionStatus)
-        })
+        setTransactionStatus('')
+        setIsLoad(true)
+        const resp = await win.api.verifyInstantPayment()
+        checkTransactionStatus(resp.transactionStatus)
+        setIsLoad(false)
         break
     }
   }
@@ -112,7 +249,7 @@ function PaymentScreen({ file }) {
       window.removeEventListener('keydown', handleKeyButton)
     }
   }, [])
-
+  
   const QRCode = 'data:image/png;base64,' + file.instantPayment.generateImage.imageContent
 
   return (
@@ -128,17 +265,27 @@ function PaymentScreen({ file }) {
         <InfoDisplay>
           <ContainQRCode>
             <QRcode src={QRCode} alt="" />
+            <span>Aponte a câmera aqui</span>
             {/* <QRcode src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSojqE7ztWUYLgAOLfIp8OrWRqDI-43JplTC8XdCZ8L9g&s" alt="" > */}
           </ContainQRCode>
 
           <ContainInfo>
-            {transactionStatus.toUpperCase() !== 'Aguardando' &&
-            transactionStatus.toUpperCase() !== '' ? (
-              <h3>{transactionStatus.toUpperCase()}</h3>
-            ) : (
+            {
+              isLoad &&
+              <LoadInfo style={{ marginBottom: 25, marginTop: 20}}>
+                <ContentInRow style={{gap: 5}}>
+                  <DotWave />
+                  <DotWave />
+                  <DotWave />
+                </ContentInRow>
+              </LoadInfo>
+            }
+            
+            {transactionStatus !== '' && transactionStatus !== 'Aguardando' ? (
+              renderIcon()
+            ) : !isLoad && (
               <>
-                <h3>{transactionStatus.toUpperCase()}</h3>
-                <LoadInfo style={{ marginBottom: 25 }}>
+                <LoadInfo style={{ marginBottom: 25, marginTop: 10 }}>
                   <h3>Aguardando Pagamento </h3>
                   <ContentInRow>
                     <DotWave />
@@ -146,14 +293,14 @@ function PaymentScreen({ file }) {
                     <DotWave />
                   </ContentInRow>
                 </LoadInfo>
+                <h4>
+                  <code>ESC</code> - Cancelar
+                </h4>
               </>
             )}
-            <h4>
-              <code>ESC</code> - Cancelar
-            </h4>
 
             <FormInput style={{ width: '100%', marginTop: 40 }}>
-              <Label>Chave Aleatoria:</Label>
+              <Label>PIX Copiar e Colar:</Label>
               <TextArea readOnly value={file.instantPayment.textContent} />
             </FormInput>
           </ContainInfo>

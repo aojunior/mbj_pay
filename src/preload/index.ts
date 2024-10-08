@@ -84,15 +84,18 @@ export const API = {
   },
 
 
-
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
-  cancelInstantPayment: async () => {
-    const cancelPayment = await ipcRenderer.send('cancel_instantpayment')
+  cancelInstantPayment: async (data) => {
+    const cancelPayment = await ipcRenderer.invoke('cancel_instantpayment', data)
     return cancelPayment
   },
   verifyInstantPayment: async () => {
     const verifyPayment = await ipcRenderer.invoke('verify_instantpayment')
     return verifyPayment
+  },
+  finishInstantPayment: async (data) => {
+    const finish = await ipcRenderer.invoke('finished_instantpayment', data)
+    return finish
   },
 
   refundCodes: async () => {

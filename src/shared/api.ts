@@ -364,7 +364,6 @@ export async function createInstantPayment(
   token: string,
   AccId: string,
   Alias: string,
-  MedId,
   MedFee
 ) {
   let response
@@ -385,7 +384,7 @@ export async function createInstantPayment(
           imageWidth: 400,
           generateImageRendering: true
         },
-        expiration: 86400,
+        expiration: 1800,
         additionalInformation: [
           {
             name: paymentFile.orderID,
@@ -398,7 +397,7 @@ export async function createInstantPayment(
     recipients: [
       {
         account: {
-          accountId: MedId
+          accountId: AccId
         },
         amount: recipientAmount,
         currency: 'BRL',
@@ -419,7 +418,7 @@ export async function createInstantPayment(
       httpsAgent
     })
     .then((res): any => {
-      if (res.status == 200 || res.status == 202) return res.data
+      if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
     })
     .catch((error) => {
       if (error.response) {
@@ -427,9 +426,13 @@ export async function createInstantPayment(
       } else {
         console.error('Error: ', error.message)
       }
+      if(error.response.status == 503) {
+        return {data: null, message: 'NETWORK_ERROR'}
+      } else {
+        return {data: null, message: 'GENERIC_ERROR'}
+      }
     })
-
-  return response.data
+    return response
 }
 
 export async function verifyInstantPayment(transactionid: string, token: string, AccId: string) {

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Notification } from '@renderer/components/notification'
 import { DeleteIcon, EditIcon, Table, Tbody, Td, Th, Thead, Tr } from '../styles'
 import NewFavorite from './_addNewFavorite';
 import { useSecurity } from '@renderer/context/security.context';
@@ -11,7 +10,7 @@ import { Button } from '@renderer/styles/global';
 const win: any = window
 export function AddFavoriteRecipient() {
   // const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const { showSecurity, security, setSecurity, callSecurityButton } = useSecurity()
+  const { showSecurity, security, callSecurityButton } = useSecurity()
   const [isLoad, setIsLoad] = useState(false)
   const [favList, setFavList] = useState<any>([])
   const [idFav, setIdFav] = useState<string>('')
@@ -29,9 +28,6 @@ export function AddFavoriteRecipient() {
     setFavList(fav)
   }
   
-  async function handleEdit(id: string) {
-    
-  }
   async function handleDelete(id: string) {
     setIsLoad(true)
     await win.api.deleteFavoriteRecipients(id)

@@ -55,15 +55,18 @@ model Aliases {
 }
 
 model Transactions {
-  id              String @id @default(cuid())
-  TransactionId   String
-  accountId       String
-  transactionType String
-  Amount          Float
-  identify        String 
-  status          String 
-  createdAT       DateTime  @default(now())
-  client          Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  id                      String @id @default(cuid())
+  transactionId           String
+  accountId               String
+  transactionType         String
+  amount                  Float
+  status                  String
+  identify                String? 
+  transactionDescription  String?
+  message                 String?
+  createdAT               DateTime  @default(now())
+  updatedAT               DateTime?
+  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model FavoritesRecipients {

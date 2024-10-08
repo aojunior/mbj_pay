@@ -49,7 +49,14 @@ export const InfoDisplay = styled.div`
   padding: 5px 0;
 `
 
-export const ContainQRCode = styled.div``
+export const ContainQRCode = styled.div`
+  text-align: center;
+  font-size: 12px;
+  color: #4d4d4d;
+  background-color: #f7f7f4;
+  display: flex;
+  flex-direction: column;
+`
 
 export const QRcode = styled.img`
   width: 300px;

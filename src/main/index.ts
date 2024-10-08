@@ -1,16 +1,16 @@
 import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
 import  path, { join } from 'path'
-import os from 'node:os'
-import { machineIdSync } from 'node-machine-id'
+// import os from 'node:os'
+// import { machineIdSync } from 'node-machine-id'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png'
-import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile } from './lib'
+import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile, removeResFile } from './lib'
 import {
   tokenGenerator,
   createAccountAPI,
   VerifyAccountAPI,
-  createAliasesAPI,
-  verifyAliases,
+  // createAliasesAPI,
+  // verifyAliases,
   verifyInstantPayment,
   verifyBalance,
   extractBalanceToday,
@@ -19,7 +19,7 @@ import {
   refundCodes,
   deleteAliases,
   // DeleteAccountAPI,
-  getLocationAndIPV6,
+  // getLocationAndIPV6,
   createInstantPayment,
   DeleteAccountAPI,
   verifyRecipientAlias
@@ -28,12 +28,13 @@ import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
 import {
   alterPasswordDB,
-  createAliasDB,
+  // createAliasDB,
   createClientDB,
   createfavoriteRecipientDB,
+  createTransanctionDB,
   credentialsDB,
   deleteAliasDB,
-  deleteClientDB,
+  // deleteClientDB,
   deleteFavoriteRecipientDB,
   getAliasesDB,
   // deleteClientDB,
@@ -41,13 +42,15 @@ import {
   getFavoriteRecipientDB,
   getFavoriteRecipientOnIdDB,
   getMediatorDB,
+  getTransanctionDB,
   insertExistingClientDB,
-  setDataToTermsOfService,
-  updateAliasDB,
-  updateClientDB,
-  updatefavoriteRecipientDB
+  // setDataToTermsOfService,
+  // updateAliasDB,
+  // updateClientDB,
+  updatefavoriteRecipientDB,
+  updateTransanctionDB
 } from '../shared/database/actions'
-import { currentTime, HashComparator } from '@shared/utils'
+import { HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
 import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
@@ -133,7 +136,7 @@ app.whenReady().then(() => {
   createWindow()
   createPath() // Cria as pastas necessarias para receber e enviar arquivos de leitura
   removeReqFile()
-
+  removeResFile()
   // Usado apenas para criar arquivo de conta com status Regular
   // encriptoTest({Cnpj:'14787479000162', Pass:'12345', Account:"27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C"})
 
@@ -220,12 +223,26 @@ app.whenReady().then(() => {
           token,
           String(client?.accountId),
           String(db[0]?.alias),
-          mediator?.mediatorAccountId,
           mediator?.mediatorFee
         )
+        mainWindow.show()
+
+        if(response.message === 'SUCCESS') {
+          console.log(response.data)
+          const file = {
+            accId: client?.accountId,
+            status: response.data.financialStatement.status,
+            transactionId: response.data.transactionId,
+            transactionType: response.data.transactionType,
+            totalAmount: response.data.totalAmount,
+            description: formatData.recipientComment,
+            identify: formatData.orderID
+          }
+          await createTransanctionDB(file)
+        }
 
         mainWindow.show()
-        mainWindow.webContents.send('watch_file', response);
+        mainWindow.webContents.send('watch_file', response.data);
       }
     } catch (error) {
       console.log(error)
@@ -462,7 +479,7 @@ ipcMain.handle('delete-alias', async (_, alias) => {
 // ----------------------------------------------------------------
 
 // HANDLE INSTANT PAYMENT
-ipcMain.on('verify_instantpayment', async () => {
+ipcMain.handle('verify_instantpayment', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
@@ -472,13 +489,36 @@ ipcMain.on('verify_instantpayment', async () => {
   const db = await getClientDB()
   const verify = await verifyInstantPayment(transactionid, token, String(db?.accountId))
 
+  await createResFile(verify.transactions[0].transactionStatus)
   return verify.transactions[0]
 })
 
-ipcMain.on('cancel_payment', async () => {
+ipcMain.handle('cancel_instantpayment', async (_, data) => {
+  await createResFile('CANCELED')
+  const transaction = await getTransanctionDB(data.transactionId)
+  
+  const file = {
+    id: transaction?.id,
+    updatedAT: data.transactionDate,
+    message: 'OPERACAO CANCELADA PELO USUARIO',
+    status: 'CANCELED',
+  }
+  const update = await updateTransanctionDB(file)
+  return update
+})
+
+ipcMain.handle('finished_instantpayment', async(_, data) => {
+  const transaction = await getTransanctionDB(data.transactionId)
+  if(transaction?.status !== 'CANCELED') {
+    const file = {
+      id: transaction?.id,
+      updatedAT: data.transactionDate,
+      status: data.transactionStatus
+    }
+    await updateTransanctionDB(file)
+  }
   removeReqFile()
-  createResFile()
-  mainWindow.webContents.send('file', null)
+  mainWindow.hide()
 })
 // ----------------------------------------------------------------
 
@@ -543,7 +583,6 @@ ipcMain.handle('update_favorite_recipient', async (_, data) => {
   return create
 })
 
-
 ipcMain.handle('verify_recipientAlias', async (_, data) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
@@ -568,8 +607,6 @@ ipcMain.handle('delete_favorite_recipient', async (_, id) => {
   return del
 })
 // ----------------------------------------------------------------
-
-
 
 // UTILITY CONNECTION
 ipcMain.handle('security', async (_, password) => {

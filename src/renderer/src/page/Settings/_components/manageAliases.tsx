@@ -207,7 +207,7 @@ export function ManageAlias() {
         </Table>
 
         <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/1</span>
-        {accState?.status == 'REGULAR' && <Button onClick={() => callSecurityButton('createAlias')}>Add Chave</Button>}
+        {accState?.status == 'REGULAR' && <Button onClick={() => callSecurityButton('createAlias')}>Criar Chave Pix</Button>}
       </>
       <span style={{ color: '#999', textAlign: 'end' }}>
         Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o

@@ -324,21 +324,65 @@ export async function readAliasesActiveDB() {
 }
 // ----------------------------------------------------------------
 
+// ACTION TO TRANSACTION
+export async function createTransanctionDB(data) {
+  try {
+    const transaction = await prisma.transactions.create({
+      data: {
+        accountId: data.accId,
+        amount: data.totalAmount,
+        transactionId: data.transactionId,
+        transactionType: data.transactionType,
+        status: data.status,
+        transactionDescription: data.description,
+        identify: data.identify // nro pedido sistema
+      }
+    })
+    console.log(transaction)
+    return transaction
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export async function updateTransanctionDB(data) {
+  try {
+    const update = await prisma.transactions.update({
+      where: {
+        id: data.id
+      },
+      data
+    })
+
+    return update
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export async function getTransanctionDB(transactionId) {
+  try{
+    const transaction = await prisma.transactions.findFirst({
+      where: {
+        transactionId: transactionId
+      }
+    })
+    return transaction
+  } catch(error) {
+
+  }
+}
+
+export async function deleteTransanctionDB() {
+
+}
+// ----------------------------------------------------------------
+
 // ACTION TO Favorite Bank
 export async function createfavoriteRecipientDB(data: any) {
   try {
     const favorite = await prisma.favoritesRecipients.create({
       data: data
-      // data: {
-      //   nickname: data.nickname,
-      //   type: data.type,
-      //   taxId: data.taxId,
-      //   bankAccount: data.bankAccount,
-      //   bankAgency: data.bankAgency,
-      //   bankBranch: data.bankBranch,
-      //   bankCode: data.bankCode,
-      //   pixKey: data.pixKey
-      // }
     })
     return favorite
   } catch (error) {
@@ -352,16 +396,6 @@ export async function updatefavoriteRecipientDB(data: any) {
     const favorite = await prisma.favoritesRecipients.update({
       where: { id: data.id },
       data: data
-      // data: {
-      //   nickname: data.nickname,
-      //   type: data.type,
-      //   taxId: data.taxId,
-      //   bankAccount: data.bankAccount,
-      //   bankAgency: data.bankAgency,
-      //   bankBranch: data.bankBranch,
-      //   bankCode: data.bankCode,
-      //   pixKey: data.pixKey
-      // }
     })
     console.log(favorite)
     return favorite

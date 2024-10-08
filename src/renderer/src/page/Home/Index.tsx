@@ -22,11 +22,11 @@ function Home() {
         setShowNotification(true)
         return
       }
+      setFile(data);
       localStorage.clear()
       localStorage.setItem('transactionid', data.transactionId)
-      setFile(data);
     });
-  }, [])
+  }, [file])
 
   return (
     <>
