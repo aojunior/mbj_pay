@@ -1,4 +1,4 @@
-import { Button, ContentInRow, Separator } from '@renderer/styles/global'
+import { Button, ContentInRow, IconEye, IconEyeInvisible, Separator } from '@renderer/styles/global'
 import { Input, Label, WrapIpunt } from '../styles'
 import { formatCNPJandCPF, formatDate } from '@shared/utils'
 import { useEffect, useState } from 'react'
@@ -16,7 +16,7 @@ export function MyAccount() {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [account, setAccount] = useState<Client>({} as Client)
   const [isLoad, setIsLoad] = useState(false)
-
+  const [showTextPassword, setShowTextPassword] = useState(false)
   const [pass, setPass] = useState('')
 
   async function getAccount() {
@@ -120,8 +120,10 @@ export function MyAccount() {
       context: '',
       confirmed: false
     })
+  } 
+  function togglePassword() {
+    setShowTextPassword(!showTextPassword)
   }
-
   useEffect(() => {
     getAccount()
     setSecurity({
@@ -153,13 +155,29 @@ export function MyAccount() {
         <WrapIpunt>
           {security.confirmed ? (
             <>
-              <Input
-                type="text"
-                placeholder="Digite a Nova Senha"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-              />
-              <Button onClick={handleChangePassword}>Salvar</Button>
+              <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Input
+                  style={{ width: '100%',  boxSizing: 'border-box' }}
+                  type={showTextPassword ? 'text' : 'password'}
+                  placeholder="Digite a Nova Senha"
+                  onChange={(e) => setPass(e.target.value)}
+                  autoFocus
+                />
+                {showTextPassword ? (
+                  <IconEyeInvisible
+                    size={24}
+                    style={{position: 'relative', right: 30}}
+                    onClick={togglePassword}
+                  />
+                ) : (
+                  <IconEye
+                    size={24}
+                    style={{position: 'relative', right: 30}}
+                    onClick={togglePassword}
+                  />
+                )}
+              </ContentInRow>
+              <Button style={{ marginTop: 5, alignSelf: 'center'}} onClick={handleChangePassword}>Salvar</Button>
             </>
           ) : (
             <Button onClick={() => setShowSecurity(true)}>Alterar Senha</Button>
@@ -185,23 +203,23 @@ export function MyAccount() {
       <ContentInRow style={{ width: '50%' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Conta</Label>
-          <Input type="text" value={account?.accountBank} style={{ width: 120 }} />
+          <Input type="text" value={String(account?.accountBank)} style={{ width: 120 }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Agência (Branch)</Label>
-          <Input type="text" value={account?.branchBank} style={{ width: 120 }} />
+          <Input type="text" value={String(account?.branchBank)} style={{ width: 120 }} />
         </div>
       </ContentInRow>
 
       <ContentInRow style={{ width: '80%' }}>
-        <WrapIpunt>
+        {/* <WrapIpunt>
           <Label>Data de Criação</Label>
           <Input
             type="text"
             value={formatDate(account?.createdAT)}
             style={{ width: 120, textAlign: 'center' }}
           />
-        </WrapIpunt>
+        </WrapIpunt> */}
 
         <WrapIpunt>
           <Label>Status da Conta</Label>

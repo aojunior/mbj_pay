@@ -51,13 +51,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }
 
   async function handleFavoritesRecipients() {
-    // setFavorites(await win.api.getFavoriteRecipients())
-    let tmp = [
-      {id: '1', nickname: 'Poupança'},
-      {id: '2', nickname: 'Meu Nubank'},
-      {id: '3', nickname: 'Conta ITAU'},
-    ]
-    setFavorites(tmp)
+    setFavorites(await win.api.getFavoriteRecipients())
   }
 
   function handleTransactionToOwnAccount() {
@@ -142,10 +136,10 @@ export function FormTransf({ balance, extract }: BalanceProps) {
               <FormInput>
                 <Label>Selecione a Conta:</Label>
                 <select>
-                  <option value="">- SELECT -</option>
+                  <option value="">- SELECIONE -</option>
                   {
                     favorites.map(d => (
-                      <option value={d.id}> {d.nickname} </option>
+                      <option key={d.id} value={d.id}> {d.nickname} </option>
                     ))
                   }
                   {/* <option value=""> ITAU S.A</option>
@@ -217,7 +211,6 @@ export function FormTransf({ balance, extract }: BalanceProps) {
       </ContentInRow>
       {dialogExtractOpen && <DialogExtract toggle={toggleExtractDialog} />}
       {dialogRefundOpen && <DialogRefund toggle={toggleRefundDialog} />}
-
       <Notification />
     </Container>
   )

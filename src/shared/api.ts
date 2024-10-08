@@ -499,6 +499,40 @@ export async function extractBalanceToday(token: string, AccId: string) {
   let response
   const sha_signature = await encrypt_string(AccId)
   response = await api.get(`/v1/accounts/${AccId}/statement?ending=${today}&start=${today}`, {
+    headers: {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Transaction-Hash': sha_signature
+    },
+    httpsAgent
+  }).then((res): any => {
+    if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
+  }).catch((error) => {
+    if (error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message)
+    }
+    if(error.response.status == 503) {
+      return {data: null, message: 'NETWORK_ERROR'}
+    } else {
+      return {data: null, message: 'GENERIC_ERROR'}
+    }
+  })
+  return response
+}
+
+export async function extractBalanceFilter(
+  token: string,
+  dateStart: string,
+  dateEnd: string,
+  AccId: string
+) {
+  let response
+  const sha_signature = await encrypt_string(AccId)
+  response = await api
+    .get(`/v1/accounts/${AccId}/statement?ending=${dateEnd}&start=${dateStart}`, {
       headers: {
         ...headers,
         Authorization: `Bearer ${token}`,
@@ -522,39 +556,8 @@ export async function extractBalanceToday(token: string, AccId: string) {
         return {data: null, message: 'GENERIC_ERROR'}
       }
     })
+
   return response
-}
-
-export async function extractBalanceFilter(
-  token: string,
-  dateStart: string,
-  dateEnd: string,
-  AccId: string
-) {
-  let response
-  const sha_signature = await encrypt_string(AccId)
-  response = await api
-    .get(`/v1/accounts/${AccId}/statement?ending=${dateEnd}&start=${dateStart}`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Transaction-Hash': sha_signature
-      },
-      httpsAgent
-    })
-    .then((res): any => {
-      if (res.status == 200 || res.status == 202) return res.data
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.response.data)
-      } else {
-        console.error('Error: ', error.message)
-      }
-    })
-
-  return response.data
 }
 
 export async function refundCodes(token: string) {

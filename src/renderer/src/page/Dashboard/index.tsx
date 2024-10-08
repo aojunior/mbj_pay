@@ -15,13 +15,13 @@ export default function Dashboard() {
 
   async function getBalance() {
     setIsLoad(true)
-    const data = await win.api.verifyBalance()
+    const balance = await win.api.verifyBalance()
     const extractToday = await win.api.extractBalanceToday()
-    if(data.message == 'SUCCESS' && extractToday.message == 'SUCCESS') {
-      setBalance(data)
-      setExtract(extractToday.statement as any[])
+    if(balance.message == 'SUCCESS' && extractToday.message == 'SUCCESS') {
+      setBalance(balance.data)
+      setExtract(extractToday.data.statement as any[])
     }
-    if(data.message == 'NETWORK_ERROR' || extractToday.message == 'NETWORK_ERROR') {
+    if(balance.message == 'NETWORK_ERROR' || extractToday.message == 'NETWORK_ERROR') {
       setBalance({})
       setExtract([])
       setContentNotification({
@@ -32,7 +32,7 @@ export default function Dashboard() {
       })
       setShowNotification(true)
     }
-    if(data.message === 'GENERIC_ERROR' || extractToday.message === 'GENERIC_ERROR') {
+    if(balance.message === 'GENERIC_ERROR' || extractToday.message === 'GENERIC_ERROR') {
       setBalance({})
       setExtract([])
       setContentNotification({

@@ -125,9 +125,9 @@ export function DialogRefund({ toggle }: dialogProps) {
               <FormInput>
                 <Label>Selecione o Motivo:</Label>
                 <select onChange={(e) => setReasonCodes(e.currentTarget.value)}>
-                  <option value="">- SELECT -</option>
+                  <option value="">- SELECIONE -</option>
                   {arrCodes &&
-                    arrCodes.map((data) => <option value={data.code}>{data.description}</option>)}
+                    arrCodes.map((data) => <option key={data.code} value={data.code}>{data.description}</option>)}
                 </select>
               </FormInput>
               <input

@@ -101,12 +101,6 @@ export function ShowPassword() {
     <form onSubmit={checkPassword}>
       <Container>
         <Section>
-          {/* <span
-            style={{ cursor: 'pointer', alignSelf: 'flex-end', fontWeight: '700', color: '#777' }}
-            onClick={() => setShowSecurity(false)}
-          >
-            X
-          </span> */}
           <AiFillCloseSquare style={{ alignSelf: 'flex-end', fontWeight: '700' }} color='#777' size={24} onClick={() => setShowSecurity(false)} cursor='pointer'/>
           <Header>
             <Title>Confirmação de senha</Title>

@@ -68,7 +68,7 @@ model Transactions {
 
 model FavoritesRecipients {
   id          String @id @default(cuid())
-  nickname    String @unique
+  nickname    String
   type        String
   taxId       String
   pixKey      String?

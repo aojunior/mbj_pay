@@ -58,8 +58,20 @@ export const API = {
     const resp = await ipcRenderer.invoke('create_favorite_recipient', data)
     return resp
   },
+  updateFavoriteRecipient: async (data) => {
+    const resp = await ipcRenderer.invoke('update_favorite_recipient', data)
+    return resp
+  },
   getFavoriteRecipients: async () => {
-    const data = await ipcRenderer.invoke('get_favorite_recipient')
+    const data = await ipcRenderer.invoke('get_favorite_recipients')
+    return data
+  },
+  getFavoriteRecipientOnId: async (id) => {
+    const data = await ipcRenderer.invoke('get_favorite_recipient_on_id', id)
+    return data
+  },
+  deleteFavoriteRecipients: async (id) => {
+    const data = await ipcRenderer.invoke('delete_favorite_recipient', id)
     return data
   },
   verifyRecipientAlias: async (data) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AiFillCloseSquare } from 'react-icons/ai';
 import styled from 'styled-components';
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -68,6 +68,7 @@ const ErrorMsg = styled.p`
 `
 
 const schemaFavoriteRecipient = z.object({
+  id: z.string().optional().or(z.literal('')),
   type: z.string(),
   nickname: z.string()
     .min(3, 'Um apelido para a conta é obrigatório')
@@ -90,14 +91,14 @@ const schemaFavoriteRecipient = z.object({
   }),
   pixKey: z.string().optional().or(z.literal('')),
   bankAgency: z.string().optional().or(z.literal('')),
-  backAccount: z.string().optional().or(z.literal('')),
+  bankAccount: z.string().optional().or(z.literal('')),
   bankBranch: z.string().optional().or(z.literal('')),
   bankCode: z.string().optional().or(z.literal(''))
 })
 
 const win: any = window
 
-function NewFavorite () {
+function NewFavorite (props: {id: string}) {
   const { setSecurity } = useSecurity()
   const [inputValue, setInputValue] = useState('1')
   const [isLoad, setIsLoad] = useState(false)
@@ -108,9 +109,9 @@ function NewFavorite () {
 
   const { register, watch, setValue, getValues, handleSubmit, formState: {errors} } = useForm<z.infer<typeof schemaFavoriteRecipient>>({
     resolver: zodResolver(schemaFavoriteRecipient),
-    defaultValues: {
-      type: '1',
-    }
+    // defaultValues: {
+    //   type: '1',
+    // }
   })
 
   watch(register => {
@@ -121,10 +122,12 @@ function NewFavorite () {
       })
     }
 
-    if( (register.backAccount && register.backAccount.length >= 3) &&
+    if( (register.bankAccount && register.bankAccount.length >= 3) &&
       (register.bankAgency && register.bankAgency.length >= 2) &&
       (register.bankBranch && register.bankBranch.length >= 1) &&
       (register.bankCode && register.bankCode.length >= 1)) {
+      // setValue('pixKey', '', {shouldValidate: true})
+
       setError({
         message: '',
         borderColor:''
@@ -139,7 +142,7 @@ function NewFavorite () {
     })
   }
 
-  async function onSubmit() {
+  async function onSubmit() {   
     if(inputValue == '1' && String(getValues().pixKey).length < 11) {
       setError({
         message: 'Chave Pix é obrigatório para salvar.',
@@ -148,7 +151,7 @@ function NewFavorite () {
       return
     }
     if(inputValue === '2' && 
-    (String(getValues().backAccount).length < 3 || String(getValues().bankAgency).length < 2 ||
+    (String(getValues().bankAccount).length < 3 || String(getValues().bankAgency).length < 2 ||
     String(getValues().bankBranch).length < 1 || String(getValues().bankCode).length < 1 )
     ) {
       setError({
@@ -157,10 +160,22 @@ function NewFavorite () {
       }) 
       return
     }
+    if(inputValue === '1') {
+      setValue('bankAccount', '', {shouldValidate: true})
+      setValue('bankAgency', '', {shouldValidate: true})
+      setValue('bankBranch', '', {shouldValidate: true})
+      setValue('bankCode', '', {shouldValidate: true})
+    } else {
+      setValue('pixKey', '', {shouldValidate: true})
+    }
     setIsLoad(true)
-    const a = await win.api.createFavoriteRecipient(getValues()) 
-    console.log(a)
+    if(getValues().id) {
+      await win.api.updateFavoriteRecipient(getValues())
+    } else {
+      await win.api.createFavoriteRecipient(getValues())
+    }
     setIsLoad(false)
+    onClose()
   }
 
   function maskCPForCNPJInput(event) {
@@ -183,6 +198,29 @@ function NewFavorite () {
   // Atualiza o valor do campo
   setValue('taxId', value, { shouldValidate: true });
   }
+
+  async function loadFavInfo() {
+    setIsLoad(true)
+    if(props.id) {
+      let data = await win.api.getFavoriteRecipientOnId(props.id)
+      console.log(data)
+      setInputValue(data.type)
+      setValue('id', data.id, {shouldValidate: true})
+      setValue('type', data.type, {shouldValidate: true})
+      setValue('taxId', data.taxId, {shouldValidate: true})
+      setValue('nickname', data.nickname, {shouldValidate: true})
+      setValue('pixKey', data.pixKey || '', {shouldValidate: true})
+      setValue('bankAccount', data.bankAccount || '', {shouldValidate: true})
+      setValue('bankAgency', data.bankAgency || '', {shouldValidate: true})
+      setValue('bankBranch', data.bankBranch || '', {shouldValidate: true})
+      setValue('bankCode', data.bankCode || '', {shouldValidate: true})
+    }
+    setIsLoad(false)
+  }
+
+  useEffect(() => {
+    loadFavInfo()
+  }, [])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -249,7 +287,7 @@ function NewFavorite () {
               <FormInput style={{ width: 180 }}>
                 <Label>Conta</Label>
                 <Input
-                  {...register('backAccount')}
+                  {...register('bankAccount')}
                   type="text"
                   placeholder="Ex: Conta ITAU"
                 />

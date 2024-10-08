@@ -328,17 +328,42 @@ export async function readAliasesActiveDB() {
 export async function createfavoriteRecipientDB(data: any) {
   try {
     const favorite = await prisma.favoritesRecipients.create({
-      data: {
-        nickname: data.nickname,
-        type: data.type,
-        taxId: data.taxId,
-        bankAccount: data.bankAccount,
-        bankAgency: data.bankAgency,
-        bankBranch: data.bankBranch,
-        bankCode: data.bankCode,
-        pixKey: data.pixKey
-      }
+      data: data
+      // data: {
+      //   nickname: data.nickname,
+      //   type: data.type,
+      //   taxId: data.taxId,
+      //   bankAccount: data.bankAccount,
+      //   bankAgency: data.bankAgency,
+      //   bankBranch: data.bankBranch,
+      //   bankCode: data.bankCode,
+      //   pixKey: data.pixKey
+      // }
     })
+    return favorite
+  } catch (error) {
+    console.error(error)
+    return
+  }
+}
+
+export async function updatefavoriteRecipientDB(data: any) {
+  try {
+    const favorite = await prisma.favoritesRecipients.update({
+      where: { id: data.id },
+      data: data
+      // data: {
+      //   nickname: data.nickname,
+      //   type: data.type,
+      //   taxId: data.taxId,
+      //   bankAccount: data.bankAccount,
+      //   bankAgency: data.bankAgency,
+      //   bankBranch: data.bankBranch,
+      //   bankCode: data.bankCode,
+      //   pixKey: data.pixKey
+      // }
+    })
+    console.log(favorite)
     return favorite
   } catch (error) {
     console.error(error)
@@ -349,6 +374,19 @@ export async function createfavoriteRecipientDB(data: any) {
 export async function getFavoriteRecipientDB() {
   try {
     const data = await prisma.favoritesRecipients.findMany()
+    return data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export async function getFavoriteRecipientOnIdDB(id: string) {
+  try {
+    const data = await prisma.favoritesRecipients.findUnique({
+      where: {
+        id: id
+      }
+    })
     return data
   } catch (error) {
     console.error(error)

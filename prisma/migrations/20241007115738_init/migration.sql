@@ -2,8 +2,8 @@
 CREATE TABLE "Client" (
     "accountId" TEXT NOT NULL,
     "accountHolderId" TEXT NOT NULL,
-    "accountBank" INTEGER NOT NULL,
-    "branchBank" INTEGER NOT NULL,
+    "accountBank" INTEGER,
+    "branchBank" INTEGER,
     "companyName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "taxId" TEXT NOT NULL,
@@ -52,6 +52,20 @@ CREATE TABLE "Transactions" (
 );
 
 -- CreateTable
+CREATE TABLE "FavoritesRecipients" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "nickname" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "taxId" TEXT NOT NULL,
+    "pixKey" TEXT,
+    "bankAgency" TEXT,
+    "bankAccount" TEXT,
+    "bankBranch" TEXT,
+    "bankCode" TEXT,
+    "createdAT" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
 CREATE TABLE "Mediator" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "mediatorAccountId" TEXT NOT NULL,
@@ -66,3 +80,6 @@ CREATE UNIQUE INDEX "Information_idDevice_key" ON "Information"("idDevice");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Aliases_alias_key" ON "Aliases"("alias");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FavoritesRecipients_nickname_key" ON "FavoritesRecipients"("nickname");

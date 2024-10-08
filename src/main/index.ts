@@ -39,11 +39,13 @@ import {
   // deleteClientDB,
   getClientDB,
   getFavoriteRecipientDB,
+  getFavoriteRecipientOnIdDB,
   getMediatorDB,
   insertExistingClientDB,
   setDataToTermsOfService,
   updateAliasDB,
-  updateClientDB
+  updateClientDB,
+  updatefavoriteRecipientDB
 } from '../shared/database/actions'
 import { currentTime, HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
@@ -536,6 +538,12 @@ ipcMain.handle('create_favorite_recipient', async (_, data) => {
   return create
 })
 
+ipcMain.handle('update_favorite_recipient', async (_, data) => {
+  const create = await updatefavoriteRecipientDB(data)
+  return create
+})
+
+
 ipcMain.handle('verify_recipientAlias', async (_, data) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
@@ -547,6 +555,11 @@ ipcMain.handle('verify_recipientAlias', async (_, data) => {
 
 ipcMain.handle('get_favorite_recipients', async () => {
   const response = await getFavoriteRecipientDB()
+  return response
+})
+
+ipcMain.handle('get_favorite_recipient_on_id', async (_, data) => {
+  const response = await getFavoriteRecipientOnIdDB(data)
   return response
 })
 
