@@ -6,10 +6,12 @@ import { promisify } from 'util';
 
 import { join } from 'path'
 
+
+
+// UTILS FUNCTIONS
 export const getRootDirectory = () => {
   return `${appDirectoryName}`
 }
-
 export const createPath = () => {
   const rootDir = getRootDirectory()
   const ReqPath = rootDir + '/Req'
@@ -28,7 +30,31 @@ export const createPath = () => {
       .catch((err) => console.error('Error: ', err))
   }
 }
+export const removeReqFile = async () => {
+  const rootDir = getRootDirectory()
+  await ensureDir(rootDir)
+  const ReqFile = rootDir + '/Req/001.int'
+  if(existsSync(ReqFile)) {
+    await unlink(ReqFile, (err) => {
+      if (err) throw err
+      console.log(`Remove file Succssesfull `)
+    })
+  }
+}
+export const removeResFile = async () => {
+  const rootDir = getRootDirectory()
+  await ensureDir(rootDir)
+  const ReqFile = rootDir + '/Res/001.pos'
+  if(existsSync(ReqFile)) {
+    await unlink(ReqFile, (err) => {
+      if (err) throw err
+      console.log(`Remove file Succssesfull `)
+    })
+  }
+}
+// ----------------------------------------------------------------
 
+// CORE FUNCTIONS
 export const watchFileAndFormat = async (callback: (formatData: any) => void) => {
   const rootDir = getRootDirectory()
   await ensureDir(rootDir)
@@ -47,7 +73,6 @@ export const watchFileAndFormat = async (callback: (formatData: any) => void) =>
         const line3 = linesUnformatted[3].split('=') // customer id
         const line4 = linesUnformatted[4].split('=') // comments
         const line5 = linesUnformatted[5] //file end
-
         const filePath = {
           fileType: line0[1].trim(),
           orderID: line1[1].trim(),
@@ -56,7 +81,6 @@ export const watchFileAndFormat = async (callback: (formatData: any) => void) =>
           recipientComment: line4[1].trim(),
           filEnd: line5
         }
-
         if (filePath.fileType === '1') {
           return callback(filePath)
         }
@@ -76,28 +100,23 @@ export const watchFileAndFormat = async (callback: (formatData: any) => void) =>
   }
 }
 
-export const removeReqFile = async () => {
-  const rootDir = getRootDirectory()
-  await ensureDir(rootDir)
-  const ReqFile = rootDir + '/Req/001.int'
-  if(existsSync(ReqFile)) {
-    await unlink(ReqFile, (err) => {
-      if (err) throw err
-      console.log(`Remove file Succssesfull `)
-    })
-  }
+type propsReqFile = {
+  orderID: string,
+  totalAmount: string,
+  customerID: string,
+  recipientComment: string
 }
-
-export const removeResFile = async () => {
+export const createReqFile = async (data: propsReqFile) => {
   const rootDir = getRootDirectory()
   await ensureDir(rootDir)
-  const ReqFile = rootDir + '/Res/001.pos'
-  if(existsSync(ReqFile)) {
-    await unlink(ReqFile, (err) => {
-      if (err) throw err
-      console.log(`Remove file Succssesfull `)
-    })
-  }
+  const ResFile = rootDir + '/Req/001.int'
+  const contentInFile = `000 = 1 \n 001 = ${data.orderID} \n 002 = ${data.totalAmount} \n 003 = ${data.customerID} \n 004 = ${data.recipientComment} \n 999`
+
+  await writeFile(ResFile, contentInFile, (err) => {
+    if (err) throw err
+    console.log(`Create REQ file Succssesfull `)
+    return `Create REQ file Succssesfull `
+  })
 }
 
 export const createResFile = async (status: string) => {
@@ -153,6 +172,9 @@ export const createResFile = async (status: string) => {
   })
 }
 
+// ----------------------------------------------------------------
+
+// FILES ENCRIPT SIGN IN
 type props = {
   ktax: string  // saltKey
   dataT: string // taxId
@@ -160,7 +182,6 @@ type props = {
   dataP: string // password
   accID: string
 }
-
 export const encriptoFile = async ({Cnpj, Pass, Account}) => {
   const pathFile = join(__dirname, '../encript.pos')
   const TaxID = await HashConstructor(Cnpj)
@@ -177,7 +198,6 @@ export const encriptoFile = async ({Cnpj, Pass, Account}) => {
     console.log(`Encript file Succssesfull `)
   })
 }
-
 const readFileAsync = promisify(readFile);
 export const readEncriptoFile = async ({taxId, password}) => {
   try {

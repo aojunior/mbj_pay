@@ -6,24 +6,6 @@ import { MdOutlineInfo } from 'react-icons/md'
 import { GiConfirmed } from 'react-icons/gi'
 import { useNotification } from '@renderer/context/notification.context'
 
-// const slideIn = keyframes`
-//   0% {
-//     transform: translateX(100%);
-//     opacity: 0;
-//   }
-//   100% {
-//     transform: translateX(0);
-//     opacity: 1;
-//   }
-// `
-// const fadeOut = keyframes`
-//   0% {
-//     opacity: 1;
-//   }
-//   100% {
-//     opacity: 0;
-//   }
-// `
 
 const fadeIn = keyframes`
   from {
@@ -35,7 +17,6 @@ const fadeIn = keyframes`
     transform: translateY(0);
   }
 `
-
 const fadeOut = keyframes`
   from {
     opacity: 1;
@@ -46,28 +27,6 @@ const fadeOut = keyframes`
     transform: translateY(-5px);
   }
 `
-
-// const NotificationWrapper = styled.div<{ isExiting: boolean }>`
-//   position: fixed;
-//   bottom: 20px;
-//   right: 20px;
-//   background-color: #fff;
-//   border: 1px solid #444;
-//   color: #444;
-//   padding: 15px 20px;
-//   border-radius: 5px;
-//   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-//   display: flex;
-//   gap: 10px;
-//   align-items: center;
-//   animation: ${({ isExiting }) => (isExiting ? fadeOut : slideIn)} 0.5s ease-out;
-//   opacity: ${({ isExiting }) => (isExiting ? 0 : 1)};
-//   transition: opacity 0.5s ease-out;
-
-//   transform: translateX(-50%);
-//   z-index: 1000;
-// `
-
 const NotificationContainer = styled.div<{ show: boolean }>`
   position: fixed;
   bottom: 20px;
@@ -113,14 +72,19 @@ const CloseButton = styled.button`
 `
 
 const Notification = () => {
-  const { contentNotification, setShowNotification, showNotification } = useNotification()
+  const { contentNotification, setShowNotification, showNotification, setContentNotification } = useNotification()
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowNotification(false)
-    }, 5000)
+      setContentNotification({
+        title: '',
+        message: '',
+        type: 'custom'
+      })
+    }, contentNotification.time || 5000)
     return () => clearTimeout(timer)
-  }, [])
+  }, [showNotification])
 
   return showNotification && contentNotification.type === 'error' ? (
     <NotificationContainer show={showNotification} style={{ borderColor: 'red' }}>
@@ -155,7 +119,7 @@ const Notification = () => {
       </NotificationContent>
       <CloseButton onClick={() => setShowNotification(false)}>×</CloseButton>
     </NotificationContainer>
-  ) : showNotification && contentNotification.type === 'confirm' ? (
+  ) : showNotification && contentNotification.type === 'success' ? (
     <NotificationContainer show={showNotification} style={{ borderColor: '#1a692d' }}>
       <NotificationContent>
         <GiConfirmed color="#1a692d" size={24} />

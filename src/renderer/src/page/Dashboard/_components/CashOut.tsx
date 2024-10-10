@@ -60,7 +60,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
       // win.api.verifyAccount()
       setContentNotification({
         ...contentNotification,
-        type: 'confirm',
+        type: 'success',
         title: 'Transferência Realizada com Sucesso',
         message: 'Sua transferência foi realizada'
       })
@@ -82,7 +82,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
       } else {
         setContentNotification({
           ...contentNotification,
-          type: 'confirm',
+          type: 'success',
           title: 'Transferêcia efetuada com sucesso',
           message: 'Sua Transferêcia foi processada com sucesso!'
         })
@@ -142,8 +142,6 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                       <option key={d.id} value={d.id}> {d.nickname} </option>
                     ))
                   }
-                  {/* <option value=""> ITAU S.A</option>
-                  <option value=""> NUBANK</option> */}
                 </select>
               </FormInput>
 

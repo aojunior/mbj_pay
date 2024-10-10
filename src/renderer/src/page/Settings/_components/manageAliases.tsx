@@ -38,7 +38,7 @@ export function ManageAlias() {
         title: 'Chave Pix registrada com sucesso!',
         message:
           'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
-        type: 'confirm'
+        type: 'success'
       })
       setAliasData(create.aliases)
     } else {

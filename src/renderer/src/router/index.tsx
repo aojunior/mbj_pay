@@ -20,33 +20,31 @@ export default function Root(): JSX.Element {
     const navigate = useNavigate()
     const { contentNotification, setContentNotification, setShowNotification } = useNotification()
     const { setAccState } = useAccount()
-    // const [showNotification, setShowNotification] = useState(false)
-    const [isLoad, setIsLoad] = useState<boolean>(false)
+    const [isLoad, setIsLoad] = useState<boolean>(true)
 
     //Refresh Token in 5 minutes and storage in SessionStorage
     const refreshAndStorageToken = useCallback(async () => {
-        const newToken = await win.api.tokenGenerator()
-        if (newToken == undefined || newToken == null) {
+      const newToken = await win.api.tokenGenerator()
+      if (newToken == undefined || newToken == null) {
         setContentNotification({
-            ...contentNotification,
-            type: 'error',
-            title: 'Error Connecting to server',
-            message: 'Error when trying to connect to the server'
-        })
-        setShowNotification(true)
-        throw new Error(`Access token not available`)
-        }
-        sessionStorage.setItem('token', newToken)
+          ...contentNotification,
+          type: 'error',
+          title: 'Error Connecting to server',
+          message: 'Error when trying to connect to the server'
+      })
+      setShowNotification(true)
+      await win.api.logger('error', `Access token not available`)
+      }
+      sessionStorage.setItem('token', newToken)
     }, [])
 
     useEffect(() => {
-        refreshAndStorageToken()
-        setInterval(() => refreshAndStorageToken(), 5000 * 60) // 5 min
+      refreshAndStorageToken()
+      setInterval(() => refreshAndStorageToken(), 5000 * 60)
     }, [refreshAndStorageToken])
     
     useEffect(() => {
       const checkClient = async () => {
-        setIsLoad(true)
         const exists = await win.api.getAccount()
         if (exists) {
           setAccState(exists)
@@ -61,7 +59,7 @@ export default function Root(): JSX.Element {
     }, [])
 
     if(isLoad) {
-      <Loading />
+      return <Loading />
     }
 
     return (

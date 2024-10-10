@@ -21,7 +21,6 @@ export function MyAccount() {
 
   async function getAccount() {
     setIsLoad(true)
-
     const data = await win.api.getAccount()
     setAccount(data)
     setIsLoad(false)
@@ -111,7 +110,7 @@ export function MyAccount() {
         ...contentNotification,
         title: 'Nova Senha',
         message: 'Senha alterada com sucesso!',
-        type: 'confirm'
+        type: 'success'
       })
       setShowNotification(true)
     }

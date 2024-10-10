@@ -1,6 +1,6 @@
 import { useState, useEffect} from 'react'
-import PaymentScreen from '@renderer/page/Home/Payment'
-import StandBy from '@renderer/page/Home/StandBy'
+import PaymentScreen from '@renderer/page/Home/_components/Payment'
+import StandBy from '@renderer/page/Home/_components/StandBy'
 import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 

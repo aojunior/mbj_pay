@@ -3,7 +3,6 @@ import { SidebarComponent } from './_components/Sidebar'
 import { useState } from 'react'
 import { AddFavoriteRecipient } from './_components/AddFavoriteRecipient'
 import { ManageAlias } from './_components/manageAliases'
-import {} from './styles'
 import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
 

@@ -1,14 +1,3 @@
-// import { is } from '@electron-toolkit/utils'
-
-// const URL = import.meta.env.URL
-// let DirectoryName: string
-
-// if (is.dev) {
-//   DirectoryName = 'workmbj_pay'
-// } else {
-//   DirectoryName = 'clientPix'
-// }
-
 export const appDirectoryName = process.platform == 'linux' ? 'clientPix' : 'C:/clientPix'
 export const fileEncoding: BufferEncoding = 'utf8'
 

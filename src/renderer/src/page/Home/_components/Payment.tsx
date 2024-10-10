@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { useEffect, useState } from 'react'
 import { Container, ContentInRow, FormInput, Label, TextArea } from '@renderer/styles/global'
-// import QRCode from '../../../assets/images.png'
 import {
   Button,
   ContainInfo,
@@ -13,10 +12,9 @@ import {
   QRcode,
   ValueAmount,
   ValueDisplay,
-  ValueLabel
-} from './styles'
-import { DotWave } from '../StandBy/styles'
-import { Notification } from '@renderer/components/notification'
+  ValueLabel,
+  DotWave
+} from '../styles'
 import { useNotification } from '@renderer/context/notification.context'
 import {FaCheckCircle} from 'react-icons/fa'
 import { RiErrorWarningFill } from 'react-icons/ri'
@@ -266,7 +264,6 @@ function PaymentScreen({ file }) {
           <ContainQRCode>
             <QRcode src={QRCode} alt="" />
             <span>Aponte a câmera aqui</span>
-            {/* <QRcode src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSojqE7ztWUYLgAOLfIp8OrWRqDI-43JplTC8XdCZ8L9g&s" alt="" > */}
           </ContainQRCode>
 
           <ContainInfo>
@@ -318,8 +315,6 @@ function PaymentScreen({ file }) {
           <code>F3</code> - Consultar Pagamento
         </Button>
       </Footer>
-
-      <Notification />
     </Container>
   )
 }

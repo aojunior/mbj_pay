@@ -17,8 +17,6 @@ import {
 } from '../../../styles/global'
 import { useAccount } from '@renderer/context/account.context'
 
-
-
 export function FormOwner() {
   const { ownerData, setOwnerData } = useAccount()
 
@@ -38,27 +36,21 @@ export function FormOwner() {
 
   function maskCPFInput(event) {
     let value = event.target.value.replace(/\D/g, '')
-    // Formato 000.000.000-00
     if (value.length <= 11) {
       value = value.replace(/^(\d{3})(\d)/, '$1.$2')
       value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
       value = value.replace(/(\d{3})(\d{2})$/, '$1-$2')
     }
-
     setValue('ownerDocument', value, { shouldValidate: true })
   }
 
   function maskPhoneInput(event) {
     let value = event.target.value.replace(/\D/g, '')
-
     if (value.length <= 10) {
-      // Formato para telefone fixo (00)0000-0000
       value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
     } else {
-      // Formato para celular (00)00000-0000
       value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
     }
-
     setValue('ownerPhoneNumber', value, { shouldValidate: true })
   }
 
@@ -81,7 +73,7 @@ export function FormOwner() {
                 <Label>CPF</Label>
                 <Input
                   {...register('ownerDocument')}
-                  type="text"
+                  type="number"
                   placeholder="Ex: 123.456.789-00"
                   onChange={maskCPFInput}
                   maxLength={14}
@@ -108,7 +100,7 @@ export function FormOwner() {
                 <Label>Data de Nascimento</Label>
                 <Input
                   {...register('ownerBirthday')}
-                  type="text"
+                  type="number"
                   placeholder="Ex: 01/01/2024"
                   onChange={maskDateInput}
                   maxLength={10}
@@ -120,7 +112,7 @@ export function FormOwner() {
               <Label>Telefone</Label>
               <Input
                 {...register('ownerPhoneNumber')}
-                type="text"
+                type="number"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
                 maxLength={15}
@@ -169,7 +161,7 @@ export function FormOwner() {
             <ContentInRow style={{ gap: 10 }}>
               <FormInput>
                 <Label>CEP</Label>
-                <Input {...register('ownerCodezip')} type="text" placeholder="Ex 01234-567" />
+                <Input {...register('ownerCodezip')} type="number" placeholder="Ex 01234-567" />
               </FormInput>
 
               <FormInput style={{ width: '10%' }}>

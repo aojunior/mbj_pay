@@ -37,7 +37,6 @@ export default function CreateAccount() {
 
   async function onSubmit() {
     if (bankData.password.length < 4) {
-      setIsLoad(true)
       setContentNotification({
         ...contentNotification,
         title: "Necessário criar uma Senha",
@@ -45,7 +44,6 @@ export default function CreateAccount() {
         type: 'error'
       })
       setShowNotification(true)
-      setIsLoad(false)
       return
     }
     setIsLoad(true)
@@ -69,22 +67,36 @@ export default function CreateAccount() {
     let resp = await win.api.createAccount(concatAccount)
     
     setIsLoad(false)
-    if (resp) {
+    if (resp.message == 'SUCCESS') {
       setContentNotification({
         ...contentNotification,
         title: 'Conta criada com sucesso!',
         message: 'Sua conta foi criada com sucesso!',
-        type: 'confirm'
+        type: 'success',
       })
       setShowNotification(true)
+      await win.api.logger('info', 'Account created successfully')
+
       setTimeout(() => navigate('/account/complete', { replace: true }), 2000)
     } else {
-      setContentNotification({
-        ...contentNotification,
-        title: 'Erro!',
-        message: 'Houve um erro ao tentar criar a conta, tente novamente!',
-        type: 'error'
-      })
+      await win.api.logger('error', 'Error creating account: ' + resp.data)
+      
+      if(resp.message == 'NETWORK_ERROR') {
+        setContentNotification({
+          ...contentNotification,
+          title: 'Erro na comunicação com o servidor',
+          message: 'Houve um erro ao tentar comunicação com o servidor, tente novamente!',
+          type: 'error'
+        })
+      }
+      if(resp.message == 'GENERIC_ERROR') {
+        setContentNotification({
+          ...contentNotification,
+          title: 'Houve um Erro',
+          message: 'Não foi possível criar a conta, tente novamente!',
+          type: 'error'
+        })
+      }
       setShowNotification(true)
     }
   }

@@ -2,7 +2,7 @@ appId: com.mbj.pay
 productName: MBJ Pay
 publish:
   provider: github
-  token: com.mbj.payTESTE
+  token: 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
 directories:
   output: dist/
   buildResources: build

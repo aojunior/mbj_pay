@@ -1,9 +1,8 @@
-import { Information } from '@prisma/client'
 import { prisma } from './databaseConnect'
 import { HashConstructor } from '@shared/utils'
 
 // ACTION TO ACCEPT TERMS OF SERVICES
-export async function setDataToTermsOfService(data: Information) {
+export async function setDataToTermsOfService(data) {
   try {
     const info = await prisma.information.findFirst()
     if(info) {
@@ -43,11 +42,10 @@ export async function createClientDB(data: any) {
         status: data.Status
       }
     })
-    console.log(account)
     return account
   } catch (error) {
     console.log(error)
-    return
+    return error
   }
 }
 

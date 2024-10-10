@@ -42,14 +42,11 @@ export function Finalization() {
       >
         <Title>Finalização do Cadastro</Title>
         <Message>
-          Verifique sua conta para concluir o cadastro. O processo de validação pode demorar até 10
-          minutos.
+          Verifique sua conta para concluir o cadastro. O processo de validação pode demorar até 30 minutos.
         </Message>
         <Button style={{ width: 150 }} onClick={handleVerifyAccount}>
           Verificar Conta
         </Button>
-
-        <Notification />
       </Container>
     </>
   )

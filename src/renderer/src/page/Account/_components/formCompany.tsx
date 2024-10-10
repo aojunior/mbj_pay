@@ -26,15 +26,15 @@ export function FormCompany() {
   watch(register => setCompanyData(register))
 
   const maskDateInput = (event) => {
-    let value = event.target.value.replace(/\D/g, '') // Remove caracteres não numéricos
+    let value = event.target.value.replace(/\D/g, '')
     if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2')
     if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
-    setValue('companyDateCreated', value, { shouldValidate: true }) // Atualiza o valor do input e dispara a validação
+    setValue('companyDateCreated', value, { shouldValidate: true })
   }
 
   function maskCNPJInput(event) {
     let value = event.target.value.replace(/\D/g, '')
-    // Formato 00.000.000/0000-00
+
     if (value.length <= 14) {
       value = value.replace(/^(\d{2})(\d)/, '$1.$2')
       value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
@@ -46,12 +46,9 @@ export function FormCompany() {
 
   function maskPhoneInput(event) {
     let value = event.target.value.replace(/\D/g, '')
-
     if (value.length <= 10) {
-      // Formato para telefone fixo (00)0000-0000
       value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
     } else {
-      // Formato para celular (00)00000-0000
       value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
     }
     setValue('companyPhoneNumber', value, { shouldValidate: true })
@@ -60,7 +57,6 @@ export function FormCompany() {
   return (
     <form>
       <Container style={{height: '80vh', gap: 20, marginTop: 30}}>
-
         <Card>
           <CardHeader>
             <CardTitle> Dados da Empresa</CardTitle>
@@ -77,7 +73,7 @@ export function FormCompany() {
                 <Label>CNPJ</Label>
                 <Input
                   {...register('companyDocument')}
-                  type="text"
+                  type="number"
                   placeholder="Ex: 12.345.678/0001-00"
                   onChange={maskCNPJInput}
                   maxLength={18}
@@ -99,7 +95,7 @@ export function FormCompany() {
                 <Label>Data Fundacao</Label>
                 <Input
                   {...register('companyDateCreated')}
-                  type="text"
+                  type="number"
                   placeholder="01/01/2024"
                   onChange={maskDateInput}
                   maxLength={10}
@@ -111,7 +107,7 @@ export function FormCompany() {
               <Label>Telefone</Label>
               <Input
                 {...register('companyPhoneNumber')}
-                type="text"
+                type="number"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
                 maxLength={15}
@@ -160,7 +156,7 @@ export function FormCompany() {
             <ContentInRow style={{ gap: 10 }}>
               <FormInput>
                 <Label>CEP</Label>
-                <Input {...register('companyCodezip')} type="text" placeholder="Ex 01234-567" />
+                <Input {...register('companyCodezip')} type="number" placeholder="Ex 01234-567" />
               </FormInput>
 
               <FormInput style={{ width: '10%' }}>

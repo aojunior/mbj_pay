@@ -4,7 +4,8 @@ type notificationContentProps = {
   title: string
   message: string
   icon?: any
-  type: 'error' | 'warning' | 'info' | 'confirm' | 'custom'
+  type: 'error' | 'warning' | 'info' | 'success' | 'custom'
+  time?: number
 }
 
 type notificationProps = {
@@ -19,7 +20,7 @@ const NotificationContext = createContext<notificationProps>({} as notificationP
 export const NotificationWrapper = ({ children }) => {
   const [contentNotification, setContentNotification] = useState({} as notificationContentProps)
   const [showNotification, setShowNotification] = useState(false)
-
+  
   return (
     <NotificationContext.Provider
       value={{ contentNotification, setContentNotification, showNotification, setShowNotification }}

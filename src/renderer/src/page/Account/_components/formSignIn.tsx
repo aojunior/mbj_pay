@@ -72,8 +72,12 @@ export function SignIn() {
           message: 'Por favor verifique o CNPJ e a Senha e tente novamente.'
         })
       }
-      if(acc.message === 'network_error') {
-        
+      if(acc.message === 'NETWORK_ERROR') {
+        setContentNotification({
+          type: 'error',
+          title: 'Erro na comunicação com o servidor',
+          message: 'Houve um erro ao tentar comunicação com o servidor, tente novamente!',
+        })
       }
       setShowNotification(true)
     }
@@ -96,6 +100,7 @@ export function SignIn() {
               <FormInput style={{ width: 300 }}>
                 <Label>CNPJ</Label>
                 <Input 
+                autoFocus
                 {...register('taxId')} 
                 type="text"
                 placeholder="Digite o CNPJ"

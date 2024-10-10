@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { ContentInRow, FormInput, Input, Label } from '@renderer/styles/global';
 import { useSecurity } from '@renderer/context/security.context';
 import { Loading } from '@renderer/components/loading';
+import { useNotification } from '@renderer/context/notification.context';
 
 const Container = styled.dialog`
   width: 100%;
@@ -75,17 +76,15 @@ const schemaFavoriteRecipient = z.object({
     .max(50, 'O nome da conta deve ter no máximo 50 caracteres'),
   taxId: z.string().refine((value) => {
     const digitsOnly = value.replace(/\D/g, '');
-    // Verifica se tem 11 dígitos (CPF)
     if (digitsOnly.length === 11) {
       const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
       return cpfRegex.test(value);
     }
-    // Verifica se tem 14 dígitos (CNPJ)
     if (digitsOnly.length === 14) {
       const cnpjRegex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
       return cnpjRegex.test(value);
     }
-    return false; // Se não for nem CPF nem CNPJ
+    return false;
   }, {
     message: 'CPF ou CNPJ inválido.'
   }),
@@ -97,9 +96,9 @@ const schemaFavoriteRecipient = z.object({
 })
 
 const win: any = window
-
 function NewFavorite (props: {id: string}) {
   const { setSecurity } = useSecurity()
+  const { setContentNotification, setShowNotification } = useNotification()
   const [inputValue, setInputValue] = useState('1')
   const [isLoad, setIsLoad] = useState(false)
   const [error, setError] = useState({
@@ -126,8 +125,6 @@ function NewFavorite (props: {id: string}) {
       (register.bankAgency && register.bankAgency.length >= 2) &&
       (register.bankBranch && register.bankBranch.length >= 1) &&
       (register.bankCode && register.bankCode.length >= 1)) {
-      // setValue('pixKey', '', {shouldValidate: true})
-
       setError({
         message: '',
         borderColor:''
@@ -171,39 +168,44 @@ function NewFavorite (props: {id: string}) {
     setIsLoad(true)
     if(getValues().id) {
       await win.api.updateFavoriteRecipient(getValues())
+      setContentNotification({
+        title: 'Sucesso',
+        message: 'Conta favorita atualizada com sucesso.',
+        type:'success'
+      })
     } else {
       await win.api.createFavoriteRecipient(getValues())
+      setContentNotification({
+        title: 'Sucesso',
+        message: 'Conta favorita criada com sucesso.',
+        type:'success'
+      })
     }
     setIsLoad(false)
+    setShowNotification(true)
     onClose()
   }
 
   function maskCPForCNPJInput(event) {
     let value = event.target.value.replace(/\D/g, '');
-
-  // Máscara para CPF (000.000.000-00)
-  if (value.length <= 11) {
-    value = value.replace(/^(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
-    value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
-  }
-  // Máscara para CNPJ (00.000.000/0000-00)
-  else if (value.length <= 14) {
-    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
-    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
-    value = value.replace(/(\d{4})(\d)/, '$1-$2');
-  }
-
-  // Atualiza o valor do campo
-  setValue('taxId', value, { shouldValidate: true });
+    if (value.length <= 11) {
+      value = value.replace(/^(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+      value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
+    }
+    else if (value.length <= 14) {
+      value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    setValue('taxId', value, { shouldValidate: true });
   }
 
   async function loadFavInfo() {
     setIsLoad(true)
     if(props.id) {
       let data = await win.api.getFavoriteRecipientOnId(props.id)
-      console.log(data)
       setInputValue(data.type)
       setValue('id', data.id, {shouldValidate: true})
       setValue('type', data.type, {shouldValidate: true})

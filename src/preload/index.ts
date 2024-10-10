@@ -83,7 +83,7 @@ export const API = {
     return credentials
   },
 
-
+  createPaymentFile: (data) => ipcRenderer.invoke('create_payment_file', data),
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
   cancelInstantPayment: async (data) => {
     const cancelPayment = await ipcRenderer.invoke('cancel_instantpayment', data)
@@ -120,7 +120,15 @@ export const API = {
   extractBalanceFilter: async (start, end) => {
     const extractFilter = await ipcRenderer.invoke('extract_balance_filter', [start, end])
     return extractFilter
-  }
+  },
+
+  logger: (data) => ipcRenderer.send('logs', data),
+  checkUpdates: () => ipcRenderer.send('check-for-updates'),
+  updateAvailable: () => ipcRenderer.on('update-available', (_, args) => args),
+  updateNotAvailable: () => ipcRenderer.on('update-not-available', (_, args) => args),
+  updateError: () => ipcRenderer.on('error', (event, error) => error),
+  downloadUpdate: () => ipcRenderer.on('update-downloaded', (_, args) => args),
+  installUpdate: () => ipcRenderer.on('update-Install', (_, args) => args)
 }
 
 contextBridge.exposeInMainWorld('api', API)

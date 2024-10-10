@@ -1,16 +1,22 @@
 import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
+import { autoUpdater } from 'electron-updater';
 import  path, { join } from 'path'
-// import os from 'node:os'
-// import { machineIdSync } from 'node-machine-id'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png'
-import { createPath, removeReqFile, createResFile, watchFileAndFormat, encriptoFile, readEncriptoFile, removeResFile } from './lib'
 import {
-  tokenGenerator,
+  createPath,
+  removeReqFile,
+  createResFile,
+  watchFileAndFormat,
+  encriptoFile,
+  readEncriptoFile,
+  removeResFile,
+  createReqFile
+} from './lib'
+import {
+  tokenGeneratorAPI,
   createAccountAPI,
   VerifyAccountAPI,
-  // createAliasesAPI,
-  // verifyAliases,
   verifyInstantPayment,
   verifyBalance,
   extractBalanceToday,
@@ -18,8 +24,6 @@ import {
   refundInstantPayment,
   refundCodes,
   deleteAliases,
-  // DeleteAccountAPI,
-  // getLocationAndIPV6,
   createInstantPayment,
   DeleteAccountAPI,
   verifyRecipientAlias
@@ -28,32 +32,26 @@ import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
 import {
   alterPasswordDB,
-  // createAliasDB,
   createClientDB,
   createfavoriteRecipientDB,
   createTransanctionDB,
   credentialsDB,
   deleteAliasDB,
-  // deleteClientDB,
   deleteFavoriteRecipientDB,
   getAliasesDB,
-  // deleteClientDB,
   getClientDB,
   getFavoriteRecipientDB,
   getFavoriteRecipientOnIdDB,
   getMediatorDB,
   getTransanctionDB,
   insertExistingClientDB,
-  // setDataToTermsOfService,
-  // updateAliasDB,
-  // updateClientDB,
   updatefavoriteRecipientDB,
   updateTransanctionDB
 } from '../shared/database/actions'
 import { HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
-import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
+import { create_alias, createLogs, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -64,10 +62,8 @@ function createWindow(): void {
     width: 1020,
     height: 800,
     show: false,
-    // autoHideMenuBar: true,
     resizable: false,
     fullscreenable: false,
-    // closable: false,
     autoHideMenuBar: true,
     center: true,
     title: 'MBJ PAY',
@@ -76,27 +72,18 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      devTools: true
+      // devTools: true,
     }
   })
   const isDev = process.env.NODE_ENV === 'development';
-  // const indexPath = isDev
-  // ? path.join(__dirname, '../renderer/index.html')  // Em desenvolvimento
-  // : `file://${path.join(app.getAppPath(), 'renderer/index.html')}`; // Em produção
-
-  // mainWindow.loadURL(indexPath);
-  // if (process.env.NODE_ENV === 'development') {
-  //   mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
-  //   mainWindow.webContents.openDevTools(); // Abre as DevTools para debugar
-  // } else {
-  //   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-  // }
-
+  
   if (isDev) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']!);
+    mainWindow.setAutoHideMenuBar(true);  
     mainWindow.webContents.openDevTools();
   } else {
-    // Carrega o arquivo HTML de produção
+    mainWindow.setMenuBarVisibility(false);
+    mainWindow.setAutoHideMenuBar(false);  
     mainWindow.loadURL(
       url.format(
         {
@@ -134,7 +121,8 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.mbjpay')
   createWindow()
-  createPath() // Cria as pastas necessarias para receber e enviar arquivos de leitura
+  autoUpdater.checkForUpdatesAndNotify();
+  createPath()
   removeReqFile()
   removeResFile()
   // Usado apenas para criar arquivo de conta com status Regular
@@ -146,22 +134,20 @@ app.whenReady().then(() => {
     path: app.getPath('exe')
   })
 
-  // Verifica se já está configurado para auto launch
-  electronAutoLauncher
-    .isEnabled()
-    .then((isEnabled) => {
-      if (!isEnabled) {
-        electronAutoLauncher.enable()
-      }
-    })
-    .catch((err) => {
-      console.error(err)
-    })
+  
+  electronAutoLauncher.isEnabled().then((isEnabled) => {
+    if (!isEnabled) {
+      electronAutoLauncher.enable()
+    }
+  }).catch((err) => {
+    createLogs('error', err)
+    console.error(err)
+  })
 
-  const iconPath = join(__dirname, '../assets', 'icon.png') // Caminho do ícone
+  const iconPath = join(__dirname, '../assets', 'icon.png')
 
   tray = new Tray(iconPath)
-  // Menu após minimizacao da janela
+
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Abrir Aplicação',
@@ -194,7 +180,6 @@ app.whenReady().then(() => {
   })
 
   // Monitora a pasta de recebimento do arquivo, vindo do sistema
-  // Formata e envia para criar pagamento
   watchFileAndFormat(async (formatData) => {
     try {
       if (!formatData) {
@@ -223,12 +208,11 @@ app.whenReady().then(() => {
           token,
           String(client?.accountId),
           String(db[0]?.alias),
-          mediator?.mediatorFee
+          Number(mediator?.mediatorFee)
         )
         mainWindow.show()
 
         if(response.message === 'SUCCESS') {
-          console.log(response.data)
           const file = {
             accId: client?.accountId,
             status: response.data.financialStatement.status,
@@ -260,9 +244,7 @@ app.on('window-all-closed', async () => {
 // Prisma
 const platformToExecutables: Record<string, any> = {
   win32: {
-    migrationEngine: 'node_modules/@prisma/engines/migration-engine-windows.exe',
-    // queryEngine: 'node_modules/@prisma/engines/query_engine-windows.dll.node',
-    
+    migrationEngine: 'node_modules/@prisma/engines/migration-engine-windows.exe', 
   },
   linux: {
     migrationEngine:
@@ -292,19 +274,12 @@ function getPlatformName(): string {
   return process.platform;
 }
 
-const extraResourcesPath = app.getAppPath().replace('app.asar', ''); // impacted by extraResources setting in electron-builder.yml
+const extraResourcesPath = app.getAppPath().replace('app.asar', '');
 const platformName = getPlatformName();
-
 const mePath = path.join(
   extraResourcesPath,
   platformToExecutables[platformName].migrationEngine
 );
-// const qePath = path.join(
-//   extraResourcesPath,
-//   platformToExecutables[platformName].queryEngine
-// );
-
-// process.env.PRISMA_QUERY_ENGINE_BINARY = qePath
 
 ipcMain.on('config:get-app-path', (event) => {
   event.returnValue = app.getAppPath();
@@ -324,18 +299,13 @@ ipcMain.on('config:get-prisma-me-path', (event) => {
 // Prisma end 
 
 // IPC Preloader creates
-// cross-screen navigation
-ipcMain.on('navigate', (_, route) => {
-  mainWindow.loadURL(`http://localhost:5173${route}`)
-})
-
 ipcMain.handle('reload-app', () => {
   const window = BrowserWindow.getAllWindows()[0];
-  window.reload(); // Recarrega a aplicação
+  window.reload();
 });
 
 ipcMain.handle('token_generator', async () => {
-  let token = await tokenGenerator()
+  let token = await tokenGeneratorAPI()
   return token
 })
 
@@ -350,8 +320,20 @@ ipcMain.handle('create_account', async (_, formData) => {
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
     let newAccount = await createAccountAPI(formData, token)
-    if (newAccount.error) return null
-  
+    
+    if(newAccount.message !== 'SUCCESS') {
+      let error = newAccount.data
+
+      console.log(error.message)
+      if (error.response) {
+        createLogs('error', error.response.data)
+      } else {
+        createLogs('error', error.message)
+      }
+
+      return newAccount
+    }
+
     let data = {
       AccId: newAccount.data.account.accountId,
       AccHId: newAccount.data.accountHolderId,
@@ -364,14 +346,19 @@ ipcMain.handle('create_account', async (_, formData) => {
       Tel: formData.companyPhoneNumber,
       Pass: formData.password
     }
-
     let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
     await encriptoFile(fileEncript)
-    let saveClientInDb = await createClientDB(data)
+
+    let saveClientInDb = await createClientDB(data).then(e => {
+      return {data: e, message: 'SUCCESS'}
+    }).catch(err => {
+      createLogs('error', err)
+      return {data: null, message: 'ERROR'}
+    })
     return saveClientInDb
   } catch (error) {
-    console.error('Error creating account:', error);
-    return { status: 'error', message: 'Failed to create account.' };
+    createLogs('error', 'Error creating account: ' + error)
+    return { data: null, message: 'Fatal_ERROR' };
   }
 })
 
@@ -389,23 +376,6 @@ ipcMain.handle('verify_account', async () => {
 
   await create_alias(token, String(db?.accountId), db?.status)
   return data
-  // const db = await getClientDB()
-  // let consulta = await VerifyAccountAPI(token, db?.accountId)
-  // if (consulta.error) return 'Error'
-
-  // let data = {
-  //   AccId: consulta.account.accountId,
-  //   AccBank: consulta.account.account,
-  //   Branch: consulta.account.branch,
-  //   Status: consulta.accountStatus,
-  //   MedAccId: consulta.mediatorId
-  // }
-  // if (data.Status !== db?.status) {
-  //   let update = await updateClientDB(data)
-  //   return update
-  // } else {
-  //   return 'RELOADED'
-  // }
 })
 
 ipcMain.handle('delete_account', async () => {
@@ -417,16 +387,20 @@ ipcMain.handle('delete_account', async () => {
   if (alias.length == 0) {
     const db = await getClientDB()
     let consulta = await DeleteAccountAPI(token, String(db?.accountId))
-    if (consulta.error.code === '97') return 'balance_error'
+    if (consulta.error.code === '97') {
+      await createLogs('error', 'Existing avalible balances')
+      return 'balance_error'
+    }
 
     if(consulta == 200) {
-      //const deletionConfirmed = await deleteClientDB(String(db?.accountId))
-      //return deletionConfirmed
+      await createLogs('info', 'Account disabled successfully')
       return await verify_account(token, db)
     } else {
+      await createLogs('error', consulta.error.message)
       return consulta.error.message
     }
   } else {
+    await createLogs('error', 'Existing active alias')
     return 'alias_registered'
   }
 })
@@ -479,6 +453,11 @@ ipcMain.handle('delete-alias', async (_, alias) => {
 // ----------------------------------------------------------------
 
 // HANDLE INSTANT PAYMENT
+ipcMain.handle('create_payment_file', async (_, data) => {
+  const payment = await createReqFile(data)
+  return payment
+})
+
 ipcMain.handle('verify_instantpayment', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
@@ -488,7 +467,6 @@ ipcMain.handle('verify_instantpayment', async () => {
     .then((response) => response)
   const db = await getClientDB()
   const verify = await verifyInstantPayment(transactionid, token, String(db?.accountId))
-
   await createResFile(verify.transactions[0].transactionStatus)
   return verify.transactions[0]
 })
@@ -496,7 +474,6 @@ ipcMain.handle('verify_instantpayment', async () => {
 ipcMain.handle('cancel_instantpayment', async (_, data) => {
   await createResFile('CANCELED')
   const transaction = await getTransanctionDB(data.transactionId)
-  
   const file = {
     id: transaction?.id,
     updatedAT: data.transactionDate,
@@ -565,9 +542,8 @@ ipcMain.handle('refund', async (_, args) => {
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
   const db = await getClientDB()
-  const response = await refundInstantPayment(args[0], args[1], token, String(db?.accountId))
-
-  // Logic for refund in database
+  const mediator = await getMediatorDB()
+  const response = await refundInstantPayment(args[0], args[1], token, String(db?.accountId), Number(mediator?.mediatorFee))
   return response
 })
 // ----------------------------------------------------------------
@@ -624,12 +600,18 @@ ipcMain.handle('alter_password', async (_, passData) => {
 ipcMain.handle('signIn', async (_, formData) => {
   try {
     const result = await readEncriptoFile(formData)
+
     let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
+
     if(result) {
       let consulta = await VerifyAccountAPI(token, result.account)
-      if (consulta.error) return {data: null, message: 'network_error'}
+      console.log(consulta)
+      if (!consulta.data) {
+        createLogs('error', consulta.message)
+        return consulta
+      }
       
       let data = {
         AccHId: consulta.accountHolderId,
@@ -662,3 +644,38 @@ ipcMain.handle('signIn', async (_, formData) => {
     console.log(error)
   }
 })
+
+ipcMain.on('logs', async(_, data) => {
+  await createLogs(data.type, data.message)
+})
+
+ipcMain.on('check-for-updates', async () => {
+  await createLogs('info','User requested check for updates');
+  autoUpdater.checkForUpdates();
+});
+
+// Eventos do autoUpdater
+autoUpdater.on('update-available', async () => {
+  await createLogs('info', 'Update available');
+  mainWindow.webContents.send('update-available');
+});
+
+autoUpdater.on('update-not-available', async () => {
+  await createLogs('info', 'Nenhuma atualização disponível.');
+  mainWindow.webContents.send('update-not-available');
+});
+
+autoUpdater.on('error', async (error) => {
+  await createLogs('error', 'Erro ao verificar atualizações:' + error);
+  mainWindow.webContents.send('error', error.message);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  createLogs('info', info);
+  autoUpdater.downloadUpdate(); // Instalar a atualização e reiniciar o app
+});
+
+ipcMain.handle('update-Install', () => {
+  createLogs('info', 'Install new version');
+  autoUpdater.quitAndInstall();
+});

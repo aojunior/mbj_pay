@@ -5,11 +5,9 @@ import { useSecurity } from '@renderer/context/security.context';
 import { Loading } from '@renderer/components/loading';
 import { ShowPassword } from '@renderer/components/password';
 import { Button } from '@renderer/styles/global';
-// import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 export function AddFavoriteRecipient() {
-  // const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { showSecurity, security, callSecurityButton } = useSecurity()
   const [isLoad, setIsLoad] = useState(false)
   const [favList, setFavList] = useState<any>([])

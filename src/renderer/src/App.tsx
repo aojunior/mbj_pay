@@ -1,6 +1,7 @@
 import { AccountWrapper } from './context/account.context'
 import { NotificationWrapper } from './context/notification.context'
 import { SecurityWrapper } from './context/security.context'
+import { UtilsProvider } from './context/utils.context'
 // import Layout from './page/Layout'
 import Root from './router'
 
@@ -9,7 +10,9 @@ function App(): JSX.Element {
     <AccountWrapper>
       <NotificationWrapper>
         <SecurityWrapper>
-          <Root />
+          <UtilsProvider>
+            <Root />
+          </UtilsProvider>
         </SecurityWrapper>
       </NotificationWrapper>
     </AccountWrapper>
