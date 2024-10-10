@@ -232,6 +232,18 @@ app.whenReady().then(() => {
       console.log(error)
     }
   })
+
+  autoUpdater.checkForUpdatesAndNotify();
+
+  autoUpdater.on('update-available', () => {
+    createLogs('info', 'Update available');
+    mainWindow?.webContents.send('update_available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    createLogs('info', 'download new version');
+    mainWindow?.webContents.send('update_downloaded');
+  });
 })
 
 app.on('window-all-closed', async () => {
@@ -330,7 +342,6 @@ ipcMain.handle('create_account', async (_, formData) => {
       } else {
         createLogs('error', error.message)
       }
-
       return newAccount
     }
 
@@ -607,30 +618,30 @@ ipcMain.handle('signIn', async (_, formData) => {
 
     if(result) {
       let consulta = await VerifyAccountAPI(token, result.account)
-      console.log(consulta)
+      
       if (!consulta.data) {
         createLogs('error', consulta.message)
         return consulta
       }
       
       let data = {
-        AccHId: consulta.accountHolderId,
-        AccId: consulta.account.accountId,
+        AccHId: consulta.data.accountHolderId,
+        AccId: consulta.data.account.accountId,
         AccBank: 0,
         Branch: 0,
-        Name: consulta.additionalDetailsCorporate.companyName,
-        Email: consulta.client.email,
-        TaxId: consulta.client.taxIdentifier.taxId,
-        Phone: consulta.client.mobilePhone.phoneNumber,
-        Status: consulta.accountStatus,
-        MedAccId: consulta.mediatorId,
+        Name: consulta.data.additionalDetailsCorporate.companyName,
+        Email: consulta.data.client.email,
+        TaxId: consulta.data.client.taxIdentifier.taxId,
+        Phone: consulta.data.client.mobilePhone.phoneNumber,
+        Status: consulta.data.accountStatus,
+        MedAccId: consulta.data.mediatorId,
         Key: result.saltKey,
         Pass: result.hashPassword
       }
 
-      if(consulta.account.branch) {
-        data.AccBank = consulta.account.account
-        data.Branch = consulta.account.branch
+      if(consulta.data.account.branch) {
+        data.AccBank = consulta.data.account.account
+        data.Branch = consulta.data.account.branch
       }
 
       let update = await insertExistingClientDB(data)
@@ -654,12 +665,6 @@ ipcMain.on('check-for-updates', async () => {
   autoUpdater.checkForUpdates();
 });
 
-// Eventos do autoUpdater
-autoUpdater.on('update-available', async () => {
-  await createLogs('info', 'Update available');
-  mainWindow.webContents.send('update-available');
-});
-
 autoUpdater.on('update-not-available', async () => {
   await createLogs('info', 'Nenhuma atualização disponível.');
   mainWindow.webContents.send('update-not-available');
@@ -670,12 +675,7 @@ autoUpdater.on('error', async (error) => {
   mainWindow.webContents.send('error', error.message);
 });
 
-autoUpdater.on('update-downloaded', (info) => {
-  createLogs('info', info);
-  autoUpdater.downloadUpdate(); // Instalar a atualização e reiniciar o app
-});
-
-ipcMain.handle('update-Install', () => {
+ipcMain.on('restart_app', () => {
   createLogs('info', 'Install new version');
   autoUpdater.quitAndInstall();
 });

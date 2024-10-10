@@ -5,6 +5,7 @@ import { AddFavoriteRecipient } from './_components/AddFavoriteRecipient'
 import { ManageAlias } from './_components/manageAliases'
 import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
+import { CheckUpdates } from './_components/updateSystem'
 
 export default function Settings() {
   const [selectedSection, setSelectedSection] = useState('')
@@ -17,6 +18,8 @@ export default function Settings() {
         return <MyAccount />
       case 'ManageAlias':
         return <ManageAlias />
+      case 'CheckUpdates':
+        return <CheckUpdates />
     }
   }
 

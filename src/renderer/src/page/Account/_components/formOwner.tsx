@@ -73,7 +73,7 @@ export function FormOwner() {
                 <Label>CPF</Label>
                 <Input
                   {...register('ownerDocument')}
-                  type="number"
+                  type="text"
                   placeholder="Ex: 123.456.789-00"
                   onChange={maskCPFInput}
                   maxLength={14}
@@ -100,7 +100,7 @@ export function FormOwner() {
                 <Label>Data de Nascimento</Label>
                 <Input
                   {...register('ownerBirthday')}
-                  type="number"
+                  type="text"
                   placeholder="Ex: 01/01/2024"
                   onChange={maskDateInput}
                   maxLength={10}
@@ -112,7 +112,7 @@ export function FormOwner() {
               <Label>Telefone</Label>
               <Input
                 {...register('ownerPhoneNumber')}
-                type="number"
+                type="text"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
                 maxLength={15}
@@ -161,7 +161,7 @@ export function FormOwner() {
             <ContentInRow style={{ gap: 10 }}>
               <FormInput>
                 <Label>CEP</Label>
-                <Input {...register('ownerCodezip')} type="number" placeholder="Ex 01234-567" />
+                <Input {...register('ownerCodezip')} type="text" placeholder="Ex 01234-567" />
               </FormInput>
 
               <FormInput style={{ width: '10%' }}>

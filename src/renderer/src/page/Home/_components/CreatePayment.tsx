@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react';
 import { AiFillCloseSquare } from 'react-icons/ai';
 import styled from 'styled-components';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { ContentInRow, FormInput, Input, Label } from '@renderer/styles/global';
-import { useSecurity } from '@renderer/context/security.context';
-import { Loading } from '@renderer/components/loading';
+import { FormInput, Input, Label } from '@renderer/styles/global';
+
 import { useUtils } from '@renderer/context/utils.context';
 
 const Container = styled.dialog`
@@ -62,23 +60,23 @@ const Button = styled.button`
     cursor: pointer;
   }
 `
-const ErrorMsg = styled.p`
-  font-size: 14px;
-  font-weight: 300;
-  color: red;  
-`
+// const ErrorMsg = styled.p`
+//   font-size: 14px;
+//   font-weight: 300;
+//   color: red;  
+// `
 
 const schemaCreatePaymet = z.object({
     orderID: z.string(),
     totalAmount: z.number(),
-    recipientComment: z.string(),
+    recipientComment: z.string().optional(),
     // other fields...  // add more fields if needed  // example: phone, email, address, etc.  // z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z
 })
 
 const win: any = window
 export function CreatePayment() {
-    const { toggleModal } = useUtils()
-  const { register, watch, setValue, getValues, handleSubmit, formState: {errors}, control } = useForm<z.infer<typeof schemaCreatePaymet>>({
+  const { toggleModal } = useUtils()
+  const { register, getValues } = useForm<z.infer<typeof schemaCreatePaymet>>({
     resolver: zodResolver(schemaCreatePaymet)
   })
 

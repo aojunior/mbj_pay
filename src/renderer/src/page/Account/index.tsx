@@ -66,7 +66,6 @@ export default function CreateAccount() {
     
     let resp = await win.api.createAccount(concatAccount)
     
-    setIsLoad(false)
     if (resp.message == 'SUCCESS') {
       setContentNotification({
         ...contentNotification,
@@ -79,7 +78,7 @@ export default function CreateAccount() {
 
       setTimeout(() => navigate('/account/complete', { replace: true }), 2000)
     } else {
-      await win.api.logger('error', 'Error creating account: ' + resp.data)
+      await win.api.logger('error', 'Error creating account: ' + JSON.stringify(resp.data))
       
       if(resp.message == 'NETWORK_ERROR') {
         setContentNotification({
@@ -99,6 +98,8 @@ export default function CreateAccount() {
       }
       setShowNotification(true)
     }
+
+    setIsLoad(false)
   }
   
   return (

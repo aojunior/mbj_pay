@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+
 export const API = {
   a: 'apii',
   sendMsg: (msg) => ipcRenderer.send('message', msg),
@@ -124,11 +125,12 @@ export const API = {
 
   logger: (data) => ipcRenderer.send('logs', data),
   checkUpdates: () => ipcRenderer.send('check-for-updates'),
-  updateAvailable: () => ipcRenderer.on('update-available', (_, args) => args),
+  onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update_available', callback),
+  onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update_downloaded', callback),
+  sendRestartApp: () => ipcRenderer.send('restart_app'),
   updateNotAvailable: () => ipcRenderer.on('update-not-available', (_, args) => args),
-  updateError: () => ipcRenderer.on('error', (event, error) => error),
-  downloadUpdate: () => ipcRenderer.on('update-downloaded', (_, args) => args),
-  installUpdate: () => ipcRenderer.on('update-Install', (_, args) => args)
+  updateError: () => ipcRenderer.on('error', (_, error) => error),
+
 }
 
 contextBridge.exposeInMainWorld('api', API)

@@ -53,8 +53,8 @@ export function SidebarComponent({ onSelect, select }: selectNavProps) {
       text: 'Gerenciar Chaves PIX'
     },
     {
-      name: 'CheckVersion',
-      text: 'Verificar Atualizacao'
+      name: 'CheckUpdates',
+      text: 'Verificar Atualização'
     },
     {
       name: 'Support',

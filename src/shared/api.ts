@@ -201,7 +201,7 @@ export async function VerifyAccountAPI(token, AccId) {
       httpsAgent
     })
     .then((res: any) => {
-      if (res.status === 200) return res.data.data
+      if (res.status === 200) return {data: res.data.data, message: 'SUCCESS'}
     })
     .catch((error) => {
       if (error.response) {

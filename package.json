@@ -4,10 +4,15 @@
   "description": "An application for instant payment",
   "main": "./out/main/index.js",
   "author": "mbjinformatica",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aojunior/mbj_pay.git"
+  },
   "build": {
+    "appId": "com.mbj.pay",
     "publish": {
       "provider": "github",
-      "owner": "jukaa57",
+      "owner": "aojunior",
       "repo": "mbj_pay"
     }
   },

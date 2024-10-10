@@ -73,7 +73,7 @@ export function FormCompany() {
                 <Label>CNPJ</Label>
                 <Input
                   {...register('companyDocument')}
-                  type="number"
+                  type="text"
                   placeholder="Ex: 12.345.678/0001-00"
                   onChange={maskCNPJInput}
                   maxLength={18}
@@ -95,7 +95,7 @@ export function FormCompany() {
                 <Label>Data Fundacao</Label>
                 <Input
                   {...register('companyDateCreated')}
-                  type="number"
+                  type="text"
                   placeholder="01/01/2024"
                   onChange={maskDateInput}
                   maxLength={10}
@@ -107,7 +107,7 @@ export function FormCompany() {
               <Label>Telefone</Label>
               <Input
                 {...register('companyPhoneNumber')}
-                type="number"
+                type="text"
                 placeholder="(xx) 9999-9999"
                 onChange={maskPhoneInput}
                 maxLength={15}
@@ -156,7 +156,7 @@ export function FormCompany() {
             <ContentInRow style={{ gap: 10 }}>
               <FormInput>
                 <Label>CEP</Label>
-                <Input {...register('companyCodezip')} type="number" placeholder="Ex 01234-567" />
+                <Input {...register('companyCodezip')} type="text" placeholder="Ex 01234-567" />
               </FormInput>
 
               <FormInput style={{ width: '10%' }}>
