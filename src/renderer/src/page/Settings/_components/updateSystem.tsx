@@ -11,23 +11,6 @@ export function CheckUpdates() {
   
     const version = '0.8.5'
 
-    // const check = async () => {
-    //     setLoad(true)
-    //     await win.api.checkUpdates()
-    //     setLoad(false)
-    //     if(await win.api.updateAvailable()) {
-    //         setUpdateAvailable(true)
-    //         return
-    //     }
-    //     if(await win.api.updateNotAvailable()) {
-    //         setUpdateAvailable(false)
-    //         return
-    //     }
-    //     if(await win.api.updateError()) {
-    //         setUpdateAvailable(false)
-    //         return
-    //     }
-    // }
 
     useEffect(() => {
         win.api.onUpdateAvailable(() => {
@@ -41,16 +24,17 @@ export function CheckUpdates() {
         return () => {
           // Limpar os ouvintes, se necessário
         };
-      }, []);
+    }, []);
     
-      const handleUpdate = () => {
-        // Inicia o download da atualização
-        win.api.downloadUpdate();
-      };
-    
-      const handleRestart = () => {
-        win.api.sendRestartApp();
-      };
+    const handleUpdate = () => {
+    setLoad(true)
+    win.api.downloadUpdate();
+    setLoad(false)
+    };
+
+    const handleRestart = () => {
+    win.api.sendRestartApp();
+    };
 
     return (
         <div

@@ -1,38 +1,20 @@
-import {existsSync, mkdirSync} from 'fs';
-import path from 'path';
-import { createLogger, format, transports } from 'winston';
+import winston from 'winston';
+import path from 'node:path'; // Usando a importação correta
 
-// Definir o caminho da pasta e dos arquivos de log
-const logDirectory = path.join(__dirname, 'logs');
-
-// Verificar se a pasta de logs existe, caso contrário, criar a pasta
-if (!existsSync(logDirectory)) {
-  mkdirSync(logDirectory, { recursive: true });
-}
-
-// Configurar o logger
-export const logger = createLogger({
-  level: 'info', // nível de log (info, warn, error)
-  format: format.combine(
-    format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
-    }),
-    format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
-  ),
-  transports: [
-    // Exibir logs no console
-    new transports.Console(),
-
-    // Salvar logs em um arquivo
-    new transports.File({
-      filename: path.join(logDirectory, 'app.log'),
-      level: 'info'
-    }),
-
-    // Arquivo separado para logs de erro
-    new transports.File({
-      filename: path.join(logDirectory, 'error.log'),
-      level: 'error'
-    })
-  ]
+// Configuração do logger
+export const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} [${level}]: ${message}`;
+        })
+    ),
+    transports: [
+        new winston.transports.File({
+            filename: path.join(__dirname, 'logs.txt'),
+            options: { flags: 'a' } // Adiciona ao final do arquivo            
+        }),
+        new winston.transports.Console()
+    ]
 });

@@ -1,4 +1,3 @@
-import { Notification } from '@renderer/components/notification'
 import { useState } from 'react'
 import {  Message, Title } from '../styles'
 import { Button, Container } from '@renderer/styles/global'

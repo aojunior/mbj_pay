@@ -2,6 +2,8 @@ appId: com.mbj.pay
 productName: MBJ Pay
 publish:
   provider: github
+  owner: aojunior
+  repo: mbj_pay
   token: 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
 directories:
   output: dist/

@@ -3,7 +3,7 @@ import { machineIdSync } from 'node-machine-id'
 import { createAliasesAPI, getLocationAndIPV6, VerifyAccountAPI, verifyAliasesAPI } from "@shared/api"
 import { createAliasDB, deleteAliasDB, getAliasesDB, getClientDB, setDataToTermsOfService, updateAliasDB, updateClientDB } from "@shared/database/actions"
 import { currentTime, delay } from "@shared/utils"
-import { logger } from '@shared/logger'
+// import logger from '@shared/logger'
 
 export async function getInformationsFromMachine() {
     const fetch = await getLocationAndIPV6()
@@ -147,11 +147,4 @@ export async function verifyAndUpdateAliases(token: string) {
   } catch(err) {
     return
   }
-}
-
-type typeLogs = 'info' | 'warn' | 'error'
-export async function createLogs(type: typeLogs, msg: any) {
-  if(type === 'info') logger.info(msg)
-  if(type === 'error') logger.error(msg)
-  if(type === 'warn') logger.warn(msg)
 }

@@ -51,7 +51,8 @@ import {
 import { HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
-import { create_alias, createLogs, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
+import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
+import { logger } from '@shared/logger';
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -140,7 +141,7 @@ app.whenReady().then(() => {
       electronAutoLauncher.enable()
     }
   }).catch((err) => {
-    createLogs('error', err)
+
     console.error(err)
   })
 
@@ -236,12 +237,12 @@ app.whenReady().then(() => {
   autoUpdater.checkForUpdatesAndNotify();
 
   autoUpdater.on('update-available', () => {
-    createLogs('info', 'Update available');
+
     mainWindow?.webContents.send('update_available');
   });
 
   autoUpdater.on('update-downloaded', () => {
-    createLogs('info', 'download new version');
+
     mainWindow?.webContents.send('update_downloaded');
   });
 })
@@ -335,12 +336,13 @@ ipcMain.handle('create_account', async (_, formData) => {
     
     if(newAccount.message !== 'SUCCESS') {
       let error = newAccount.data
+      logger.error(error)
 
       console.log(error.message)
       if (error.response) {
-        createLogs('error', error.response.data)
+
       } else {
-        createLogs('error', error.message)
+
       }
       return newAccount
     }
@@ -359,16 +361,17 @@ ipcMain.handle('create_account', async (_, formData) => {
     }
     let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
     await encriptoFile(fileEncript)
+    logger.info('create a new account')
 
     let saveClientInDb = await createClientDB(data).then(e => {
       return {data: e, message: 'SUCCESS'}
     }).catch(err => {
-      createLogs('error', err)
+      console.log(err)
       return {data: null, message: 'ERROR'}
     })
     return saveClientInDb
   } catch (error) {
-    createLogs('error', 'Error creating account: ' + error)
+
     return { data: null, message: 'Fatal_ERROR' };
   }
 })
@@ -399,19 +402,19 @@ ipcMain.handle('delete_account', async () => {
     const db = await getClientDB()
     let consulta = await DeleteAccountAPI(token, String(db?.accountId))
     if (consulta.error.code === '97') {
-      await createLogs('error', 'Existing avalible balances')
+
       return 'balance_error'
     }
 
     if(consulta == 200) {
-      await createLogs('info', 'Account disabled successfully')
+
       return await verify_account(token, db)
     } else {
-      await createLogs('error', consulta.error.message)
+
       return consulta.error.message
     }
   } else {
-    await createLogs('error', 'Existing active alias')
+
     return 'alias_registered'
   }
 })
@@ -620,7 +623,7 @@ ipcMain.handle('signIn', async (_, formData) => {
       let consulta = await VerifyAccountAPI(token, result.account)
       
       if (!consulta.data) {
-        createLogs('error', consulta.message)
+
         return consulta
       }
       
@@ -647,6 +650,7 @@ ipcMain.handle('signIn', async (_, formData) => {
       let update = await insertExistingClientDB(data)
       getInformationsFromMachine()
       verifyAndUpdateAliases(token)
+      logger.info('Sign IN successful')
       return {data: update, message: ''}
     } else {
       return {data: null, message: 'login_error'}
@@ -656,26 +660,22 @@ ipcMain.handle('signIn', async (_, formData) => {
   }
 })
 
-ipcMain.on('logs', async(_, data) => {
-  await createLogs(data.type, data.message)
-})
-
 ipcMain.on('check-for-updates', async () => {
-  await createLogs('info','User requested check for updates');
+
   autoUpdater.checkForUpdates();
 });
 
 autoUpdater.on('update-not-available', async () => {
-  await createLogs('info', 'Nenhuma atualização disponível.');
+
   mainWindow.webContents.send('update-not-available');
 });
 
 autoUpdater.on('error', async (error) => {
-  await createLogs('error', 'Erro ao verificar atualizações:' + error);
+
   mainWindow.webContents.send('error', error.message);
 });
 
 ipcMain.on('restart_app', () => {
-  createLogs('info', 'Install new version');
+
   autoUpdater.quitAndInstall();
 });

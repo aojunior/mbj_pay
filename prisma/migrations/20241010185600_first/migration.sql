@@ -41,13 +41,16 @@ CREATE TABLE "Aliases" (
 -- CreateTable
 CREATE TABLE "Transactions" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "TransactionId" TEXT NOT NULL,
+    "transactionId" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
     "transactionType" TEXT NOT NULL,
-    "Amount" REAL NOT NULL,
-    "identify" TEXT NOT NULL,
+    "amount" REAL NOT NULL,
     "status" TEXT NOT NULL,
+    "identify" TEXT,
+    "transactionDescription" TEXT,
+    "message" TEXT,
     "createdAT" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAT" DATETIME,
     CONSTRAINT "Transactions_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Client" ("accountId") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -80,6 +83,3 @@ CREATE UNIQUE INDEX "Information_idDevice_key" ON "Information"("idDevice");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Aliases_alias_key" ON "Aliases"("alias");
-
--- CreateIndex
-CREATE UNIQUE INDEX "FavoritesRecipients_nickname_key" ON "FavoritesRecipients"("nickname");

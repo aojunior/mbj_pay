@@ -6,8 +6,6 @@ import { promisify } from 'util';
 
 import { join } from 'path'
 
-
-
 // UTILS FUNCTIONS
 export const getRootDirectory = () => {
   return `${appDirectoryName}`
