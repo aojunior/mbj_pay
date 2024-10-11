@@ -58,6 +58,13 @@ let mainWindow: BrowserWindow
 let tray: Tray
 let isQuiting: boolean = false
 
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'aojunior',
+  repo: 'mbj_pay',
+  token: process.env.MAIN_VITE_GH_TOKEN
+});
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1020,
