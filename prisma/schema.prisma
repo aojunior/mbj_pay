@@ -38,6 +38,7 @@ model Information {
   city        String
   state       String
   contry      String
+  zipCode     String
   createdAT   DateTime @default(now())
   time        String
   ip          String      

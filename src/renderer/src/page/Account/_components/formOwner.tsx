@@ -46,11 +46,8 @@ export function FormOwner() {
 
   function maskPhoneInput(event) {
     let value = event.target.value.replace(/\D/g, '')
-    if (value.length <= 10) {
-      value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
-    } else {
-      value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
-    }
+    value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
+  
     setValue('ownerPhoneNumber', value, { shouldValidate: true })
   }
 
@@ -109,11 +106,11 @@ export function FormOwner() {
             </ContentInRow>
 
             <FormInput style={{ width: 200, alignSelf: 'flex-start' }}>
-              <Label>Telefone</Label>
+              <Label>Tel. Celular</Label>
               <Input
                 {...register('ownerPhoneNumber')}
                 type="text"
-                placeholder="(xx) 9999-9999"
+                placeholder="(xx) 99999-9999"
                 onChange={maskPhoneInput}
                 maxLength={15}
               />

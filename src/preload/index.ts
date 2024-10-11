@@ -123,6 +123,8 @@ export const API = {
     return extractFilter
   },
 
+  logger: (data) => ipcRenderer.send('logger', data),
+
   checkUpdates: () => ipcRenderer.send('check-for-updates'),
   onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update_available', callback),
   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update_downloaded', callback),

@@ -42,6 +42,7 @@ import {
   getClientDB,
   getFavoriteRecipientDB,
   getFavoriteRecipientOnIdDB,
+  getInformationsDB,
   getMediatorDB,
   getTransanctionDB,
   insertExistingClientDB,
@@ -142,18 +143,15 @@ app.whenReady().then(() => {
     path: app.getPath('exe')
   })
 
-  
   electronAutoLauncher.isEnabled().then((isEnabled) => {
     if (!isEnabled) {
       electronAutoLauncher.enable()
     }
   }).catch((err) => {
-
     console.error(err)
   })
 
   const iconPath = join(__dirname, '../assets', 'icon.png')
-
   tray = new Tray(iconPath)
 
   const contextMenu = Menu.buildFromTemplate([
@@ -244,12 +242,10 @@ app.whenReady().then(() => {
   autoUpdater.checkForUpdatesAndNotify();
 
   autoUpdater.on('update-available', () => {
-
     mainWindow?.webContents.send('update_available');
   });
 
   autoUpdater.on('update-downloaded', () => {
-
     mainWindow?.webContents.send('update_downloaded');
   });
 })
@@ -339,6 +335,17 @@ ipcMain.handle('create_account', async (_, formData) => {
     let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
+    let infos = await getInformationsDB()
+
+    formData.idDevice = infos?.idDevice
+    formData.city = infos?.city
+    formData.contry = infos?.contry
+    formData.zipCode = infos?.zipCode
+    formData.state = infos?.state
+    formData.latitude = infos?.latitude
+    formData.longitude = infos?.longitude
+    formData.ip = infos?.ip
+
     let newAccount = await createAccountAPI(formData, token)
     
     if(newAccount.message !== 'SUCCESS') {
@@ -351,34 +358,37 @@ ipcMain.handle('create_account', async (_, formData) => {
       } else {
 
       }
-      return newAccount
-    }
 
-    let data = {
-      AccId: newAccount.data.account.accountId,
-      AccHId: newAccount.data.accountHolderId,
-      Status: newAccount.data.accountStatus,
-      AccBank: newAccount.data.account,
-      BranchBank: newAccount.data.branch,
-      Nome: formData.companyName,
-      Email: formData.companyEmailAddress,
-      Cnpj: formData.companyDocument,
-      Tel: formData.companyPhoneNumber,
-      Pass: formData.password
+      return null
+    } else {
+      let data = {
+        AccId: newAccount.data.account.accountId,
+        AccHId: newAccount.data.accountHolderId,
+        Status: newAccount.data.accountStatus,
+        AccBank: newAccount.data.account,
+        BranchBank: newAccount.data.branch,
+        Nome: formData.companyName,
+        Email: formData.companyEmailAddress,
+        Cnpj: formData.companyDocument,
+        Tel: formData.companyPhoneNumber,
+        Pass: formData.password
+      }
+  
+      let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
+      await encriptoFile(fileEncript)
+      logger.info('create a new account on api')
+      
+      let saveClientInDb = await createClientDB(data).then(e => {
+        logger.info('save new account on database')
+        return {data: e, message: 'SUCCESS'}
+      }).catch(err => {
+        logger.error(err)
+        return {data: null, message: 'ERROR'}
+      })
+      return saveClientInDb
     }
-    let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
-    await encriptoFile(fileEncript)
-    logger.info('create a new account')
-
-    let saveClientInDb = await createClientDB(data).then(e => {
-      return {data: e, message: 'SUCCESS'}
-    }).catch(err => {
-      console.log(err)
-      return {data: null, message: 'ERROR'}
-    })
-    return saveClientInDb
   } catch (error) {
-
+    logger.error(error)
     return { data: null, message: 'Fatal_ERROR' };
   }
 })
@@ -394,7 +404,6 @@ ipcMain.handle('verify_account', async () => {
   .then((response) => response)
   const db = await getClientDB()
   const data = await verify_account(token, db)
-
   await create_alias(token, String(db?.accountId), db?.status)
   return data
 })
@@ -409,19 +418,15 @@ ipcMain.handle('delete_account', async () => {
     const db = await getClientDB()
     let consulta = await DeleteAccountAPI(token, String(db?.accountId))
     if (consulta.error.code === '97') {
-
       return 'balance_error'
     }
 
     if(consulta == 200) {
-
       return await verify_account(token, db)
     } else {
-
       return consulta.error.message
     }
   } else {
-
     return 'alias_registered'
   }
 })
@@ -667,8 +672,13 @@ ipcMain.handle('signIn', async (_, formData) => {
   }
 })
 
-ipcMain.on('check-for-updates', async () => {
+ipcMain.on('logger', async (_, data) => {
+  data.type == 'info' && logger.info(data.message)
+  data.type == 'error' && logger.error(data.message)
+  data.type == 'warn' && logger.warn(data.message)
+})
 
+ipcMain.on('check-for-updates', async () => {
   autoUpdater.checkForUpdates();
 });
 
@@ -683,6 +693,5 @@ autoUpdater.on('error', async (error) => {
 });
 
 ipcMain.on('restart_app', () => {
-
   autoUpdater.quitAndInstall();
 });

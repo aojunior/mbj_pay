@@ -12,6 +12,19 @@ export const formatDate = (date: Date) => {
   }
 }
 
+// Função nativa para formatar a data
+export const formatDateTime = (date) => {
+  const pad = (n) => (n < 10 ? '0' + n : n);
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1); // Mês é zero-indexado
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
 export const formatCNPJandCPF = (data: string) => {
   if (data?.length > 11) {
     let cnpj = data.replace(/\D/g, '')

@@ -65,7 +65,7 @@ export function FormCompany() {
           <CardContent>
             <ContentInRow style={{ gap: 10 }}>
               <FormInput style={{ width: 400 }}>
-                <Label>Nome Fantasia</Label>
+                <Label>Razão Social</Label>
                 <Input {...register('companyName')} type="text" placeholder="Digite aqui" />
               </FormInput>
 
@@ -80,6 +80,10 @@ export function FormCompany() {
                 />
               </FormInput>
             </ContentInRow>
+            <FormInput style={{ width: 400, alignSelf: 'flex-start' }}>
+              <Label>Nome Fantasia</Label>
+              <Input {...register('companyFantasyName')} type="text" placeholder="Digite aqui" />
+            </FormInput>
 
             <ContentInRow style={{ gap: 10 }}>
               <FormInput style={{ width: 400 }}>
@@ -104,11 +108,11 @@ export function FormCompany() {
             </ContentInRow>
 
             <FormInput style={{ width: 200, alignSelf: 'flex-start' }}>
-              <Label>Telefone</Label>
+              <Label>Tel. Celular</Label>
               <Input
                 {...register('companyPhoneNumber')}
                 type="text"
-                placeholder="(xx) 9999-9999"
+                placeholder="(xx) 99999-9999"
                 onChange={maskPhoneInput}
                 maxLength={15}
               />

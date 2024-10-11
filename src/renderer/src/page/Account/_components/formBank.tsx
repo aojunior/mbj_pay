@@ -37,14 +37,13 @@ export function FormBank() {
       lerImg.onload = () => {
         switch (e.name) {
           case 'imgSelfie':
-            console.log(JSON.parse(JSON.stringify(lerImg.result)))
-            setBankData({ ...bankData, imgSelfie: JSON.parse(JSON.stringify(lerImg.result)) })
+            setBankData({ ...bankData, imgSelfie: lerImg.result })
             break
           case 'imgRgFront':
-            setBankData({ ...bankData, imgRgFront: JSON.parse(JSON.stringify(lerImg.result)) })
+            setBankData({ ...bankData, imgRgFront: lerImg.result })
             break
           case 'imgRgBack':
-            setBankData({ ...bankData, imgRgBack: JSON.parse(JSON.stringify(lerImg.result)) })
+            setBankData({ ...bankData, imgRgBack: lerImg.result })
             break
         }
       }

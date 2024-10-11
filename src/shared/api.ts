@@ -81,6 +81,7 @@ export async function tokenGeneratorAPI() {
 
 export async function createAccountAPI(accountData: z.infer<typeof accountSchema>, token) {
   let response
+
   const data = {
     externalIdentifier: `${uuidv4()}${now}`,
     clientType: 'CORPORATE',
@@ -88,7 +89,7 @@ export async function createAccountAPI(accountData: z.infer<typeof accountSchema
     client: {
       name: accountData.ownerName,
       taxIdentifier: {
-        taxId: accountData.companyDocument,
+        taxId: accountData.companyDocument, //'81667817000110',
         country: 'BRA'
       },
       mobilePhone: {
@@ -109,7 +110,7 @@ export async function createAccountAPI(accountData: z.infer<typeof accountSchema
     },
     additionalDetailsCorporate: {
       establishmentDate: accountData.companyDateCreated,
-      companyName: accountData.companyName,
+      companyName: accountData.companyFantasyName,
       businessLine: 47,
       establishmentForm: 1,
       representatives: [
@@ -138,21 +139,37 @@ export async function createAccountAPI(accountData: z.infer<typeof accountSchema
           },
           documents: [
             {
-              content: 'data:image/png;base64,' + accountData.imgSelfie,
+              content: accountData.imgSelfie,
               type: 'PICTURE'
             },
             {
-              content: 'data:image/png;base64,' + accountData.imgRgFront,
+              content: accountData.imgRgFront,
               type: 'IDENTITY_FRONT'
             },
             {
-              content: 'data:image/png;base64,' + accountData.imgRgBack,
+              content: accountData.imgRgBack,
               type: 'IDENTITY_BACK'
             }
           ]
         }
       ]
+    },
+    customData: {
+    connectionDetails: {
+    countryCode: "BRA",
+    countryName: accountData.contry,
+    city: accountData.city,
+    state: accountData.state,
+    zipCode: accountData.zipCode,
+    ipAddress: accountData.ip,
+    geolocation: {
+    latitude: accountData.latitude,
+    longitude: accountData.longitude
+    },
+    deviceId: accountData.idDevice
     }
+ }
+
   }
   const sha_signature = await encrypt_string(data.externalIdentifier + accountData.companyDocument)
 

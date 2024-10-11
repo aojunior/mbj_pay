@@ -14,12 +14,22 @@ export async function setDataToTermsOfService(data) {
     }
 
     const save = await prisma.information.create({
-      data: data
+      data
     })
     return save
   } catch (error) {
     console.log(error)
     return error
+  }
+}
+
+export async function getInformationsDB() {
+  try {
+    const info = await prisma.information.findFirst()
+    return info
+  } catch (error) {
+    console.log(error)
+    return null
   }
 }
 
@@ -44,7 +54,6 @@ export async function createClientDB(data: any) {
     })
     return account
   } catch (error) {
-    console.log(error)
     return error
   }
 }

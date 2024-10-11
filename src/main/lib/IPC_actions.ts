@@ -39,6 +39,7 @@ export async function getInformationsFromMachine() {
       createdAT: new Date(),
       latitude: fetch.latitude,
       longitude: fetch.longitude,
+      zipCode: fetch.zip_code,
       city: fetch.city,
       state: fetch.region_name,
       contry: fetch.country_name,

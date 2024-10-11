@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const accountSchema = z.object({
   companyName: z.string(),
+  companyFantasyName: z.string(),
   companyDocument: z.string(),
   companyDateCreated: z
     .string()
@@ -34,5 +35,15 @@ export const accountSchema = z.object({
   ownerCodezip: z.string(),
   imgSelfie: z.string(),
   imgRgFront: z.string(),
-  imgRgBack: z.string()
+  imgRgBack: z.string(),
+  latitude:    z.number(),
+  longitude:   z.number(),
+  city:        z.string(),
+  state:       z.string(),
+  contry:      z.string(),
+  zipCode:     z.string(),
+  createdAT:   z.string(),
+  time:        z.string(),
+  ip:          z.string(),   
+  idDevice:    z.string(),
 })

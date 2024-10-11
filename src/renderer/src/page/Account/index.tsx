@@ -7,6 +7,7 @@ import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
 import { useAccount } from '@renderer/context/account.context'
 import { Header } from '@renderer/components/header'
+import { delay } from '@shared/utils'
 
 const win: any = window
 
@@ -46,24 +47,29 @@ export default function CreateAccount() {
       setShowNotification(true)
       return
     }
+
     setIsLoad(true)
     const formatDateForSubmission = (date) => {
       const [day, month, year] = date.split('/')
       return `${year}-${month}-${day}`
     }
+
     const concatAccount = { ...companyData, ...ownerData, ...bankData }
-    concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated)
     concatAccount.companyDocument = companyData.companyDocument.replace(/\D/g, '')
+    concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated)
     concatAccount.companyPhoneNumber = companyData.companyPhoneNumber.replace(/\D/g, '')
     
     concatAccount.ownerBirthday = formatDateForSubmission(ownerData.ownerBirthday)
     concatAccount.ownerDocument = ownerData.ownerDocument.replace(/\D/g, '')
     concatAccount.ownerPhoneNumber = ownerData.ownerPhoneNumber.replace(/\D/g, '')
-
-    concatAccount.imgSelfie =  JSON.parse(JSON.stringify(concatAccount.imgSelfie))
-    concatAccount.imgRgFront =  JSON.parse(JSON.stringify(concatAccount.imgRgFront))
-    concatAccount.imgRgBack =  JSON.parse(JSON.stringify(concatAccount.imgRgBack))
     
+    // Formato para 11 dígitos: 9999999-9999
+    concatAccount.ownerPhoneNumber = concatAccount.ownerPhoneNumber.replace(/^(\d{7})(\d{4})$/, '$1-$2');
+    
+    concatAccount.imgSelfie =  String(concatAccount.imgSelfie).replace('data:image/jpeg;base64,', '')
+    concatAccount.imgRgFront =  String(concatAccount.imgRgFront).replace('data:image/jpeg;base64,', '')
+    concatAccount.imgRgBack =  String(concatAccount.imgRgBack).replace('data:image/jpeg;base64,', '')
+
     let resp = await win.api.createAccount(concatAccount)
     
     if (resp.message == 'SUCCESS') {
@@ -74,9 +80,9 @@ export default function CreateAccount() {
         type: 'success',
       })
       setShowNotification(true)
-      await win.api.logger('info', 'Account created successfully')
-
-      setTimeout(() => navigate('/account/complete', { replace: true }), 2000)
+      await win.api.logger({type: 'info', message:'Account created successfully'})
+      delay(2000)
+      navigate('/account/complete', { replace: true })
     } else {
       await win.api.logger('error', 'Error creating account: ' + JSON.stringify(resp.data))
       
@@ -98,7 +104,6 @@ export default function CreateAccount() {
       }
       setShowNotification(true)
     }
-
     setIsLoad(false)
   }
   
