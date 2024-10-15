@@ -11,7 +11,8 @@ export function Finalization() {
  
   async function handleVerifyAccount() {
     setIsLoad(true)
-    const verify = await win.api.verifyAccount()
+    const IDD = await sessionStorage.getItem('accID')
+    const verify = await win.api.verifyAccount(IDD)
     setIsLoad(false)
 
     if (verify == 'UPDATED') {

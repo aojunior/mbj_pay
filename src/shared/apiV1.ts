@@ -1,21 +1,13 @@
 import { createHmac } from 'crypto'
 import axios from 'axios'
-import https from 'https'
-import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { readFileSync } from 'fs'
-import { z } from 'zod'
-import { accountSchema } from './schemas'
 import { getClientDB } from './database/actions'
 import { today } from './utils'
+import { logger } from './logger'
+import { handleStatusError } from './handleErrors'
 
 const now = new Date().toISOString()
-const client_id = import.meta.env.MAIN_VITE_CLIENTEID
-const client_secret = import.meta.env.MAIN_VITE_CLIENTSECRET
 const SecretKey = import.meta.env.MAIN_VITE_SECRETKEY
-const certificate_pem = readFileSync(join(__dirname, '../') + 'CERTIFICATES/client.crt')
-const certificate_key = readFileSync(join(__dirname, '../') + 'CERTIFICATES/client.key')
-const certificate_ca = readFileSync(join(__dirname, '../') + 'CERTIFICATES/rootCA.crt')
 
 const headers = {
   'Accept-Encoding': 'gzip, deflate, br',
@@ -35,203 +27,95 @@ async function encrypt_string(hash_string: string) {
   return sha_signature
 }
 
-const httpsAgent = new https.Agent({
-  rejectUnauthorized: false,
-  cert: certificate_pem,
-  key: certificate_key,
-  ca: certificate_ca,
-  host: 'mtls-mp.hml.flagship.maas.link'
-})
+const api = axios.create({ baseURL: 'http://localhost:3000/api/v1' })
 
-const api = axios.create({
-  baseURL: 'https://mtls-mp.hml.flagship.maas.link',
-  httpsAgent
-})
-
-export async function getLocationAndIPV6() {
-  const api = await axios.get('https://api.ipbase.com/v1/json/').then((e) => e.data)
-  return api
-}
-
-export async function tokenGeneratorAPI() {
-  let token
-
-  token = await api
-    .post(
-      '/auth/realms/Matera/protocol/openid-connect/token',
-      {
-        grant_type: 'client_credentials',
-        client_id: client_id,
-        client_secret: client_secret
-      },
-      {
-        headers: {
-          ...headers,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    )
-    .then((response) => {
-      return response.data.access_token
-    })
-    .catch((e) => console.error(e))
-
+// ======  Services
+export async function tokenGeneratorAPIV1() {
+  let token = await api.post('/auth/token').then((response) => {
+    logger.info('CREATED TOKEN')
+    return response.data.access_token
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return null
+  })
   return token
 }
+ 
+export async function getLocationAndIPV6V1() {
+  const res = await axios.get('https://api.ipbase.com/v1/json/').then((e) => e.data)
+  return res
+}
 
-export async function createAccountAPI(accountData: z.infer<typeof accountSchema>, token) {
-  let response
-
-  const data = {
-    externalIdentifier: `${uuidv4()}${now}`,
-    clientType: 'CORPORATE',
-    accountType: 'UNLIMITED_ORDINARY',
-    client: {
-      name: accountData.ownerName,
-      taxIdentifier: {
-        taxId: accountData.companyDocument, //'81667817000110',
-        country: 'BRA'
-      },
-      mobilePhone: {
-        country: 'BRA',
-        phoneNumber: accountData.companyPhoneNumber
-      },
-      email: accountData.companyEmailAddress
-    },
-    billingAddress: {
-      logradouro: accountData.companyAddress,
-      numero: accountData.companyAddressNumber,
-      complemento: accountData.companyAddressComplement,
-      bairro: accountData.companyNeighborhood,
-      cidade: accountData.companyCity,
-      estado: accountData.companyState,
-      cep: accountData.companyCodezip,
-      pais: 'BRA'
-    },
-    additionalDetailsCorporate: {
-      establishmentDate: accountData.companyDateCreated,
-      companyName: accountData.companyFantasyName,
-      businessLine: 47,
-      establishmentForm: 1,
-      representatives: [
-        {
-          name: accountData.ownerName,
-          mother: accountData.ownerMotherName,
-          birthDate: accountData.ownerBirthday,
-          taxIdentifier: {
-            taxId: accountData.ownerDocument,
-            country: 'BRA'
-          },
-          mobilePhone: {
-            country: 'BRA',
-            phoneNumber: accountData.ownerPhoneNumber
-          },
-          email: accountData.ownerEmailAddress,
-          mailAddress: {
-            logradouro: accountData.ownerAddress,
-            numero: accountData.ownerAddressNumber,
-            complemento: accountData.ownerAddressComplement,
-            bairro: accountData.ownerNeighborhood,
-            cidade: accountData.ownerCity,
-            estado: accountData.ownerState,
-            cep: accountData.ownerCodezip,
-            pais: 'BRA'
-          },
-          documents: [
-            {
-              content: accountData.imgSelfie,
-              type: 'PICTURE'
-            },
-            {
-              content: accountData.imgRgFront,
-              type: 'IDENTITY_FRONT'
-            },
-            {
-              content: accountData.imgRgBack,
-              type: 'IDENTITY_BACK'
-            }
-          ]
-        }
-      ]
-    },
-    customData: {
-    connectionDetails: {
-    countryCode: "BRA",
-    countryName: accountData.contry,
-    city: accountData.city,
-    state: accountData.state,
-    zipCode: accountData.zipCode,
-    ipAddress: accountData.ip,
-    geolocation: {
-    latitude: accountData.latitude,
-    longitude: accountData.longitude
-    },
-    deviceId: accountData.idDevice
+export async function getPspListAPIV1(token) {
+  let psp = await api.get('/psp',{
+    data: {
+      token
     }
- }
-
   }
-  const sha_signature = await encrypt_string(data.externalIdentifier + accountData.companyDocument)
-
-  response = await api
-  .post('/v1/accounts', data, {
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Transaction-Hash': sha_signature
-    },
-    httpsAgent
+  ).then((response) => {
+    return response.data
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return null
   })
-  .then((res) => {
-    if (res.status == 200) return {data: res.data.data, message: 'SUCCESS'}
-  })
-  .catch((error) => {
-    if (error.response) {
-      console.log(error.response.data)
-    } else {
-      console.log('Error', error.message)
-    }
+  return psp
+}
 
-    if(error.response.status == 503) {
-      return {data: error, message: 'NETWORK_ERROR'}
-    } else {
-      return {data: error, message: 'GENERIC_ERROR'}
+// ======  Account
+export async function createAccountAPIV1(accountData, token) {
+  let response = await api.post('/accounts', {
+    data: {
+      accountData: accountData,
+      token: token
     }
+  }).then((res) => {
+    if (res.status == 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
   })
 
   return response
 }
 
-export async function VerifyAccountAPI(token, AccId) {
-  let response
-  const sha_signature = await encrypt_string(AccId)
+export async function SignInAPIV1({taxId, password}) {
+  let response = await api.get(`/accounts/signin`, {
+    data:{
+      credential: taxId,
+      password
+    }
+  }).then((res: any) => {
+    if (res.status === 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
 
-  response = await api
-    .get(`/v1/accounts/${AccId}`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Transaction-Hash': sha_signature
-      },
-      httpsAgent
-    })
-    .then((res: any) => {
-      if (res.status === 200) return {data: res.data.data, message: 'SUCCESS'}
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.log(error.response.data)
-      } else {
-        console.log('Error', error.message)
-      }
-      if(error.response.status == 503) {
-        return {data: null, message: 'NETWORK_ERROR'}
-      } else {
-        return {data: null, message: 'GENERIC_ERROR'}
-      }
-    })
+return response
+}
+
+export async function VerifyAccountAPIV1(token, AccId) {
+  let response = await api.get(`/accounts`, {
+    data:{
+      accountID: AccId,
+      token: token
+    }
+  }).then((res: any) => {
+    if (res.status === 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
 
   return response
 }
@@ -247,7 +131,6 @@ export async function DeleteAccountAPI(token, AccId) {
         Accept: 'application/json',
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
     })
     .then((res: any) => {
       if (res.status === 200 || res.status === 202) return res.status
@@ -267,6 +150,7 @@ export async function DeleteAccountAPI(token, AccId) {
   return response
 }
 
+// ======  Alias
 export async function createAliasesAPI(token: string, AccId: string) {
   const sha_signature = await encrypt_string(`post:/v1/accounts/${AccId}/aliases:`)
   const data = {
@@ -283,7 +167,7 @@ export async function createAliasesAPI(token: string, AccId: string) {
         Accept: '*/*',
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res): any => {
       if (res.status == 202) return res.data
@@ -312,7 +196,7 @@ export async function deleteAliases(token: string, AccId: string, alias: string)
         Accept: '*/*',
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res: any) => {
       if (res.status == 202) return res.status
@@ -337,7 +221,7 @@ export async function verifyAliasesAPI(token: string, AccId: string) {
         ...headers,
         Authorization: `Bearer ${token}`
       },
-      httpsAgent
+      
     })
     .then((res) => {
       if (res.status == 200 || res.status == 202) return res.data.data
@@ -355,6 +239,7 @@ export async function verifyAliasesAPI(token: string, AccId: string) {
   return response
 }
 
+// ======  Instant Payment
 export async function createInstantPayment(
   paymentFile: any,
   token: string,
@@ -412,7 +297,7 @@ export async function createInstantPayment(
         Authorization: `Bearer ${token}`,
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res): any => {
       if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
@@ -445,7 +330,7 @@ export async function verifyInstantPayment(transactionid: string, token: string,
         Accept: 'application/json',
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res): any => {
       if (res.status == 200 || res.status == 202) return res.data
@@ -462,7 +347,8 @@ export async function verifyInstantPayment(transactionid: string, token: string,
   return response.data
 }
 
-export async function verifyBalance(token: string, accountId) {
+// ======  Balance
+export async function verifyBalance(token: string, accountId: string) {
   let response
   const db = await getClientDB(accountId)
   const sha_signature = await encrypt_string(String(db?.accountId))
@@ -474,7 +360,7 @@ export async function verifyBalance(token: string, accountId) {
         Accept: 'application/json',
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res): any => {
       if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
@@ -505,7 +391,7 @@ export async function extractBalanceToday(token: string, AccId: string) {
       Accept: 'application/json',
       'Transaction-Hash': sha_signature
     },
-    httpsAgent
+    
   }).then((res): any => {
     if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
   }).catch((error) => {
@@ -539,7 +425,7 @@ export async function extractBalanceFilter(
         Accept: 'application/json',
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res): any => {
       if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
@@ -560,6 +446,7 @@ export async function extractBalanceFilter(
   return response
 }
 
+// ======  Refund
 export async function refundCodes(token: string) {
   let response
   response = await api
@@ -568,7 +455,7 @@ export async function refundCodes(token: string) {
         ...headers,
         Authorization: `Bearer ${token}`
       },
-      httpsAgent
+      
     })
     .then((res) => {
       if (res.status == 200 || res.status == 202) return res.data
@@ -611,7 +498,7 @@ export async function refundInstantPayment(
         Authorization: `Bearer ${token}`,
         'Transaction-Hash': sha_signature
       },
-      httpsAgent
+      
     })
     .then((res) => {
       if (res.status == 200 || res.status == 202) return res.data
@@ -628,7 +515,8 @@ export async function refundInstantPayment(
   return response.data
 }
 
-// ---- CASH OUT
+// ======  Cash Out
+
 export async function verifyRecipientAlias(params: {accID: string, pixKey: string}, token: string) {
   let response
 
@@ -638,7 +526,7 @@ export async function verifyRecipientAlias(params: {accID: string, pixKey: strin
       ...headers,
       Authorization: `Bearer ${token}`
     },
-    httpsAgent
+    
   }).then((res) => {
     return res.data
   }).catch((error) => {

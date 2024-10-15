@@ -80,6 +80,7 @@ export default function CreateAccount() {
         type: 'success',
       })
       setShowNotification(true)
+      await sessionStorage.setItem('accID', resp.data.accountId)
       await win.api.logger({type: 'info', message:'Account created successfully'})
       delay(2000)
       navigate('/account/complete', { replace: true })

@@ -6,6 +6,7 @@ import { UtilsProvider } from './context/utils.context'
 import Root from './router'
 
 function App(): JSX.Element {
+
   return (
     <AccountWrapper>
       <NotificationWrapper>

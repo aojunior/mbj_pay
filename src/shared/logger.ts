@@ -4,7 +4,7 @@ import { formatDateTime } from './utils';
 
 // Função para criar o logger
 export const logger = (() => {
-  const logFilePath = path.join(__dirname, 'logs.txt');
+  const logFilePath = path.join(__dirname, '../logs.txt');
 
   // Função para gravar no arquivo de log
   const logToFile = (level, message) => {

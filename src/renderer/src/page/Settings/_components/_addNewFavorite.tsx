@@ -8,6 +8,9 @@ import { ContentInRow, FormInput, Input, Label } from '@renderer/styles/global';
 import { useSecurity } from '@renderer/context/security.context';
 import { Loading } from '@renderer/components/loading';
 import { useNotification } from '@renderer/context/notification.context';
+import { useAccount } from '@renderer/context/account.context';
+import Select from 'react-select';
+import { delay } from '@shared/utils';
 
 const Container = styled.dialog`
   width: 100%;
@@ -92,15 +95,20 @@ const schemaFavoriteRecipient = z.object({
   bankAgency: z.string().optional().or(z.literal('')),
   bankAccount: z.string().optional().or(z.literal('')),
   bankBranch: z.string().optional().or(z.literal('')),
-  bankCode: z.string().optional().or(z.literal(''))
+  bankCode: z.string().optional().or(z.literal('')),
+  accountId: z.string().optional().or(z.literal(''))
 })
 
 const win: any = window
-function NewFavorite (props: {id: string}) {
+function NewFavorite (props: {id: string,}) {
   const { setSecurity } = useSecurity()
+  const { accData } = useAccount()
   const { setContentNotification, setShowNotification } = useNotification()
   const [inputValue, setInputValue] = useState('1')
   const [isLoad, setIsLoad] = useState(false)
+  const [pspList, setPspList] = useState<any>([])
+  const [selectedOption, setSelectedOption] = useState(null);
+
   const [error, setError] = useState({
     message: '',
     borderColor: '#c4c4c7'
@@ -112,6 +120,14 @@ function NewFavorite (props: {id: string}) {
     //   type: '1',
     // }
   })
+
+  const customStyles = {
+    container: (provided) => ({
+      ...provided,
+      width: '400px', // Define a largura do Select
+      marginBottom: '10px',
+    }),
+  };
 
   watch(register => {
     if(register.pixKey && register.pixKey.length >= 11 ) {
@@ -139,6 +155,31 @@ function NewFavorite (props: {id: string}) {
     })
   }
 
+  function maskCPForCNPJInput(event) {
+    let value = event.target.value.replace(/\D/g, '');
+    if (value.length <= 11) {
+      value = value.replace(/^(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+      value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
+    }
+    else if (value.length <= 14) {
+      value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    setValue('taxId', value, { shouldValidate: true });
+  }
+
+  const handleChange = (selected) => {
+    if(selected !== null) {
+      setValue('bankCode', selected.value, {shouldValidate: true})
+    } else {
+      setValue('bankCode', '', {shouldValidate: true})
+    }
+    setSelectedOption(selected);
+  };
+
   async function onSubmit() {   
     if(inputValue == '1' && String(getValues().pixKey).length < 11) {
       setError({
@@ -149,8 +190,7 @@ function NewFavorite (props: {id: string}) {
     }
     if(inputValue === '2' && 
     (String(getValues().bankAccount).length < 3 || String(getValues().bankAgency).length < 2 ||
-    String(getValues().bankBranch).length < 1 || String(getValues().bankCode).length < 1 )
-    ) {
+    String(getValues().bankBranch).length < 1 || String(getValues().bankCode).length < 1 || !selectedOption) ) {
       setError({
         message: 'Todos os campos são obrigatórios para salvar.',
         borderColor: 'red'
@@ -165,6 +205,7 @@ function NewFavorite (props: {id: string}) {
     } else {
       setValue('pixKey', '', {shouldValidate: true})
     }
+    setValue('accountId', accData?.accountId, {shouldValidate: true})
     setIsLoad(true)
     if(getValues().id) {
       await win.api.updateFavoriteRecipient(getValues())
@@ -186,23 +227,9 @@ function NewFavorite (props: {id: string}) {
     onClose()
   }
 
-  function maskCPForCNPJInput(event) {
-    let value = event.target.value.replace(/\D/g, '');
-    if (value.length <= 11) {
-      value = value.replace(/^(\d{3})(\d)/, '$1.$2');
-      value = value.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
-      value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
-    }
-    else if (value.length <= 14) {
-      value = value.replace(/^(\d{2})(\d)/, '$1.$2');
-      value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-      value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
-      value = value.replace(/(\d{4})(\d)/, '$1-$2');
-    }
-    setValue('taxId', value, { shouldValidate: true });
-  }
-
   async function loadFavInfo() {
+    let dat = await loadPspList()
+    setPspList(dat)
     setIsLoad(true)
     if(props.id) {
       let data = await win.api.getFavoriteRecipientOnId(props.id)
@@ -216,12 +243,30 @@ function NewFavorite (props: {id: string}) {
       setValue('bankAgency', data.bankAgency || '', {shouldValidate: true})
       setValue('bankBranch', data.bankBranch || '', {shouldValidate: true})
       setValue('bankCode', data.bankCode || '', {shouldValidate: true})
+      await delay(2000)
+      const preselectedItem = dat.find((item) => item?.value === data.bankCode);
+      console.log(preselectedItem)
+      setSelectedOption(preselectedItem); // Define o item pré-selecionado
     }
     setIsLoad(false)
   }
+  
+  async function loadPspList() {
+    setIsLoad(true)
+    let data = await win.api.getAllPsps()
+    const formattedOptions = data.map((item) => ({
+      value: item.id,
+      label: item.name,
+    }))
+    
+    setIsLoad(false)
+    return formattedOptions
+  }
 
   useEffect(() => {
-    loadFavInfo()
+    (async() => {
+      await loadFavInfo()
+    })()
   }, [])
 
   return (
@@ -285,7 +330,18 @@ function NewFavorite (props: {id: string}) {
             </> 
             :
             <>
+            <Label style={{marginTop: 20}}>Escolha o Banco</Label>
+            <Select
+              value={selectedOption}
+              onChange={handleChange}
+              options={pspList}
+              placeholder="Pesquisar..."
+              isClearable
+              isSearchable
+              styles={customStyles}
+            />
             <ContentInRow style={{justifyContent: 'flex-start', gap: 15}}>
+
               <FormInput style={{ width: 180 }}>
                 <Label>Conta</Label>
                 <Input
@@ -308,14 +364,6 @@ function NewFavorite (props: {id: string}) {
               <Label>Agência</Label>
               <Input
                 {...register('bankAgency')}
-                type="text"
-                placeholder="Ex: 1234567890"
-              />
-            </FormInput>
-            <FormInput style={{ width: 400 }}>
-              <Label>Banco</Label>
-              <Input
-                {...register('bankCode')}
                 type="text"
                 placeholder="Ex: 1234567890"
               />

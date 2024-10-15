@@ -10,7 +10,7 @@ const Sidebar = styled.div`
   flex-direction: column;
   gap: 15px;
 `
-const SidebarLink = styled.button<{ selected: any }>`
+const SidebarLink = styled.button<{ selected?: any }>`
   color: #444;
   padding: 5px;
   text-decoration: none;
@@ -18,6 +18,7 @@ const SidebarLink = styled.button<{ selected: any }>`
   transition: background-color 0.3s;
   background-color: #f5f5f7;
   border: none;
+  border-radius: 5px;
   ${({ selected }) =>
     selected &&
     `
@@ -59,8 +60,13 @@ export function SidebarComponent({ onSelect, select }: selectNavProps) {
     {
       name: 'Support',
       text: 'Suporte'
-    }
+    },
   ]
+
+  const onLogOff = () => {
+    localStorage.clear()
+    window.location.reload()
+  }
 
   return (
     <Sidebar>
@@ -69,10 +75,14 @@ export function SidebarComponent({ onSelect, select }: selectNavProps) {
           key={list.name}
           selected={list.name === select}
           onClick={() => onSelect(list.name)}
+          
         >
           {list.text}
         </SidebarLink>
       ))}
+      <SidebarLink style={{color: 'red'}} onClick={onLogOff}>
+        Sair
+      </SidebarLink>
     </Sidebar>
   )
 }

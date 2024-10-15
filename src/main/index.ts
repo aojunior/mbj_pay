@@ -8,15 +8,10 @@ import {
   removeReqFile,
   createResFile,
   watchFileAndFormat,
-  encriptoFile,
-  readEncriptoFile,
   removeResFile,
   createReqFile
 } from './lib'
 import {
-  tokenGeneratorAPI,
-  createAccountAPI,
-  VerifyAccountAPI,
   verifyInstantPayment,
   verifyBalance,
   extractBalanceToday,
@@ -26,7 +21,7 @@ import {
   deleteAliases,
   createInstantPayment,
   DeleteAccountAPI,
-  verifyRecipientAlias
+  verifyRecipientAlias,
 } from '../shared/api'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
@@ -40,12 +35,13 @@ import {
   deleteFavoriteRecipientDB,
   getAliasesDB,
   getClientDB,
+  getClientDB2,
   getFavoriteRecipientDB,
   getFavoriteRecipientOnIdDB,
-  getInformationsDB,
   getMediatorDB,
   getTransanctionDB,
-  insertExistingClientDB,
+  setDataToTermsOfServiceDB,
+  signInDB,
   updatefavoriteRecipientDB,
   updateTransanctionDB
 } from '../shared/database/actions'
@@ -54,6 +50,7 @@ import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
 import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
 import { logger } from '@shared/logger';
+import { createAccountAPIV1, getPspListAPIV1, tokenGeneratorAPIV1 } from '@shared/apiV1';
 
 let mainWindow: BrowserWindow
 let tray: Tray
@@ -188,6 +185,10 @@ app.whenReady().then(() => {
   // Monitora a pasta de recebimento do arquivo, vindo do sistema
   watchFileAndFormat(async (formatData) => {
     try {
+      let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+      .then((response) => response)
+      let account = JSON.parse(parse)
+
       if (!formatData) {
         return {
           error: 'Arquivo não encontrado no diretório de recebimento.',
@@ -195,7 +196,7 @@ app.whenReady().then(() => {
         }
       } else {
         const db = await getAliasesDB()
-        const client = await getClientDB()
+        const client = await getClientDB(account.accountId)
         const mediator = await getMediatorDB()
         if(client?.status === 'ERROR') {
           mainWindow.webContents.send('watch_file', {
@@ -321,12 +322,14 @@ ipcMain.handle('reload-app', () => {
 });
 
 ipcMain.handle('token_generator', async () => {
-  let token = await tokenGeneratorAPI()
+  let token = await tokenGeneratorAPIV1()
   return token
 })
 
 ipcMain.handle('accept_terms_of_service', async () => {
-  return await getInformationsFromMachine()
+  let data = await getInformationsFromMachine()
+  // await mainWindow.webContents.executeJavaScript(`localStorage.setItem('informations', ${JSON.stringify(data)}`)
+  return data
 })
 
 // HANDLE ACCOUNT
@@ -335,30 +338,26 @@ ipcMain.handle('create_account', async (_, formData) => {
     let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-    let infos = await getInformationsDB()
+    let infos = await mainWindow.webContents
+    .executeJavaScript(`sessionStorage.getItem('informations')`)
+    .then((response) => JSON.parse(response))
+    
+    // await getInformationsDB()
 
     formData.idDevice = infos?.idDevice
     formData.city = infos?.city
-    formData.contry = infos?.contry
+    formData.country = infos?.country
     formData.zipCode = infos?.zipCode
     formData.state = infos?.state
     formData.latitude = infos?.latitude
     formData.longitude = infos?.longitude
     formData.ip = infos?.ip
 
-    let newAccount = await createAccountAPI(formData, token)
+    let newAccount = await createAccountAPIV1(formData, token)
     
-    if(newAccount.message !== 'SUCCESS') {
-      let error = newAccount.data
+    if(newAccount?.message !== 'success') {
+      let error = newAccount?.data
       logger.error(error)
-
-      console.log(error.message)
-      if (error.response) {
-
-      } else {
-
-      }
-
       return null
     } else {
       let data = {
@@ -373,18 +372,20 @@ ipcMain.handle('create_account', async (_, formData) => {
         Tel: formData.companyPhoneNumber,
         Pass: formData.password
       }
-  
-      let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
-      await encriptoFile(fileEncript)
+      infos.accountId = newAccount?.data.account.accountId
+      // let fileEncript = {Cnpj: data.Cnpj, Pass: data.Pass, Account: data.AccId}
+      // await encriptoFile(fileEncript)
       logger.info('create a new account on api')
       
       let saveClientInDb = await createClientDB(data).then(e => {
         logger.info('save new account on database')
+
         return {data: e, message: 'SUCCESS'}
       }).catch(err => {
         logger.error(err)
         return {data: null, message: 'ERROR'}
       })
+      await setDataToTermsOfServiceDB(infos)
       return saveClientInDb
     }
   } catch (error) {
@@ -394,15 +395,19 @@ ipcMain.handle('create_account', async (_, formData) => {
 })
 
 ipcMain.handle('get_account', async () => {
-  const db = await getClientDB()
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+
+  const db = await getClientDB(account.accountId)
   return db
 })
 
-ipcMain.handle('verify_account', async () => {
+ipcMain.handle('verify_account', async (_, accountId) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const db = await getClientDB()
+  const db = await getClientDB(accountId)
   const data = await verify_account(token, db)
   await create_alias(token, String(db?.accountId), db?.status)
   return data
@@ -412,10 +417,14 @@ ipcMain.handle('delete_account', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  
   const alias = await getAliasesDB()
 
   if (alias.length == 0) {
-    const db = await getClientDB()
+    const db = await getClientDB(account.accountId)
     let consulta = await DeleteAccountAPI(token, String(db?.accountId))
     if (consulta.error.code === '97') {
       return 'balance_error'
@@ -437,7 +446,11 @@ ipcMain.handle('create-alias', async () => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const db = await getClientDB()
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+
+  const db = await getClientDB(account.accountId)
   const resp = await create_alias(token, String(db?.accountId), db?.status)
   return resp
 })
@@ -446,7 +459,10 @@ ipcMain.handle('update-alias', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-  return await verifyAndUpdateAliases(token)
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  return await verifyAndUpdateAliases(token, account.accountId)
 })
 
 ipcMain.handle('get_alias', async () => {
@@ -458,7 +474,11 @@ ipcMain.handle('delete-alias', async (_, alias) => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-  const client = await getClientDB()
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  
+  const client = await getClientDB(account.accountId)
   let deleteAlias = await deleteAliases(token, String(client?.accountId), alias)
 
   async function deleteBD() {
@@ -486,12 +506,17 @@ ipcMain.handle('create_payment_file', async (_, data) => {
 
 ipcMain.handle('verify_instantpayment', async () => {
   let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
   let transactionid = await mainWindow.webContents
-    .executeJavaScript(`localStorage.getItem('transactionid')`)
-    .then((response) => response)
-  const db = await getClientDB()
+  .executeJavaScript(`localStorage.getItem('transactionid')`)
+  .then((response) => response)
+  let parse = await mainWindow.webContents
+  .executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+
+  let account = JSON.parse(parse)
+  const db = await getClientDB(account.accountId)
   const verify = await verifyInstantPayment(transactionid, token, String(db?.accountId))
   await createResFile(verify.transactions[0].transactionStatus)
   return verify.transactions[0]
@@ -530,7 +555,10 @@ ipcMain.handle('verify_balance', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-  const response = await verifyBalance(token)
+    let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+    .then((response) => response)
+    let account = JSON.parse(parse)
+  const response = await verifyBalance(token, account.accountId)
   return response
 })
 
@@ -538,7 +566,11 @@ ipcMain.handle('extract_balance_today', async () => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-  const db = await getClientDB()
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+
+  const db = await getClientDB(account.accountId)
   const response = await extractBalanceToday(token, String(db?.accountId))
   return response
 })
@@ -547,7 +579,11 @@ ipcMain.handle('extract_balance_filter', async (_, args) => {
   let token = await mainWindow.webContents
     .executeJavaScript(`sessionStorage.getItem('token')`)
     .then((response) => response)
-  const db = await getClientDB()
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+
+  const db = await getClientDB(account.accountId)
   const response = await extractBalanceFilter(token, args[0], args[1], String(db?.accountId))
   return response
 })
@@ -567,7 +603,10 @@ ipcMain.handle('refund', async (_, args) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const db = await getClientDB()
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const db = await getClientDB(account.accountId)
   const mediator = await getMediatorDB()
   const response = await refundInstantPayment(args[0], args[1], token, String(db?.accountId), Number(mediator?.mediatorFee))
   return response
@@ -618,58 +657,79 @@ ipcMain.handle('security', async (_, password) => {
 })
 
 ipcMain.handle('alter_password', async (_, passData) => {
-  const db = await getClientDB()
+  let parse = await mainWindow.webContents
+  .executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const db = await getClientDB(account.accountId)
   const alterPassword = await alterPasswordDB(passData, db?.accountId)
   return alterPassword
 })
 
 ipcMain.handle('signIn', async (_, formData) => {
   try {
-    const result = await readEncriptoFile(formData)
-
-    let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
-
-    if(result) {
-      let consulta = await VerifyAccountAPI(token, result.account)
-      
-      if (!consulta.data) {
-
-        return consulta
-      }
-      
-      let data = {
-        AccHId: consulta.data.accountHolderId,
-        AccId: consulta.data.account.accountId,
-        AccBank: 0,
-        Branch: 0,
-        Name: consulta.data.additionalDetailsCorporate.companyName,
-        Email: consulta.data.client.email,
-        TaxId: consulta.data.client.taxIdentifier.taxId,
-        Phone: consulta.data.client.mobilePhone.phoneNumber,
-        Status: consulta.data.accountStatus,
-        MedAccId: consulta.data.mediatorId,
-        Key: result.saltKey,
-        Pass: result.hashPassword
-      }
-
-      if(consulta.data.account.branch) {
-        data.AccBank = consulta.data.account.account
-        data.Branch = consulta.data.account.branch
-      }
-
-      let update = await insertExistingClientDB(data)
-      getInformationsFromMachine()
-      verifyAndUpdateAliases(token)
-      logger.info('Sign IN successful')
-      return {data: update, message: ''}
-    } else {
-      return {data: null, message: 'login_error'}
+    const data = await signInDB(formData.taxId)
+    if(!data) return {data: null, message: 'Por favor verifique as credenciais e tente novamente.'}
+    
+    let passHash = {
+      saltKey: data?.saltKey,
+      hashPassword: data?.hashPassword
     }
+    const verifyP = await HashComparator(formData.password, passHash)
+    if(verifyP) {
+      const client = await getClientDB2(data?.accountId)
+      logger.info('SignIn successfully')
+      return {data: client, message: ''}
+    } else {
+      return {data: null, message: 'Por favor verifique as credenciais e tente novamente.'}
+    }
+    // const result = await readEncriptoFile(formData)
+    // let token = await mainWindow.webContents
+    // .executeJavaScript(`sessionStorage.getItem('token')`)
+    // .then((response) => response)
+
+    // if(result) {
+    //   let consulta = await VerifyAccountAPIV1(token, result.account)
+    //   if(consulta?.message === 'success') {
+    //     let data = {
+    //       AccHId: consulta.data.accountHolderId,
+    //       AccId: consulta.data.account.accountId,
+    //       AccBank: 0,
+    //       Branch: 0,
+    //       Name: consulta.data.additionalDetailsCorporate.companyName,
+    //       Email: consulta.data.client.email,
+    //       TaxId: consulta.data.client.taxIdentifier.taxId,
+    //       Phone: consulta.data.client.mobilePhone.phoneNumber,
+    //       Status: consulta.data.accountStatus,
+    //       MedAccId: consulta.data.mediatorId,
+    //       Key: result.saltKey,
+    //       Pass: result.hashPassword
+    //     }
+    //     if(consulta.data.account.branch) {
+    //       data.AccBank = consulta.data.account.account
+    //       data.Branch = consulta.data.account.branch
+    //     }
+    //     let update = await insertExistingClientDB(data)
+    //     getInformationsFromMachine()
+    //     verifyAndUpdateAliases(token)
+    //     logger.info('SignIn successfully')
+    //     return {data: update, message: ''}
+    //   }
+    //   return handleMessageError(consulta)
+    // } else {
+    //   return {data: null, message: 'Por favor verifique as credenciais e tente novamente.'}
+    // }
   } catch(error) {
-    console.log(error)
+    logger.error(error)
   }
+})
+
+ipcMain.handle('psp_list', async () => {
+  let token = await mainWindow.webContents
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
+  const psp = await getPspListAPIV1(token)
+  return psp
 })
 
 ipcMain.on('logger', async (_, data) => {

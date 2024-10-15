@@ -1,30 +1,23 @@
 import { Button, ContentInRow, IconEye, IconEyeInvisible, Separator } from '@renderer/styles/global'
-import { Input, Label, WrapIpunt } from '../styles'
+import { Input, Label, Title, WrapIpunt } from '../styles'
 import { formatCNPJandCPF } from '@shared/utils'
 import { useEffect, useState } from 'react'
 import { Notification } from '@renderer/components/notification'
 import { Loading } from '@renderer/components/loading'
-import { Client } from '@prisma/client'
 import { ShowPassword } from '@renderer/components/password'
 import { useSecurity } from '@renderer/context/security.context'
 import { useNotification } from '@renderer/context/notification.context'
+import { useAccount } from '@renderer/context/account.context'
 
 const win: any = window
 
 export function MyAccount() {
   const { setShowSecurity, showSecurity, security, setSecurity } = useSecurity()
+  const { accData, getAccount } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const [account, setAccount] = useState<Client>({} as Client)
   const [isLoad, setIsLoad] = useState(false)
   const [showTextPassword, setShowTextPassword] = useState(false)
   const [pass, setPass] = useState('')
-
-  async function getAccount() {
-    setIsLoad(true)
-    const data = await win.api.getAccount()
-    setAccount(data)
-    setIsLoad(false)
-  }
 
   const handleVerifyAccount = async () => {
     setIsLoad(true)
@@ -123,8 +116,11 @@ export function MyAccount() {
   function togglePassword() {
     setShowTextPassword(!showTextPassword)
   }
+
   useEffect(() => {
-    getAccount()
+    if (!accData) {
+      getAccount()
+    }
     setSecurity({
       context: '',
       confirmed: false
@@ -142,13 +138,13 @@ export function MyAccount() {
       }}
     >
       {isLoad && <Loading />}
-      <h1> Informações da Conta</h1>
+      <Title> Informações da Conta</Title>
 
       {showSecurity && <ShowPassword />}
       <ContentInRow>
         <WrapIpunt>
           <Label>Razão Social</Label>
-          <Input type="text" value={account?.companyName} />
+          <Input type="text" value={accData?.companyName} />
         </WrapIpunt>
 
         <WrapIpunt>
@@ -188,25 +184,25 @@ export function MyAccount() {
         <Label>CNPJ</Label>
         <Input
           type="text"
-          value={formatCNPJandCPF(account?.taxId as string)}
+          value={formatCNPJandCPF(accData?.taxId as string)}
           style={{ width: 140 }}
         />
       </WrapIpunt>
 
       <WrapIpunt>
         <Label>ID da Conta</Label>
-        <Input type="text" value={account?.accountId} />
+        <Input type="text" value={accData?.accountId} />
       </WrapIpunt>
 
       <Label style={{ color: '#444', marginTop: 15 }}>Detalhes Bancário</Label>
       <ContentInRow style={{ width: '50%' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Conta</Label>
-          <Input type="text" value={String(account?.accountBank)} style={{ width: 120 }} />
+          <Input type="text" value={String(accData?.accountBank)} style={{ width: 120 }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Agência (Branch)</Label>
-          <Input type="text" value={String(account?.branchBank)} style={{ width: 120 }} />
+          <Input type="text" value={String(accData?.branchBank)} style={{ width: 120 }} />
         </div>
       </ContentInRow>
 
@@ -215,14 +211,14 @@ export function MyAccount() {
           <Label>Data de Criação</Label>
           <Input
             type="text"
-            value={formatDate(account?.createdAT)}
+            value={formatDate(accData?.createdAT)}
             style={{ width: 120, textAlign: 'center' }}
           />
         </WrapIpunt> */}
 
         <WrapIpunt>
           <Label>Status da Conta</Label>
-          <Input type="text" value={account?.status} style={{ width: 120, textAlign: 'center' }} />
+          <Input type="text" value={accData?.status} style={{ width: 120, textAlign: 'center' }} />
         </WrapIpunt>
       </ContentInRow>
 
@@ -231,7 +227,10 @@ export function MyAccount() {
       <ContentInRow>
         <Button onClick={handleVerifyAccount}>Verificar</Button>
 
-        <Button style={{ backgroundColor: account?.status !== 'CLOSED' ? 'red' : '#777',  }} onClick={handleDeleteAccount} disabled={account?.status === 'CLOSED'}>
+        <Button
+        style={{ backgroundColor: accData?.status !== 'CLOSED' ? 'red' : '#777',  }} 
+        onClick={handleDeleteAccount}
+        disabled={accData?.status === 'CLOSED'}>
           Inativar Conta
         </Button>
       </ContentInRow>

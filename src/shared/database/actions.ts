@@ -2,7 +2,7 @@ import { prisma } from './databaseConnect'
 import { HashConstructor } from '@shared/utils'
 
 // ACTION TO ACCEPT TERMS OF SERVICES
-export async function setDataToTermsOfService(data) {
+export async function setDataToTermsOfServiceDB(data) {
   try {
     const info = await prisma.information.findFirst()
     if(info) {
@@ -79,10 +79,11 @@ export async function insertExistingClientDB(data: any) {
         await prisma.mediator.create({
           data: {
             mediatorAccountId: data.MedAccId,
-            mediatorFee: 0.5
+            mediatorFee: 0.5,
+            accountId: e.accountId
           }
         })
-        return getClientDB()
+        return getClientDB(e.accountId)
       } else {
         return e.status
       }
@@ -96,28 +97,27 @@ export async function insertExistingClientDB(data: any) {
 
 export async function updateClientDB(data: any) {
   try {
-    await prisma.client
-      .update({
-        where: { accountId: data.AccId },
-        data: {
-          accountBank: data.AccBank,
-          branchBank: data.Branch,
-          status: data.Status
-        }
-      })
-      .then(async (e) => {
-        if (e.status === 'REGULAR') {
-          const insertMediator = await prisma.mediator.create({
-            data: {
-              mediatorAccountId: data.MedAccId,
-              mediatorFee: 0.5
-            }
-          })
-          return insertMediator
-        } else {
-          return e.status
-        }
-      })
+    await prisma.client.update({
+      where: { accountId: data.AccId },
+      data: {
+        accountBank: data.AccBank,
+        branchBank: data.Branch,
+        status: data.Status
+      }
+    }).then(async (e) => {
+      if (e.status === 'REGULAR') {
+        const insertMediator = await prisma.mediator.create({
+          data: {
+            mediatorAccountId: data.MedAccId,
+            mediatorFee: 0.5,
+            accountId: e.accountId            
+          }
+        })
+        return insertMediator
+      } else {
+        return e.status
+      }
+    })
     return 'UPDATED'
   } catch (error) {
     console.log(error)
@@ -139,9 +139,12 @@ export async function clientExists() {
   }
 }
 
-export async function getClientDB() {
+export async function getClientDB(accountId) {
   try {
     const account = await prisma.client.findFirst({
+      where: {
+        accountId: accountId
+      },
       select: {
         accountId: true,
         accountBank: true,
@@ -163,6 +166,33 @@ export async function getClientDB() {
     return null
   }
 }
+
+export async function getClientDB2(accountId) {
+  try {
+    const account = await prisma.client.findFirst({
+      where: { accountId },
+      select: {
+        accountId: true,
+        accountBank: true,
+        branchBank: true,
+        accountHolderId: true,
+        companyName: true,
+        createdAT: true,
+        email: true,
+        phoneNumber: true,
+        taxId: true,
+        status: true,
+        hashPassword: false,
+        saltKey: false
+      }
+    })
+    return account
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
 
 export async function verifyClientDB(data, accountId: string) {
   try {
@@ -194,12 +224,32 @@ export async function deleteClientDB(accountId: string) {
 
 export async function credentialsDB() {
   try {
+   
     const credentials = await prisma.client.findFirst({
       select: {
         hashPassword: true,
         saltKey: true
       }
     })
+   
+    return credentials
+  } catch (error) {
+    console.error(error)
+    return
+  }
+}
+
+export async function signInDB(data?: string) {
+  try {
+    const credentials = await prisma.client.findFirst({
+      where: { taxId: data },
+      select: {
+        accountId: true,
+        hashPassword: true,
+        saltKey: true
+      }
+    })
+    
     return credentials
   } catch (error) {
     console.error(error)
@@ -404,7 +454,6 @@ export async function updatefavoriteRecipientDB(data: any) {
       where: { id: data.id },
       data: data
     })
-    console.log(favorite)
     return favorite
   } catch (error) {
     console.error(error)

@@ -23,8 +23,8 @@ export const API = {
     const del = await ipcRenderer.invoke('delete_account')
     return del
   },
-  verifyAccount: async () => {
-    const verify = await ipcRenderer.invoke('verify_account')
+  verifyAccount: async (accountId) => {
+    const verify = await ipcRenderer.invoke('verify_account', accountId)
     return verify
   },
   getAccount: async () => {
@@ -121,6 +121,10 @@ export const API = {
   extractBalanceFilter: async (start, end) => {
     const extractFilter = await ipcRenderer.invoke('extract_balance_filter', [start, end])
     return extractFilter
+  },
+  getAllPsps: async () => {
+    const psps = await ipcRenderer.invoke('psp_list')
+    return psps
   },
 
   logger: (data) => ipcRenderer.send('logger', data),

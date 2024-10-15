@@ -11,8 +11,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:../resources/database.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Client {
@@ -28,8 +28,11 @@ model Client {
   hashPassword    String
   status          String
   createdAT       DateTime  @default(now())
-  aliases         Aliases[] 
+  aliases         Aliases[]
   transactions    Transactions[]
+  mediator        Mediator[]
+  recipients      FavoritesRecipients[]
+  information     Information[]
 }
 
 model Information {
@@ -37,12 +40,14 @@ model Information {
   longitude   Float
   city        String
   state       String
-  contry      String
+  country      String
   zipCode     String
   createdAT   DateTime @default(now())
   time        String
-  ip          String      
+  ip          String
+  accountId   String  @unique
   idDevice    String  @unique
+  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model Aliases {
@@ -67,11 +72,12 @@ model Transactions {
   message                 String?
   createdAT               DateTime  @default(now())
   updatedAT               DateTime?
-  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  client        Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model FavoritesRecipients {
   id          String @id @default(cuid())
+  accountId   String
   nickname    String
   type        String
   taxId       String
@@ -81,10 +87,13 @@ model FavoritesRecipients {
   bankBranch  String?
   bankCode    String?
   createdAT   DateTime @default(now())
+  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model Mediator {
   id                String @id @default(cuid())
+  accountId         String
   mediatorAccountId String
   mediatorFee       Float
+  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }

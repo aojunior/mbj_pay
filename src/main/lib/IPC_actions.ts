@@ -1,54 +1,55 @@
 import os from 'node:os'
 import { machineIdSync } from 'node-machine-id'
-import { createAliasesAPI, getLocationAndIPV6, VerifyAccountAPI, verifyAliasesAPI } from "@shared/api"
-import { createAliasDB, deleteAliasDB, getAliasesDB, getClientDB, setDataToTermsOfService, updateAliasDB, updateClientDB } from "@shared/database/actions"
+import { createAliasesAPI, VerifyAccountAPI, verifyAliasesAPI } from "@shared/api"
+import { createAliasDB, deleteAliasDB, getAliasesDB, getClientDB, updateAliasDB, updateClientDB } from "@shared/database/actions"
 import { currentTime, delay } from "@shared/utils"
-// import logger from '@shared/logger'
+import { getLocationAndIPV6V1 } from '@shared/apiV1'
 
 export async function getInformationsFromMachine() {
-    const fetch = await getLocationAndIPV6()
-    function getIPs() {
-      let ifaces: any = os.networkInterfaces()
-      let ipAdresse: any = {}
-      Object.keys(ifaces).forEach(function (ifname) {
-        let alias = 0
-        ifaces[ifname].forEach(function (iface) {
-          if ('IPv4' !== iface.family || iface.internal !== false) {
-            // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-            return
-          }
-  
-          if (alias >= 1) {
-            // this single interface has multiple ipv4 addresses
-            // console.log(ifname + ':' + alias, iface.address);
-          } else {
-            // this interface has only one ipv4 adress
-            // console.log(ifname, iface.address);
-            ipAdresse = { IP: iface.address, MAC: iface.mac }
-          }
-          ++alias
-        })
+  const fetch = await getLocationAndIPV6V1()
+  function getIPs() {
+    let ifaces: any = os.networkInterfaces()
+    let ipAdresse: any = {}
+    Object.keys(ifaces).forEach(function (ifname) {
+      let alias = 0
+      ifaces[ifname].forEach(function (iface) {
+        if ('IPv4' !== iface.family || iface.internal !== false) {
+          // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+          return
+        }
+
+        if (alias >= 1) {
+          // this single interface has multiple ipv4 addresses
+          // console.log(ifname + ':' + alias, iface.address);
+        } else {
+          // this interface has only one ipv4 adress
+          // console.log(ifname, iface.address);
+          ipAdresse = { IP: iface.address, MAC: iface.mac }
+        }
+        ++alias
       })
-      return ipAdresse.IP
-    }
-    let ipNet = getIPs()
-    let idDevice = machineIdSync(true)
-  
-    const infos = {
-      time: currentTime,
-      createdAT: new Date(),
-      latitude: fetch.latitude,
-      longitude: fetch.longitude,
-      zipCode: fetch.zip_code,
-      city: fetch.city,
-      state: fetch.region_name,
-      contry: fetch.country_name,
-      // ipv6: fetch.ip,
-      ip: ipNet,
-      idDevice: idDevice
-    }
-    const saveInDB = await setDataToTermsOfService(infos)
-    return saveInDB
+    })
+    return ipAdresse.IP
+  }
+  let ipNet = getIPs()
+  let idDevice = machineIdSync(true)
+
+  const infos = {
+    time: currentTime,
+    createdAT: new Date(),
+    latitude: fetch.latitude,
+    longitude: fetch.longitude,
+    zipCode: fetch.zip_code,
+    city: fetch.city,
+    state: fetch.region_name,
+    country: fetch.country_name,
+    // ipv6: fetch.ip,
+    ip: ipNet,
+    idDevice: idDevice
+  }
+  return infos
+  // const saveInDB = await setDataToTermsOfService(infos)
+  // return saveInDB
 }
 
 export async function verify_account(token: string | null, client: any) {
@@ -97,9 +98,9 @@ export async function create_alias(token: string, accountId: string, status?: st
   }
 }
 
-export async function verifyAndUpdateAliases(token: string) {
+export async function verifyAndUpdateAliases(token: string, accountId: string){
   try {
-    const client = await getClientDB()
+    const client = await getClientDB(accountId)
     const aliases = await getAliasesDB()
     let verify = await verifyAliasesAPI(token, String(client?.accountId))
   

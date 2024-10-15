@@ -14,7 +14,8 @@ export const TermsOfUse = () => {
   const handleButtonClick = async () => {
     if (accepted) {
       try {
-        await win.api.acceptTermsOfService()
+        const data = await win.api.acceptTermsOfService()
+        sessionStorage.setItem('informations', JSON.stringify(data))
         navigate('/account/company')
       } catch (error) {
         console.log(error)

@@ -1,5 +1,5 @@
 import { Button } from '@renderer/styles/global'
-import { DeleteIcon, Table, Tbody, Td, Th, Thead, Tr } from '../styles'
+import { DeleteIcon, Table, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import { useEffect, useState } from 'react'
 import { Loading } from '@renderer/components/loading'
 import { Notification } from '@renderer/components/notification'
@@ -171,13 +171,13 @@ export function ManageAlias() {
       {isLoad && <Loading />}
       {showSecurity && <ShowPassword />}
       <Button
-        style={{ position: 'absolute', right: 40, top: 150 }}
+        style={{ position: 'absolute', right: 40, top: 130 }}
         onClick={() => handleKeyButton('F5')}
       >
         <code>F5</code> - Atualizar
       </Button>
 
-      <h1> Chave Pix </h1>
+      <Title> Chave Pix </Title>
       <>
         <Table>
           <Thead>

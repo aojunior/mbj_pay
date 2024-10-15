@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DeleteIcon, EditIcon, Table, Tbody, Td, Th, Thead, Tr } from '../styles'
+import { DeleteIcon, EditIcon, Table, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import NewFavorite from './_addNewFavorite';
 import { useSecurity } from '@renderer/context/security.context';
 import { Loading } from '@renderer/components/loading';
@@ -46,10 +46,18 @@ export function AddFavoriteRecipient() {
   }, [])
 
   return (
-    <>
+    <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      paddingLeft: 40,
+      paddingRight: 40,
+      gap: 15
+    }}
+    >
       {isLoad && <Loading />}
       { showSecurity && <ShowPassword/> }
-      <h1>Meus Favoritos</h1>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+      <Title>Meus Favoritos</Title>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
       
       <Table>
         <Thead>
@@ -101,6 +109,6 @@ export function AddFavoriteRecipient() {
       (security.confirmed && security.context === 'editFav') &&
         <NewFavorite id={idFav}/>
       }
-    </>
+    </div>
   )
 }

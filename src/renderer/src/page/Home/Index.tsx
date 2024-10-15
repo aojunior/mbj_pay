@@ -23,7 +23,7 @@ function Home() {
         return
       }
       setFile(data);
-      localStorage.clear()
+      localStorage.removeItem('transactionid')
       localStorage.setItem('transactionid', data.transactionId)
     });
   }, [file])

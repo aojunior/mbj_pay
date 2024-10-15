@@ -6,6 +6,7 @@ import { ManageAlias } from './_components/manageAliases'
 import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
 import { CheckUpdates } from './_components/updateSystem'
+import { Support } from './_components/support'
 
 export default function Settings() {
   const [selectedSection, setSelectedSection] = useState('')
@@ -20,6 +21,8 @@ export default function Settings() {
         return <ManageAlias />
       case 'CheckUpdates':
         return <CheckUpdates />
+        case 'Support':
+          return <Support />
     }
   }
 

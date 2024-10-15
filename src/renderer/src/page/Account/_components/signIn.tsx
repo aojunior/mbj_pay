@@ -27,7 +27,7 @@ import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
 export function SignIn() {
-  const { setAccState } = useAccount()
+  const { setAccount } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [signInData, setSignInData] = useState<any>()
   const [isLoad, setIsLoad] = useState<boolean>(false)
@@ -55,30 +55,22 @@ export function SignIn() {
     setValue('taxId', value, { shouldValidate: true })
   }
 
-  async function handleSubmitForm() {
+  async function handleSubmitForm(e) {
+    e.preventDefault()
     setIsLoad(true)
     setValue('taxId', getValues().taxId.replace(/\D/g, ''))
     const acc = await win.api.signIn(getValues())
-    setAccState(acc)
     setIsLoad(false)
     if(acc.data) {
+      await setAccount(acc.data)
       navigate('/home')
     } else {
-      if(acc.message === 'login_error') {
-        setContentNotification({
-          ...contentNotification,
-          type: 'error',
-          title: 'Erro de Login',
-          message: 'Por favor verifique o CNPJ e a Senha e tente novamente.'
-        })
-      }
-      if(acc.message === 'NETWORK_ERROR') {
-        setContentNotification({
-          type: 'error',
-          title: 'Erro na comunicação com o servidor',
-          message: 'Houve um erro ao tentar comunicação com o servidor, tente novamente!',
-        })
-      }
+      setContentNotification({
+        ...contentNotification,
+        type: 'error',
+        title: 'Houve um Erro',
+        message: acc.message
+      })
       setShowNotification(true)
     }
   }
@@ -135,7 +127,7 @@ export function SignIn() {
           </CardContent>
 
           <CardFooter style={{marginTop: 10, alignItems: 'center'}}>
-            <Button onClick={handleSubmitForm} type='button'>
+            <Button onClick={handleSubmitForm} >
               Entrar
             </Button>
             <br />
@@ -143,7 +135,7 @@ export function SignIn() {
             <hr style={{borderTop: '1px dashed #c7c7c4', width: '100%'}}/>
             <p style={{color:'#c4c4c7'}}>ou</p>
             
-            <Button style={{marginTop: 0}} onClick={() => navigate('/account/terms')} >
+            <Button style={{marginTop: 0}} onClick={() => navigate('/account/terms')} type='button'>
               Criar Conta
             </Button>
           </CardFooter>

@@ -2,6 +2,7 @@ import { Loading } from "@renderer/components/loading"
 import { Button } from "@renderer/styles/global"
 import { useState } from "react"
 import { useEffect } from "react";
+import { Title } from "../styles";
 
 const win: any = window
 export function CheckUpdates() {
@@ -45,7 +46,7 @@ export function CheckUpdates() {
             }}
         >
             {isLoad && <Loading />}
-            <h1> Verificar se há atualização </h1>
+            <Title> Verificar se há atualização </Title>
             <div style={{ marginTop: 120, justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 30}}>
                 {
                     !updateAvailable &&

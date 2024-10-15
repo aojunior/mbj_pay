@@ -1,6 +1,14 @@
 import { styled } from 'styled-components'
 import { MdDeleteForever, MdEdit } from 'react-icons/md'
 
+
+export const Title =  styled.h1`
+  font-size: 24px;
+  margin: 0;
+  padding: 0;
+  font-weight: 600;
+`
+
 export const Section = styled.div`
   width: 100%;
   height: 100%;
@@ -19,10 +27,13 @@ export const Table = styled.table`
   font-family: Arial, sans-serif;
   align-self: center;
   text-align: center;
+
+  max-height: 600px;
 `
 
 export const Thead = styled.thead`
-  background-color: #009879;
+  background-color: #3178c6;
+  /* background-color: #009879; */
   color: #ffffff;
   text-align: left;
 `
@@ -44,6 +55,7 @@ export const Tbody = styled.tbody`
   & tr:nth-of-type(even) {
     background-color: #f3f3f3;
   }
+
 `
 
 export const EditIcon = styled(MdEdit)`
