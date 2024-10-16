@@ -218,7 +218,7 @@ export async function VerifyAccountAPI(token, AccId) {
       httpsAgent
     })
     .then((res: any) => {
-      if (res.status === 200) return {data: res.data.data, message: 'SUCCESS'}
+      if (res.status === 200) return {data: res.data.data, message: 'success'}
     })
     .catch((error) => {
       if (error.response) {
@@ -650,5 +650,57 @@ export async function verifyRecipientAlias(params: {accID: string, pixKey: strin
     }
   })
 
+  return response
+}
+
+
+// ---- Decoding
+
+export async function decodeQRCodeAPI(qrCode, datePayment, token) {
+  const sha_signature = await encrypt_string(`post:/v1/qrcode/decoding:${qrCode}`)
+  let data = {
+    document: qrCode,
+    dateForPayment: datePayment,
+    externalIdentifier: `${uuidv4()}${now}`,
+  }
+
+  let response = await api.post(`/v1/qrcode/decoding`, data, {
+    headers:{
+      ...headers,
+      Authorization: `Bearer ${token}`,
+      'Transaction-Hash': sha_signature
+    }
+  }).then((res) => {
+    return res.data.data
+  }).catch((error) => {
+    if (error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message)
+      console.error('Error: ', error)
+    }
+  })
+  console.log(response)
+  return response
+}
+
+export async function consultingQrCodeAPI(token, accountId, alias) {
+  //23114447 2802E904-5C22-DA87-7B5A-B2DAEEEA38B4
+  // var valoresHash = totalAmount + accountIdPagamentoPix + pspId + taxId;
+  let response = await api.get(`/v1/accounts/${accountId}/aliases/BRA/${alias}`, {
+    headers:{
+      ...headers,
+      Authorization: `Bearer ${token}`,
+    }
+  }).then((res) => {
+    return res.data.data
+  }).catch((error) => {
+    if (error.response) {
+      console.error(error.response.data)
+    } else {
+      console.error('Error: ', error.message)
+      console.error('Error: ', error)
+    }
+  })
   return response
 }

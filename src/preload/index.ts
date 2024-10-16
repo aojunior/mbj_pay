@@ -136,6 +136,12 @@ export const API = {
   updateNotAvailable: () => ipcRenderer.on('update-not-available', (_, args) => args),
   updateError: () => ipcRenderer.on('error', (_, error) => error),
 
+
+  // ---
+  decodingQrCode: async (data) => {
+    const result = await ipcRenderer.invoke('decoding', data)
+    return result
+  }
 }
 
 contextBridge.exposeInMainWorld('api', API)

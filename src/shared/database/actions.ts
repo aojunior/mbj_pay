@@ -36,7 +36,7 @@ export async function getInformationsDB() {
 // ACTION TO CLIENT
 export async function createClientDB(data: any) {
   try {
-    const hash = HashConstructor(data.password)
+    const hash = HashConstructor(data.Pass)
     const account = await prisma.client.create({
       data: {
         accountId: data.AccId,
@@ -58,6 +58,7 @@ export async function createClientDB(data: any) {
   }
 }
 
+//used in SQLITE
 export async function insertExistingClientDB(data: any) {
   try {
     const account = await prisma.client.create({
@@ -79,7 +80,7 @@ export async function insertExistingClientDB(data: any) {
         await prisma.mediator.create({
           data: {
             mediatorAccountId: data.MedAccId,
-            mediatorFee: 0.5,
+            mediatorFee: 1,
             accountId: e.accountId
           }
         })
@@ -105,18 +106,24 @@ export async function updateClientDB(data: any) {
         status: data.Status
       }
     }).then(async (e) => {
-      if (e.status === 'REGULAR') {
+      const checkMediator = await prisma.mediator.findFirst({
+        where: {
+          accountId: e.accountId
+        }
+      })
+      if (!checkMediator) {
         const insertMediator = await prisma.mediator.create({
           data: {
             mediatorAccountId: data.MedAccId,
-            mediatorFee: 0.5,
+            mediatorFee: 1,
             accountId: e.accountId            
           }
         })
         return insertMediator
-      } else {
-        return e.status
       }
+    }).catch(err => {
+      console.error(err)
+      return 'Error updating client'
     })
     return 'UPDATED'
   } catch (error) {
@@ -193,7 +200,6 @@ export async function getClientDB2(accountId) {
   }
 }
 
-
 export async function verifyClientDB(data, accountId: string) {
   try {
     await prisma.aliases.create({
@@ -222,16 +228,17 @@ export async function deleteClientDB(accountId: string) {
   }
 }
 
-export async function credentialsDB() {
+export async function credentialsDB(accountId: string){
   try {
-   
     const credentials = await prisma.client.findFirst({
+      where: {
+        accountId: accountId
+      },
       select: {
         hashPassword: true,
         saltKey: true
       }
     })
-   
     return credentials
   } catch (error) {
     console.error(error)
@@ -362,10 +369,14 @@ export async function activeAliasDB(alias: string, accountId: string) {
   }
 }
 
-export async function getAliasesDB() {
+export async function getAliasesDB(accountId: string) {
   const aliasesAll = await prisma.aliases.findMany({
     where: {
-      status: 'ACTIVE'
+      AND: [
+        {
+          accountId
+        }
+      ]
     }
   })
   return aliasesAll
@@ -450,8 +461,17 @@ export async function createfavoriteRecipientDB(data: any) {
 
 export async function updatefavoriteRecipientDB(data: any) {
   try {
-    const favorite = await prisma.favoritesRecipients.update({
-      where: { id: data.id },
+    const favorite = await prisma.favoritesRecipients.updateMany({
+      where:{
+        AND: [
+          { 
+           id: data.id,
+          },
+          {
+            accountId: data.accountId,
+          }
+        ]
+      },
       data: data
     })
     return favorite
@@ -461,20 +481,11 @@ export async function updatefavoriteRecipientDB(data: any) {
   }
 }
 
-export async function getFavoriteRecipientDB() {
+export async function getFavoriteRecipientDB(accountId: string) {
   try {
-    const data = await prisma.favoritesRecipients.findMany()
-    return data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-export async function getFavoriteRecipientOnIdDB(id: string) {
-  try {
-    const data = await prisma.favoritesRecipients.findUnique({
+    const data = await prisma.favoritesRecipients.findMany({
       where: {
-        id: id
+        accountId: accountId
       }
     })
     return data
@@ -483,10 +494,27 @@ export async function getFavoriteRecipientOnIdDB(id: string) {
   }
 }
 
-export async function deleteFavoriteRecipientDB(id: string) {
-  const del = await prisma.favoritesRecipients.delete({
+export async function getFavoriteRecipientOnIdDB(id: string, accountId: string) {
+  try {
+    const data = await prisma.favoritesRecipients.findFirst({
+      where: {
+        AND: [
+          { id: id }, { accountId: accountId }
+        ]
+      }
+    })
+    return data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export async function deleteFavoriteRecipientDB(id: string, accountId: string) {
+  const del = await prisma.favoritesRecipients.deleteMany({
     where: {
-      id: id
+      AND: [
+        { id: id }, { accountId: accountId }
+      ]
     }
   })
   return del
@@ -494,7 +522,11 @@ export async function deleteFavoriteRecipientDB(id: string) {
 // ----------------------------------------------------------------
 
 // ACTION TO Mediator
-export async function getMediatorDB() {
-  const mediator = await prisma.mediator.findFirst()
+export async function getMediatorDB(accountId) {
+  const mediator = await prisma.mediator.findFirst({
+    where: {
+      accountId: accountId
+    }
+  })
   return mediator
 }

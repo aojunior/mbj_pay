@@ -19,19 +19,18 @@ import { DialogExtract } from './DialogExtract'
 import { DetailContent, RowDetails } from '../styles'
 import { DialogRefund } from './DialogRefund'
 import { maskCurrencyInput } from '@shared/utils'
-import { ShowPassword } from '@renderer/components/password'
 import { useSecurity } from '@renderer/context/security.context'
-import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 
 type BalanceProps = {
   balance: any
   extract: any[]
 }
+
 const win: any = window
 export function FormTransf({ balance, extract }: BalanceProps) {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const { security, setSecurity, showSecurity, callSecurityButton } = useSecurity()
+  const { security, setSecurity, callSecurityButton } = useSecurity()
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
@@ -56,7 +55,6 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
   function handleTransactionToOwnAccount() {
     if (handleAvalibleTransaction()) {
-      console.log(amount)
       // win.api.verifyAccount()
       setContentNotification({
         ...contentNotification,
@@ -123,7 +121,6 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
   return (
     <Container style={{ paddingLeft: 15, paddingRight: 15 }}>
-      {showSecurity && <ShowPassword />}
       <ContentInRow>
         <div style={{ display: 'flex', flexDirection: 'column', width: '50%', gap: 25 }}>
           <Card style={{ width: '100%', height: 430 }}>
@@ -209,7 +206,6 @@ export function FormTransf({ balance, extract }: BalanceProps) {
       </ContentInRow>
       {dialogExtractOpen && <DialogExtract toggle={toggleExtractDialog} />}
       {dialogRefundOpen && <DialogRefund toggle={toggleRefundDialog} />}
-      <Notification />
     </Container>
   )
 }

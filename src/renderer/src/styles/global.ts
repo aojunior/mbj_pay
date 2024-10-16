@@ -10,7 +10,7 @@ export const Container = styled.div`
   gap: 10px;
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 20px;
-  overflow-y: scroll;
+  overflow-y: hidden;
 
   &::-webkit-scrollbar {
     -webkit-appearance: none;
@@ -25,6 +25,7 @@ export const Container = styled.div`
   &::-webkit-scrollbar-thumb {
     background-color: #3178c6;
     border-radius: 0.28rem;
+    border: 1px solid  #e4e4e7;
   }
 `
 

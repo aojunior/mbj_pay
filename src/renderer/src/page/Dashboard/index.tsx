@@ -1,49 +1,42 @@
 import { useEffect, useState } from 'react'
 import { FormTransf } from './_components/CashOut'
 import { Button } from '@renderer/styles/global'
-import { Loading } from '@renderer/components/loading'
-import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
+import { useLoading } from '@renderer/context/loading.context'
+import { handleMessageError } from '@shared/handleErrors'
 
 const win: any = window
 
 export default function Dashboard() {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
+  const { setIsLoading } = useLoading()
   const [balance, setBalance] = useState({})
   const [extract, setExtract] = useState<any>([])
-  const [isLoad, setIsLoad] = useState(false)
 
   async function getBalance() {
-    setIsLoad(true)
+    setIsLoading(true)
     const balance = await win.api.verifyBalance()
     const extractToday = await win.api.extractBalanceToday()
-    if(balance.message == 'SUCCESS' && extractToday.message == 'SUCCESS') {
+    if(balance.data && extractToday.data) {
       setBalance(balance.data)
       setExtract(extractToday.data.statement as any[])
-    }
-    if(balance.message == 'NETWORK_ERROR' || extractToday.message == 'NETWORK_ERROR') {
+    } else {
+      let msg
+      !balance.data ?
+      msg = handleMessageError(balance) : msg = handleMessageError(extractToday)
       setBalance({})
       setExtract([])
       setContentNotification({
         ...contentNotification,
         type: 'error',
-        title: 'Erro na comunicação com o servidor',
-        message: 'Erro ao tentar se comunicar com o servidor, por favor tente novamente!'
-      })
-      setShowNotification(true)
-    }
-    if(balance.message === 'GENERIC_ERROR' || extractToday.message === 'GENERIC_ERROR') {
-      setBalance({})
-      setExtract([])
-      setContentNotification({
         title: 'Houve um Erro',
-        message: 'Não foi possível carregar informações. Tente novamente mais tarde.',
-        type: 'error'
+        message: msg.message
       })
-      setShowNotification(true)
     }
-    setIsLoad(false)
+    setShowNotification(true)
+    setIsLoading(false)
   }
+
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
       case 'F5':
@@ -67,9 +60,6 @@ export default function Dashboard() {
         <code>F5</code> - Atualizar
       </Button>
       <FormTransf balance={balance} extract={extract} />
-      {isLoad && <Loading />}
-
-      <Notification />
     </>
   )
 }

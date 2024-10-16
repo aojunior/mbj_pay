@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { useEffect, useState } from 'react'
 import {
   Button,
@@ -10,8 +9,8 @@ import {
   Separator
 } from '../../../styles/global'
 import { DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
-import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
+import { useLoading } from '@renderer/context/loading.context'
 
 type dialogProps = {
   toggle: () => void
@@ -19,11 +18,11 @@ type dialogProps = {
 const win: any = window
 
 export function DialogExtract({ toggle }: dialogProps) {
+  const { setIsLoading } = useLoading()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [input, setInput] = useState('now')
   const dateFilter = { start: '', end: '' }
   const [extract, setExtract] = useState<any>([])
-  const [isLoad, setIsLoad] = useState(false)
 
   const formatDate = (date: string) => {
     let format = date.split('T')
@@ -43,7 +42,7 @@ export function DialogExtract({ toggle }: dialogProps) {
   }
 
   async function filterExtract() {
-    setIsLoad(true)
+    setIsLoading(true)
     let date = new Date().toISOString()
     let now = date.split('T')
     let filter;
@@ -80,7 +79,7 @@ export function DialogExtract({ toggle }: dialogProps) {
         setShowNotification(true)
       }
     }
-    setIsLoad(false)
+    setIsLoading(false)
   }
 
   const handleKeyButton = async (event) => {
@@ -92,8 +91,8 @@ export function DialogExtract({ toggle }: dialogProps) {
   }
 
   useEffect(() => {
+    filterExtract()
     window.addEventListener('keydown', handleKeyButton)
-
     return () => {
       window.removeEventListener('keydown', handleKeyButton)
     }
@@ -155,7 +154,6 @@ export function DialogExtract({ toggle }: dialogProps) {
             </FilterPanel>
           </CardContent>
         </Card>
-
         <Card style={{ width: '100%', height: '100%' }}>
           <CardContent
             style={{ overflowY: 'scroll', height: '100%', justifyContent: 'flex-start' }}
@@ -185,8 +183,6 @@ export function DialogExtract({ toggle }: dialogProps) {
         </Card>
         <Button onClick={toggle}> Fechar </Button>
       </DialogContext>
-
-      {isLoad && <Loading />}
     </Dialog>
   )
 }

@@ -8,14 +8,14 @@ import { useNotification } from '@renderer/context/notification.context'
 import { useAccount } from '@renderer/context/account.context'
 import { Header } from '@renderer/components/header'
 import { delay } from '@shared/utils'
+import { useLoading } from '@renderer/context/loading.context'
 
 const win: any = window
 
 export default function CreateAccount() {
   const { companyData, bankData, ownerData } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-
-  const [ isLoad, setIsLoad ] = useState(false)
+  const { setIsLoading } = useLoading()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -48,7 +48,7 @@ export default function CreateAccount() {
       return
     }
 
-    setIsLoad(true)
+    setIsLoading(true)
     const formatDateForSubmission = (date) => {
       const [day, month, year] = date.split('/')
       return `${year}-${month}-${day}`
@@ -58,10 +58,12 @@ export default function CreateAccount() {
     concatAccount.companyDocument = companyData.companyDocument.replace(/\D/g, '')
     concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated)
     concatAccount.companyPhoneNumber = companyData.companyPhoneNumber.replace(/\D/g, '')
+    concatAccount.companyZipCode = companyData.companyZipCode.replace(/\D/g, '')
     
     concatAccount.ownerBirthday = formatDateForSubmission(ownerData.ownerBirthday)
     concatAccount.ownerDocument = ownerData.ownerDocument.replace(/\D/g, '')
     concatAccount.ownerPhoneNumber = ownerData.ownerPhoneNumber.replace(/\D/g, '')
+    concatAccount.ownerZipCode = ownerData.ownerZipCode.replace(/\D/g, '')
     
     // Formato para 11 dígitos: 9999999-9999
     concatAccount.ownerPhoneNumber = concatAccount.ownerPhoneNumber.replace(/^(\d{7})(\d{4})$/, '$1-$2');
@@ -75,37 +77,25 @@ export default function CreateAccount() {
     if (resp.message == 'SUCCESS') {
       setContentNotification({
         ...contentNotification,
-        title: 'Conta criada com sucesso!',
-        message: 'Sua conta foi criada com sucesso!',
+        title: 'Solicitação enviada com sucesso!',
+        message: 'Sua conta foi enviada para analise com sucesso!',
         type: 'success',
       })
       setShowNotification(true)
-      await sessionStorage.setItem('accID', resp.data.accountId)
-      await win.api.logger({type: 'info', message:'Account created successfully'})
+      await localStorage.setItem('accID', resp.data.accountId)
+      await win.api.logger({type: 'info', message:'Request Account successfully'})
       delay(2000)
       navigate('/account/complete', { replace: true })
     } else {
-      await win.api.logger('error', 'Error creating account: ' + JSON.stringify(resp.data))
-      
-      if(resp.message == 'NETWORK_ERROR') {
-        setContentNotification({
-          ...contentNotification,
-          title: 'Erro na comunicação com o servidor',
-          message: 'Houve um erro ao tentar comunicação com o servidor, tente novamente!',
-          type: 'error'
-        })
-      }
-      if(resp.message == 'GENERIC_ERROR') {
-        setContentNotification({
-          ...contentNotification,
-          title: 'Houve um Erro',
-          message: 'Não foi possível criar a conta, tente novamente!',
-          type: 'error'
-        })
-      }
+      setContentNotification({
+        ...contentNotification,
+        title: 'Houve um Erro',
+        message: resp.message,
+        type: 'error'
+      })
       setShowNotification(true)
     }
-    setIsLoad(false)
+    setIsLoading(false)
   }
   
   return (
@@ -122,9 +112,7 @@ export default function CreateAccount() {
       <Header />
       { location.pathname !== '/' && location.pathname !== '/account/signin' &&
         <Progress />}
-    
         <Outlet />
-
       { location.pathname !== '/' && location.pathname !== '/account/signin' &&
         <ContentInRow
           style={
@@ -140,7 +128,7 @@ export default function CreateAccount() {
           )}
         </ContentInRow>
       }
-      {isLoad && <Loading />}
+      <Loading />
       <Notification />
     </div>
   )

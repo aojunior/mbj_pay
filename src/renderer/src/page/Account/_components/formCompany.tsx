@@ -54,9 +54,17 @@ export function FormCompany() {
     setValue('companyPhoneNumber', value, { shouldValidate: true })
   }
 
+  function maskZipCodeInput(event) {
+    let value = event.target.value.replace(/\D/g, '')
+    if (value.length <= 8) {
+      value = value.replace(/^(\d{5})(\d)/, '$1-$2')
+    }
+    setValue('companyZipCode', value, { shouldValidate: true })
+  }
+
   return (
     <form>
-      <Container style={{height: '80vh', gap: 20, marginTop: 30}}>
+      <Container style={{height: '80vh', gap: 20, marginTop: 30, overflowY: 'scroll'}}>
         <Card>
           <CardHeader>
             <CardTitle> Dados da Empresa</CardTitle>
@@ -160,7 +168,13 @@ export function FormCompany() {
             <ContentInRow style={{ gap: 10 }}>
               <FormInput>
                 <Label>CEP</Label>
-                <Input {...register('companyCodezip')} type="text" placeholder="Ex 01234-567" />
+                <Input
+                {...register('companyZipCode')}
+                type="text"
+                placeholder="Ex 01234-567"
+                maxLength={9}
+                onChange={maskZipCodeInput}
+                />
               </FormInput>
 
               <FormInput style={{ width: '10%' }}>

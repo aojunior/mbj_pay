@@ -47,13 +47,20 @@ export function FormOwner() {
   function maskPhoneInput(event) {
     let value = event.target.value.replace(/\D/g, '')
     value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
-  
     setValue('ownerPhoneNumber', value, { shouldValidate: true })
+  }
+
+  function maskZipCodeInput(event) {
+    let value = event.target.value.replace(/\D/g, '')
+    if (value.length <= 8) {
+      value = value.replace(/^(\d{5})(\d)/, '$1-$2')
+    }
+    setValue('ownerZipCode', value, { shouldValidate: true })
   }
 
   return (
     <form>
-      <Container style={{height: '80vh', gap: 20, marginTop: 30}}>
+      <Container style={{height: '80vh', gap: 20, marginTop: 30, overflowY: 'scroll'}}>
         <Card>
           <CardHeader>
             <CardTitle> Dados do Representante</CardTitle>
@@ -158,7 +165,14 @@ export function FormOwner() {
             <ContentInRow style={{ gap: 10 }}>
               <FormInput>
                 <Label>CEP</Label>
-                <Input {...register('ownerCodezip')} type="text" placeholder="Ex 01234-567" />
+                
+                <Input
+                {...register('ownerZipCode')}
+                maxLength={9}
+                type="text"
+                placeholder="Ex 01234-567" 
+                onChange={maskZipCodeInput}
+                />
               </FormInput>
 
               <FormInput style={{ width: '10%' }}>

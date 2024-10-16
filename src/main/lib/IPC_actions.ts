@@ -1,9 +1,9 @@
 import os from 'node:os'
 import { machineIdSync } from 'node-machine-id'
-import { createAliasesAPI, VerifyAccountAPI, verifyAliasesAPI } from "@shared/api"
 import { createAliasDB, deleteAliasDB, getAliasesDB, getClientDB, updateAliasDB, updateClientDB } from "@shared/database/actions"
 import { currentTime, delay } from "@shared/utils"
-import { getLocationAndIPV6V1 } from '@shared/apiV1'
+import { createAliasesAPIV1, getLocationAndIPV6V1, VerifyAccountAPIV1, verifyAliasesAPIV1 } from '@shared/apiV1'
+import { handleMessageError } from '@shared/handleErrors'
 
 export async function getInformationsFromMachine() {
   const fetch = await getLocationAndIPV6V1()
@@ -48,50 +48,45 @@ export async function getInformationsFromMachine() {
     idDevice: idDevice
   }
   return infos
-  // const saveInDB = await setDataToTermsOfService(infos)
-  // return saveInDB
 }
 
-export async function verify_account(token: string | null, client: any) {
-  let consulta = await VerifyAccountAPI(token, client?.accountId)
-  if (consulta.error) return 'Error'
-
-  let data = {
-    AccId: consulta.account.accountId,
-    AccBank: consulta.account.account,
-    Branch: consulta.account.branch,
-    Status: consulta.accountStatus,
-    MedAccId: consulta.mediatorId
-  }
-  if (data.Status !== client?.status) {
+export async function verify_account(token: string | null, accountId: string) {
+  let consulta = await VerifyAccountAPIV1(token, accountId)
+  if (consulta?.message === 'success') {
+    let data = {
+      AccId: consulta?.data.account.accountId,
+      AccBank: consulta?.data.account.account,
+      Branch: consulta?.data.account.branch,
+      Status: consulta?.data.accountStatus,
+      MedAccId: consulta?.data.mediatorId
+    }
     let update = await updateClientDB(data)
-    return update
+    return { data: await getClientDB(accountId), update: update}
   } else {
-    return 'RELOADED'
+    return handleMessageError(consulta?.message)
   }
 }
 
-export async function create_alias(token: string, accountId: string, status?: string) {
+export async function create_alias(token: string, accountId: string) {
   try {
-    let aliases = await getAliasesDB()
-    if(aliases.length > 0 || status !== 'REGULAR') return // Not Create alias if exist more than one or if have error
-  
-    const createAlias = await createAliasesAPI(token, accountId)
-    if (createAlias.alias.status === 'CLEARING_REGISTRATION_PENDING') {
-      await delay(3000) 
+    let aliases = await getAliasesDB(accountId)
+    if(aliases.length >= 20) return // Not Create alias if exist more than one or if have error
+    const createAlias = await createAliasesAPIV1(token, accountId)
+    if (createAlias.data.alias.status === 'CLEARING_REGISTRATION_PENDING') {
+      aliases = await verifyAndUpdateAliases(token, accountId)
       // Get all, filter and add new alias in the db
-      const verify = await verifyAliasesAPI(token, accountId)
-      const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
-        const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
-        return !matchingItem
-      })
-      filteredArrayAdd.map(async (alias) => {
-        await createAliasDB(alias, String(accountId))
-      })
-      aliases = await getAliasesDB()
+      // const verify = await verifyAliasesAPIV1(token, accountId)
+      // const filteredArrayAdd = verify?.data.aliases.filter((aliasAPI) => {
+      //   const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
+      //   return !matchingItem
+      // })
+      // filteredArrayAdd.map(async (alias) => {
+      //   await createAliasDB(alias, String(accountId))
+      // })
+      // aliases = await getAliasesDB()
       return {aliases, message: 'CREATED'}
     } else {
-      return {aliases: null, message: 'ERROR'}
+      return handleMessageError(createAlias.message)
     }
   } catch(err) {
     return {aliases: null, message: 'ERROR'}
@@ -100,29 +95,24 @@ export async function create_alias(token: string, accountId: string, status?: st
 
 export async function verifyAndUpdateAliases(token: string, accountId: string){
   try {
-    const client = await getClientDB(accountId)
-    const aliases = await getAliasesDB()
-    let verify = await verifyAliasesAPI(token, String(client?.accountId))
-  
-    if(!verify.aliases) {
-      if(verify == 503) {
-        return {data: null, message: 'NETWORK_ERROR'}
-      } else {
-        return {data: null, message: 'GENERIC_ERROR'}
-      }
+    const aliases = await getAliasesDB(accountId)
+    let verify = await verifyAliasesAPIV1(token, accountId)
+    if(verify?.message !== 'success') {
+      return handleMessageError(verify?.message)
     } else {
-      const filteredArrayAdd = verify.aliases.filter((aliasAPI) => {
+      if(verify.data.aliases.length == 0) return {data: await getAliasesDB(accountId), message: 'SUCCESS'}
+      const filteredArrayAdd = verify.data.aliases.filter((aliasAPI) => {
         const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
         return !matchingItem
       })
     
       if (filteredArrayAdd.length > 0) {
         filteredArrayAdd.map(async (alias) => {
-          await createAliasDB(alias, String(client?.accountId))
+          await createAliasDB(alias, accountId)
         })
       }
     
-      const filteredArrayUpdate = verify.aliases.filter((aliasAPI) => {
+      const filteredArrayUpdate = verify.data.aliases.filter((aliasAPI) => {
         const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
         return matchingItem && matchingItem.status !== aliasAPI.status
       })
@@ -134,19 +124,19 @@ export async function verifyAndUpdateAliases(token: string, accountId: string){
       }
       
       const filteredArrayDelete = aliases.filter((aliasDB) => {
-        const matchingItem = verify.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias)
+        const matchingItem = verify.data.aliases.find((aliasAPI) => aliasAPI.name === aliasDB.alias)
         return !matchingItem
       })
     
       if (filteredArrayDelete.length > 0) {
         filteredArrayDelete.map(async (alias) => {
-          await deleteAliasDB(alias.alias, String(client?.accountId))
+          await deleteAliasDB(alias.alias, accountId)
         })
       }
-  
-      return{data: await getAliasesDB(), message: 'SUCCESS'}
+      await delay(3000)
+      return {data: await getAliasesDB(accountId), message: 'SUCCESS'}
     }
   } catch(err) {
-    return
+    return {data: [], message: 'ERROR'}
   }
 }

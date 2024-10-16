@@ -1,3 +1,4 @@
+import { useLoading } from '@renderer/context/loading.context'
 import { styled, keyframes } from 'styled-components'
 
 const Container = styled.dialog`
@@ -29,7 +30,9 @@ const Spinner = styled.div`
 `
 
 export function Loading() {
-  return (
+  const { isLoading } = useLoading()
+
+  return isLoading && (
     <Container id="dialog">
       <Spinner />
     </Container>

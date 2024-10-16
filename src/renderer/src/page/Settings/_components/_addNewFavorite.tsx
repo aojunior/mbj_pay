@@ -116,15 +116,13 @@ function NewFavorite (props: {id: string,}) {
 
   const { register, watch, setValue, getValues, handleSubmit, formState: {errors} } = useForm<z.infer<typeof schemaFavoriteRecipient>>({
     resolver: zodResolver(schemaFavoriteRecipient),
-    // defaultValues: {
-    //   type: '1',
-    // }
+
   })
 
   const customStyles = {
     container: (provided) => ({
       ...provided,
-      width: '400px', // Define a largura do Select
+      width: '400px',
       marginBottom: '10px',
     }),
   };
@@ -188,8 +186,7 @@ function NewFavorite (props: {id: string,}) {
       }) 
       return
     }
-    if(inputValue === '2' && 
-    (String(getValues().bankAccount).length < 3 || String(getValues().bankAgency).length < 2 ||
+    if(inputValue === '2' && (String(getValues().bankAccount).length < 3 || String(getValues().bankAgency).length < 2 ||
     String(getValues().bankBranch).length < 1 || String(getValues().bankCode).length < 1 || !selectedOption) ) {
       setError({
         message: 'Todos os campos são obrigatórios para salvar.',

@@ -1,5 +1,5 @@
 import { Button } from '@renderer/styles/global'
-import { DeleteIcon, Table, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
+import { DeleteIcon, Table, TableWrapper, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import { useEffect, useState } from 'react'
 import { Loading } from '@renderer/components/loading'
 import { Notification } from '@renderer/components/notification'
@@ -12,7 +12,7 @@ import { delay } from '@shared/utils'
 const win: any = window
 
 export function ManageAlias() {
-  const { accState } = useAccount()
+  const { accData } = useAccount()
   const { showSecurity, security, setSecurity, callSecurityButton } = useSecurity()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [aliasData, setAliasData] = useState<any>([])
@@ -20,7 +20,7 @@ export function ManageAlias() {
   const [selectedAlias, setSelectedAlias] = useState('')
 
   const handleCreateAlias = async () => {
-    if (aliasData.length > 0) {
+    if (aliasData.length >= 20) {
       setContentNotification({
         ...contentNotification,
         title: 'Limite de chave Pix atingida',
@@ -33,14 +33,16 @@ export function ManageAlias() {
     setIsLoad(true)
     let create = await win.api.createAlias()
     if (create.message === 'CREATED' ) {
+      console.log(create)
+      await delay(1000)
+      let resp = create.aliases.data
+      setAliasData(resp)
       setContentNotification({
         ...contentNotification,
         title: 'Chave Pix registrada com sucesso!',
-        message:
-          'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
+        message: 'Sua chave Pix foi registrada com sucesso! Aguarde alguns minutos para consultá-la',
         type: 'success'
       })
-      setAliasData(create.aliases)
     } else {
       setContentNotification({
         ...contentNotification,
@@ -61,7 +63,7 @@ export function ManageAlias() {
   const handleDeleteAlias = async () => {
     setIsLoad(true)
     const del = await win.api.deleteAlias(selectedAlias)
-    if(del.message === 'SUCCESS') {
+    if(del.message === 'deleted alias') {
       setAliasData(del.data)
       setContentNotification({
         ...contentNotification,
@@ -69,18 +71,10 @@ export function ManageAlias() {
         message: 'Sua chave Pix foi deletada com sucesso!',
         type: 'warning'
       })
-    }
-    if(del.message === 'NETWORK_ERROR') {
+    } else {
       setContentNotification({
-        title: 'Erro na comunicação com o servidor',
-        message: 'Não foi possível deletar a chave Pix. Tente novamente mais tarde.',
-        type: 'error'
-      })
-    }
-    if(del.message === 'GENERIC_ERROR') {
-      setContentNotification({
-        title: 'Houve um Erro',
-        message: 'Não foi possível deletar a chave Pix. Tente novamente mais tarde.',
+        title: 'Houve um erro ao deletar',
+        message: del.message,
         type: 'error'
       })
     }
@@ -97,23 +91,8 @@ export function ManageAlias() {
     switch (event.key || event) {
       case 'F5':
         setIsLoad(true)
-        if (accState?.status == 'REGULAR') {
+        if (accData?.status == 'REGULAR') {
           let resp = await win.api.updateAlias()
-          console.log(resp)
-          if(resp.message === 'NETWORK_ERROR') {
-            setContentNotification({
-              title: 'Erro na comunicação com o servidor',
-              message: 'Não foi possível atualizar a lista de chaves Pix. Tente novamente mais tarde.',
-              type: 'error'
-            })
-          }
-          if(resp.message == 'GENERIC_ERROR') {
-            setContentNotification({
-              title: 'Houve um Erro',
-              message: 'Não foi possível atualizar a lista de chaves Pix. Tente novamente mais tarde.',
-              type: 'error'
-            })
-          }
           if(resp.message == 'SUCCESS') {
             await delay(3000)
             let resp = await win.api.getAlias()
@@ -124,6 +103,12 @@ export function ManageAlias() {
               message: 'Sua lista de chaves Pix foi atualizada com sucesso!',
               type: 'info'
             })
+          } else {
+            setContentNotification({
+              title: 'Houve um Erro',
+              message: resp.message,
+              type: 'error'
+            })
           }
         }
         setShowNotification(true)
@@ -132,11 +117,15 @@ export function ManageAlias() {
     }
   }
 
+  function hiddenAlias(alias: string) {
+    return alias.slice(0, 19 ).padEnd(36, '**********')
+  }
+
   useEffect(() => {
     (async () => {
       setIsLoad(true)
-      let resp = await win.api.getAlias()
-      setAliasData(resp)
+      let resp = await win.api.updateAlias()
+      setAliasData(resp.data)
       setIsLoad(false)
     })()
     setSecurity({
@@ -179,38 +168,41 @@ export function ManageAlias() {
 
       <Title> Chave Pix </Title>
       <>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>Status</Th>
-              <Th>Chave</Th>
-              <Th>Ações</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {aliasData.map((data) => (
+        <TableWrapper>
+          <Table>
+            <Thead>
               <Tr>
-                <Td>{data.status}</Td>
-                <Td>{data.alias}</Td>
-                <Td>
-                  <DeleteIcon
-                    size={24}
-                    onClick={() => {
-                      callSecurityButton('deleteAlias')
-                      setSelectedAlias(data.alias)
-                    }}
-                  />
-                </Td>
+                <Th>Status</Th>
+                <Th>Chave</Th>
+                <Th>Ações</Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
-
-        <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/1</span>
-        {accState?.status == 'REGULAR' && <Button onClick={() => callSecurityButton('createAlias')}>Criar Chave Pix</Button>}
+            </Thead>
+            <Tbody>
+              {aliasData.map((data) => (
+                <Tr key={data.alias}>
+                  <Td>{data.status}</Td>
+                  <Td>{hiddenAlias(data.alias)}</Td>
+                  <Td>
+                    <DeleteIcon
+                      size={24}
+                      onClick={() => {
+                        callSecurityButton('deleteAlias')
+                        setSelectedAlias(data.alias)
+                      }}
+                    />
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableWrapper>
+        <span style={{ color: '#999', textAlign: 'end' }}>{aliasData.length}/20</span>
+        {(accData?.status == 'REGULAR' && aliasData.length < 20) &&
+        <Button onClick={() => callSecurityButton('createAlias')} style={{width: 140}}>Criar Chave Pix</Button>
+        }
       </>
       <span style={{ color: '#999', textAlign: 'end' }}>
-        Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de ativá-la, para que o
+        Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de usá-la, para que o
         banco central possa registrar a nova chave corretamente.
       </span>
       <Notification />

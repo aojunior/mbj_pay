@@ -1,7 +1,6 @@
 import { useState, useEffect} from 'react'
 import PaymentScreen from '@renderer/page/Home/_components/Payment'
 import StandBy from '@renderer/page/Home/_components/StandBy'
-import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 
 const win: any = window
@@ -33,7 +32,7 @@ function Home() {
     {
       file === null ? <StandBy /> : <PaymentScreen file={file} />
     }
-      <Notification/>
+  
     </>
   )
 }

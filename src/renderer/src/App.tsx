@@ -1,4 +1,5 @@
 import { AccountWrapper } from './context/account.context'
+import { LoadingWrapper } from './context/loading.context'
 import { NotificationWrapper } from './context/notification.context'
 import { SecurityWrapper } from './context/security.context'
 import { UtilsProvider } from './context/utils.context'
@@ -8,15 +9,17 @@ import Root from './router'
 function App(): JSX.Element {
 
   return (
-    <AccountWrapper>
-      <NotificationWrapper>
-        <SecurityWrapper>
-          <UtilsProvider>
-            <Root />
-          </UtilsProvider>
-        </SecurityWrapper>
-      </NotificationWrapper>
-    </AccountWrapper>
+    <LoadingWrapper>
+      <AccountWrapper>
+        <NotificationWrapper>
+          <SecurityWrapper>
+            <UtilsProvider>
+              <Root />
+            </UtilsProvider>
+          </SecurityWrapper>
+        </NotificationWrapper>
+      </AccountWrapper>
+    </LoadingWrapper>
   )
 }
 

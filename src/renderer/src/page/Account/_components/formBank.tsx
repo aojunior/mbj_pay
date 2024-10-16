@@ -56,7 +56,7 @@ export function FormBank() {
 
   return (
     <form>
-      <Container style={{height: '80vh', gap: 20, marginTop: 30, width: '65vw' }}>
+      <Container style={{height: '80vh', gap: 20, marginTop: 30, width: '65vw', overflowY: 'scroll' }}>
         <Card style={{width: '100%'}}>
           <CardHeader>
             <CardTitle>Anexo de Documento</CardTitle>

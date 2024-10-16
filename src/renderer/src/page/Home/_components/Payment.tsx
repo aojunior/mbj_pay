@@ -241,6 +241,17 @@ function PaymentScreen({ file }) {
     }
   }
 
+  const decoding =  async () => {
+    setIsLoad(true)
+    let d = {
+      qrCode: file.instantPayment.textContent,
+      datePayment: file.transactionDate.split('T')[0]
+    }
+    const qr = await win.api.decodingQrCode(d)
+    console.log(qr)
+    setIsLoad(false)
+  }
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyButton)
     return () => {
@@ -315,6 +326,11 @@ function PaymentScreen({ file }) {
           <code>F3</code> - Consultar Pagamento
         </Button>
       </Footer>
+     <Footer style={{marginTop: 10}}>
+      <Button onClick={decoding}>
+        Decodificar QR Code
+      </Button>
+     </Footer>
     </Container>
   )
 }

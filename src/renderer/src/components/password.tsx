@@ -62,9 +62,8 @@ const Button = styled.button`
 `
 
 const win: any = window
-
 export function ShowPassword() {
-  const { textPassword, setTextPassword, security, setSecurity, setShowSecurity } = useSecurity()
+  const { textPassword, setTextPassword, security, setSecurity, setShowSecurity, showSecurity } = useSecurity()
   const [showTextPassword, setShowTextPassword] = useState(false)
   const [error, setError] = useState({
     message: '',
@@ -97,7 +96,7 @@ export function ShowPassword() {
     })
   }
 
-  return (
+  return showSecurity && (
     <form onSubmit={checkPassword}>
       <Container>
         <Section>

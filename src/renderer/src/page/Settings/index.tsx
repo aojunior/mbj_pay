@@ -27,7 +27,7 @@ export default function Settings() {
   }
 
   return (
-    <Container style={{ flexDirection: 'row' }}>
+    <Container style={{ flexDirection: 'row', overflowY: 'hidden'}}>
       <SidebarComponent onSelect={setSelectedSection} select={selectedSection} />
       <Section>{renderContent()}</Section>
     </Container>

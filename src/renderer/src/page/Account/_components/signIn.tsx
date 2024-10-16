@@ -21,16 +21,16 @@ import {
 } from '../../../styles/global'
 import { useNavigate } from 'react-router-dom'
 import { useAccount } from '@renderer/context/account.context'
-import { Loading } from '@renderer/components/loading'
 import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
+import { useLoading } from '@renderer/context/loading.context'
 
 const win: any = window
 export function SignIn() {
   const { setAccount } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [signInData, setSignInData] = useState<any>()
-  const [isLoad, setIsLoad] = useState<boolean>(false)
+  const { setIsLoading } = useLoading()
   const [showTextPassword, setShowTextPassword] = useState(false)
 
   const { register, watch, setValue, getValues } = useForm<z.infer<typeof signInSchema>>({
@@ -57,10 +57,10 @@ export function SignIn() {
 
   async function handleSubmitForm(e) {
     e.preventDefault()
-    setIsLoad(true)
+    setIsLoading(true)
     setValue('taxId', getValues().taxId.replace(/\D/g, ''))
     const acc = await win.api.signIn(getValues())
-    setIsLoad(false)
+    setIsLoading(false)
     if(acc.data) {
       await setAccount(acc.data)
       navigate('/home')
@@ -81,7 +81,6 @@ export function SignIn() {
 
   return (
     <form>
-      {isLoad && <Loading />}
         <Card style={{marginTop: '25%'}}>
           <CardHeader>
             <CardTitle> Entra na Conta MBJ PAY </CardTitle>

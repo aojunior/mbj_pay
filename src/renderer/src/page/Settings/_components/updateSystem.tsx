@@ -50,7 +50,7 @@ export function CheckUpdates() {
             <div style={{ marginTop: 120, justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 30}}>
                 {
                     !updateAvailable &&
-                    <p>Você está com a versão mais atual!</p>
+                    <p>Você está com a versão mais recente!</p>
                 }
                 {
                     updateAvailable && !updateDownloaded && 

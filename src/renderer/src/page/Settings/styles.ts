@@ -19,6 +19,25 @@ export const Section = styled.div`
   flex-direction: column;
 `
 
+export const TableWrapper = styled.div`
+  max-height: 350px;
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.28rem;
+  }
+  &::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 0.37rem rgba(0, 0, 0, 0);
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #3178c6;
+    border: 1px solid  #e4e4e7;
+    border-radius: 0.28rem;
+  }
+`
+
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -27,8 +46,6 @@ export const Table = styled.table`
   font-family: Arial, sans-serif;
   align-self: center;
   text-align: center;
-
-  max-height: 600px;
 `
 
 export const Thead = styled.thead`

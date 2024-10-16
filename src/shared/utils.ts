@@ -37,16 +37,11 @@ export const formatCNPJandCPF = (data: string) => {
 
 export const maskCurrencyInput = (event) => {
   let value = event.target.value
-
-  // Remove todos os caracteres que não sejam números
   value = value.replace(/\D/g, '')
-
-  // Converte para número e formata como moeda
   value = (Number(value) / 100).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL'
   })
-
   event.target.value = value
 }
 

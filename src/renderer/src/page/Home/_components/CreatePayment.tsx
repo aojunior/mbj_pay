@@ -4,8 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { FormInput, Input, Label } from '@renderer/styles/global';
-
+import { maskCurrencyInput } from '@shared/utils'
 import { useUtils } from '@renderer/context/utils.context';
+import { useState } from 'react';
 
 const Container = styled.dialog`
   width: 100%;
@@ -67,16 +68,16 @@ const Button = styled.button`
 // `
 
 const schemaCreatePaymet = z.object({
-    orderID: z.string(),
-    totalAmount: z.number(),
-    recipientComment: z.string().optional(),
-    // other fields...  // add more fields if needed  // example: phone, email, address, etc.  // z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z.string(), z
+  orderID: z.string().optional(),
+  totalAmount: z.number()
+  .min(1, 'O valor é obrigatório'),
+  recipientComment: z.string().optional(),
 })
 
 const win: any = window
 export function CreatePayment() {
   const { toggleModal } = useUtils()
-  const { register, getValues } = useForm<z.infer<typeof schemaCreatePaymet>>({
+  const { register, getValues, setValue } = useForm<z.infer<typeof schemaCreatePaymet>>({
     resolver: zodResolver(schemaCreatePaymet)
   })
 
@@ -86,36 +87,44 @@ export function CreatePayment() {
 
   async function onSubmit(e) {
     e.preventDefault()
-    const a = await win.api.createPaymentFile(getValues()) 
+    let a = await win.api.createPaymentFile(getValues()) 
     console.log(a)
     onClose()
   }
 
-    return (
-        <form onSubmit={onSubmit}>
-            <Container>
-                <Section>
-                    <AiFillCloseSquare style={{ alignSelf: 'flex-end' }} color='#777' size={24} onClick={onClose} cursor='pointer'/>
-                    <Header>
-                        <Title>Novo Pagamento</Title>
-                    </Header>
-                    <FormInput>
-                        <Label>Número do Pedido</Label>
-                        <Input autoFocus type="text" {...register('orderID')} />
-                    </FormInput>
-                    <FormInput>
-                        <Label>Valor Pagamento</Label>
-                        <Input type="text" {...register('totalAmount')} name='totalAmount' />
-                    </FormInput>
-                    <FormInput>
-                        <Label>Descrição do Pagamento</Label>
-                        <Input type="text" {...register('recipientComment')} />
-                    </FormInput>
-                    <Footer style={{marginTop: 20}}>
-                        <Button type="submit">Gerar Pagamento</Button>
-                    </Footer>
-                </Section>
-            </Container>
-        </form>
-    )
+  const handleCurrencyChange = (event) => {
+    maskCurrencyInput(event)
+    let currency = event.target.value.replace(/\D/g, '') / 100
+    setValue('totalAmount', currency, { shouldValidate: true });
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <Container>
+        <Section>
+          <AiFillCloseSquare style={{ alignSelf: 'flex-end' }} color='#777' size={24} onClick={onClose} cursor='pointer'/>
+          <Header>
+            <Title>Novo Pagamento</Title>
+          </Header>
+          <FormInput>
+            <Label>Número do Pedido</Label>
+            <Input autoFocus type="text" {...register('orderID')} />
+          </FormInput>
+          <FormInput>
+            <Label>Valor Pagamento</Label>
+            <Input type="text"
+            onChange={handleCurrencyChange}
+            placeholder="R$ 0.00"/>
+          </FormInput>
+          <FormInput>
+              <Label>Descrição do Pagamento</Label>
+              <Input type="text" {...register('recipientComment')} />
+          </FormInput>
+          <Footer style={{marginTop: 20}}>
+            <Button type="submit">Gerar Pagamento</Button>
+          </Footer>
+        </Section>
+      </Container>
+    </form>
+  )
 }

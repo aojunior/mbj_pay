@@ -23,7 +23,7 @@ export const companySchema = z.object({
   companyNeighborhood: z.string(),
   companyCity: z.string(),
   companyState: z.string(),
-  companyCodezip: z.string()
+  companyZipCode: z.string().regex(/^([\d]{5})-*([\d]{3})$/, 'Formato inválido, use 00000-000')
 })
 
 export const ownerSchema = z.object({
@@ -38,7 +38,7 @@ export const ownerSchema = z.object({
     .string()
     .regex(
       /^\(\d{2}\)\s\d{4,5}-\d{4}$/,
-      'Telefone inválido. Use o formato (00) 0000-0000 ou (00) 00000-0000'
+      'Telefone inválido. Use o formato (00) 00000-0000'
     ),
   ownerAddress: z.string(),
   ownerAddressNumber: z.string(),
@@ -46,7 +46,7 @@ export const ownerSchema = z.object({
   ownerNeighborhood: z.string(),
   ownerCity: z.string(),
   ownerState: z.string(),
-  ownerCodezip: z.string()
+  ownerZipCode: z.string().regex(/^([\d]{5})-*([\d]{3})$/, 'Formato inválido, use 00000-000')
 })
 
 export const bankSchema = z.object({

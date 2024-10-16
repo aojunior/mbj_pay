@@ -13,19 +13,21 @@ import {
 import { ContentSelect, DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
 import { Alert } from '@renderer/components/alert'
 import { useNotification } from '@renderer/context/notification.context'
-import { Notification } from '@renderer/components/notification'
-
+import { useLoading } from '@renderer/context/loading.context'
+import { useSecurity } from '@renderer/context/security.context'
 
 type dialogProps = {
   toggle: () => void
 }
-const win: any = window
 
+const win: any = window
 export function DialogRefund({ toggle }: dialogProps) {
   const { contentNotification, setContentNotification, setShowNotification  } = useNotification()
+  const { security, callSecurityButton } = useSecurity()
+  const { setIsLoading } = useLoading()
   const [arrCodes, setArrCodes] = useState<any>()
   const [reasonCodes, setReasonCodes] = useState('')
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState('now')  
   const dateFilter = { start: '', end: '' }
   const [extract, setExtract] = useState<any>([])
   const [openAlert, setOpenAlert] = useState(false)
@@ -49,22 +51,44 @@ export function DialogRefund({ toggle }: dialogProps) {
   }
 
   async function filterExtract() {
+    setIsLoading(true)
     let date = new Date().toISOString()
     let now = date.split('T')
+    let filter;
 
     if (input == 'other') {
-      await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end)
+      filter = await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end)
     }
     if (input == '7day') {
-      await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0])
+      filter = await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0])
     }
     if (input == 'now') {
-      await win.api.extractBalanceFilter(now[0], now[0])
+      filter = await win.api.extractBalanceFilter(now[0], now[0])
     }
-
-    await win.api.responseExtractFilter((data) => {
-      setExtract(data.statement)
-    })
+    if(filter.message == 'SUCCESS') {
+      setExtract(filter.data.statement as any[])
+    } else {
+      if(filter.message == 'NETWORK_ERROR') {
+        setExtract([])
+        setContentNotification({
+          ...contentNotification,
+          type: 'error',
+          title: 'Erro na comunicação com o servidor',
+          message: 'Erro ao tentar se comunicar com o servidor, por favor tente novamente!'
+        })
+        setShowNotification(true)
+      }
+      if(filter.message === 'GENERIC_ERROR') {
+        setExtract([])
+        setContentNotification({
+          title: 'Houve um Erro',
+          message: 'Não foi possível carregar informações. Tente novamente mais tarde.',
+          type: 'error'
+        })
+        setShowNotification(true)
+      }
+    }
+    setIsLoading(false)
   }
 
   const handleKeyButton = async (event) => {
@@ -98,19 +122,28 @@ export function DialogRefund({ toggle }: dialogProps) {
     setOpenAlert(!openAlert)
   }
 
-  async function handle() {
+  async function handleRefundConfirmed() {
+    setIsLoading(true)
     const res = await win.api.refundInstantPayment(item, reasonCodes)
     console.log(res)
+    setIsLoading(false)
   }
 
   useEffect(() => {
     getRefundCodes()
+    filterExtract()
     window.addEventListener('keydown', handleKeyButton)
-
     return () => {
       window.removeEventListener('keydown', handleKeyButton)
     }
   }, [])
+
+  useEffect(() => {
+    if (security.confirmed && security.context == 'refund') {
+      setOpenAlert(false)
+      handleRefundConfirmed()
+    }
+  }, [security.confirmed])
 
   return (
     <Dialog id="dialog">
@@ -171,7 +204,7 @@ export function DialogRefund({ toggle }: dialogProps) {
                   <input type="date" onChange={(e) => (dateFilter.end = e.currentTarget.value)} />
                 </div>
               )}
-              <Button onClick={() => handleKeyButton('F1')}>Buscar</Button>
+              <Button onClick={() => handleKeyButton('F1')} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-evenly'}}> <code>F1</code> Buscar</Button>
             </FilterPanel>
           </CardContent>
         </Card>
@@ -198,9 +231,7 @@ export function DialogRefund({ toggle }: dialogProps) {
         </Card>
         <Button onClick={toggle}> Fechar </Button>
       </DialogContext>
-          
-      <Notification 
-      />
+
       {openAlert && (
         <Alert
           title="Confirmar Devolução?"
@@ -209,7 +240,7 @@ export function DialogRefund({ toggle }: dialogProps) {
           nameButton="Devolver"
           typeButton="delete"
           toggle={toggleAlert}
-          actionButton={handle}
+          actionButton={() => callSecurityButton('refund')}
         />
       )}
     </Dialog>

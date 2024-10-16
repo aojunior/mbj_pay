@@ -105,7 +105,7 @@ return response
 export async function VerifyAccountAPIV1(token, AccId) {
   let response = await api.get(`/accounts`, {
     data:{
-      accountID: AccId,
+      accountId: AccId,
       token: token
     }
   }).then((res: any) => {
@@ -151,170 +151,91 @@ export async function DeleteAccountAPI(token, AccId) {
 }
 
 // ======  Alias
-export async function createAliasesAPI(token: string, AccId: string) {
-  const sha_signature = await encrypt_string(`post:/v1/accounts/${AccId}/aliases:`)
+export async function createAliasesAPIV1(token: string, AccId: string) {
   const data = {
-    externalIdentifier: `${uuidv4()}${now}`,
-    alias: {
-      type: 'EVP'
-    }
+    token: token,
+    accountId: AccId,
   }
-  let response = await api
-    .post(`/v1/accounts/${AccId}/aliases`, data, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: '*/*',
-        'Transaction-Hash': sha_signature
-      },
-      
-    })
-    .then((res): any => {
-      if (res.status == 202) return res.data
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.log(error.response.data)
-        return error.response.status
-      } else {
-        console.log('Error', error.message)
-        return error.response.status
-      }
-    })
-
-  return response.data
+  let response = await api.post(`/aliases`, data).then((res): any => {
+    logger.info('Creating alias')
+    if (res.status == 202) return res.data
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
 }
 
-export async function deleteAliases(token: string, AccId: string, alias: string) {
-  const sha_signature = await encrypt_string(`delete:/v1/accounts/${AccId}/aliases/${alias}`)
-
-  let response = await api
-    .delete(`/v1/accounts/${AccId}/aliases/${alias}`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: '*/*',
-        'Transaction-Hash': sha_signature
-      },
-      
-    })
-    .then((res: any) => {
-      if (res.status == 202) return res.status
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.message)
-        return error.response.status
-      } else {
-        console.error('Error', error.message)
-        return error.response.status
-      }
-    })
+export async function deleteAliasesV1(token: string, AccId: string, alias: string) {
+  let data = {
+    token: token,
+    accountId: AccId,
+    alias: alias
+  }
+  let response = await api.delete(`/aliases`, {
+    data
+  }).then((res: any) => {
+    if (res.status == 202) return {data: res.status, message: 'deleted'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
 
   return response
 }
 
-export async function verifyAliasesAPI(token: string, AccId: string) {
-  let response = await api
-    .get(`/v1/accounts/${AccId}/aliases`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`
-      },
-      
-    })
-    .then((res) => {
-      if (res.status == 200 || res.status == 202) return res.data.data
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.response.data)
-        return error.response.status
-      } else {
-        console.error('Error', error.message)
-        return error.response.status
-      }
-    })
+export async function verifyAliasesAPIV1(token: string, AccId: string) {
+  let response = await api.get(`/aliases`, {
+    data: {
+      token: token,
+      accountId: AccId
+    }
+  }).then((res) => {
+    if (res.status == 200) {
+      return {data: res.data, message: 'success'}
+    }
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
 
   return response
 }
 
 // ======  Instant Payment
-export async function createInstantPayment(
+export async function createInstantPaymentV1(
   paymentFile: any,
   token: string,
   AccId: string,
   Alias: string,
+  MedId: string,
   MedFee: number,
 ) {
-  let response
-  let totalAmount = Number(paymentFile.totalAmount)
-  let recipientAmount = Number(paymentFile.totalAmount) | 0
-  const valorHash = Alias + recipientAmount + AccId + String(recipientAmount)
-  const sha_signature = await encrypt_string(valorHash)
-
-  const paymentData = {
-    externalIdentifier: uuidv4() + now,
-    totalAmount: totalAmount,
-    currency: 'BRL',
-    paymentInfo: {
-      transactionType: 'InstantPayment',
-      instantPayment: {
-        alias: Alias,
-        qrCodeImageGenerationSpecification: {
-          errorCorrectionLevel: 'M',
-          imageWidth: 400,
-          generateImageRendering: true
-        },
-        expiration: 1800,
-        additionalInformation: [
-          {
-            name: paymentFile.orderID,
-            content: paymentFile.customerID + '-' + paymentFile.orderID,
-            showToPayer: true
-          }
-        ]
-      }
-    },
-    recipients: [
-      {
-        account: {
-          accountId: AccId
-        },
-        amount: totalAmount,
-        currency: 'BRL',
-        mediatorFee: MedFee,
-        recipientComment: paymentFile.recipientComment
-      }
-    ],
-    callbackAddress: 'https://testemockqr.requestcatcher.com/'
+  const data = {
+    paymentFile,
+    token,
+    accountId: AccId,
+    alias: Alias,
+    mediatorId: MedId,
+    mediatorFee: MedFee
   }
 
-  response = await api
-    .post(`/v1/payments`, paymentData, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        'Transaction-Hash': sha_signature
-      },
-      
-    })
-    .then((res): any => {
-      if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.response.data)
-      } else {
-        console.error('Error: ', error.message)
-      }
-      if(error.response.status == 503) {
-        return {data: null, message: 'NETWORK_ERROR'}
-      } else {
-        return {data: null, message: 'GENERIC_ERROR'}
-      }
-    })
-    return response
+  let response = await api.post(`/payments`, data).then((res): any => {
+    if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+
+  return response
 }
 
 export async function verifyInstantPayment(transactionid: string, token: string, AccId: string) {
@@ -348,35 +269,19 @@ export async function verifyInstantPayment(transactionid: string, token: string,
 }
 
 // ======  Balance
-export async function verifyBalance(token: string, accountId: string) {
-  let response
-  const db = await getClientDB(accountId)
-  const sha_signature = await encrypt_string(String(db?.accountId))
-
-  response = await api.get(`/v2/accounts/${String(db?.accountId)}/balance`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Transaction-Hash': sha_signature
-      },
-      
-    })
-    .then((res): any => {
-      if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.response.data)
-      } else {
-        console.error('Error: ', error.message)
-      }
-      if(error.response.status == 503) {
-        return {data: null, message: 'NETWORK_ERROR'}
-      } else {
-        return {data: null, message: 'GENERIC_ERROR'}
-      }
-    })
+export async function verifyBalanceV1(token: string, accountId: string) {
+  let data = {
+    token,
+    accountId
+  }
+  let response = await api.get(`/balance`, {data}).then((res): any => {
+    if (res.status == 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
 
   return response
 }
@@ -526,7 +431,6 @@ export async function verifyRecipientAlias(params: {accID: string, pixKey: strin
       ...headers,
       Authorization: `Bearer ${token}`
     },
-    
   }).then((res) => {
     return res.data
   }).catch((error) => {
