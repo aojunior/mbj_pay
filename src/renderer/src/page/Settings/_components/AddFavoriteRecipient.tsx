@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 import { DeleteIcon, EditIcon, Table, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import NewFavorite from './_addNewFavorite';
 import { useSecurity } from '@renderer/context/security.context';
-import { Loading } from '@renderer/components/loading';
-import { ShowPassword } from '@renderer/components/password';
 import { Button } from '@renderer/styles/global';
+import { useLoading } from '@renderer/context/loading.context';
 
 const win: any = window
 export function AddFavoriteRecipient() {
-  const { showSecurity, security, callSecurityButton } = useSecurity()
-  const [isLoad, setIsLoad] = useState(false)
+  const { security, callSecurityButton } = useSecurity()
+  const { setIsLoading } = useLoading()
   const [favList, setFavList] = useState<any>([])
   const [idFav, setIdFav] = useState<string>('')
 
@@ -22,15 +21,17 @@ export function AddFavoriteRecipient() {
   }
 
   async function updateFavList() {
+    setIsLoading(true)
     const fav = await win.api.getFavoriteRecipients()
     setFavList(fav)
+    setIsLoading(false)
   }
   
   async function handleDelete(id: string) {
-    setIsLoad(true)
+    setIsLoading(true)
     await win.api.deleteFavoriteRecipients(id)
     updateFavList()
-    setIsLoad(false)
+    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -47,23 +48,21 @@ export function AddFavoriteRecipient() {
 
   return (
     <div
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      paddingLeft: 40,
-      paddingRight: 40,
-      gap: 15
-    }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft: 40,
+        paddingRight: 40,
+        gap: 15
+      }}
     >
-      {isLoad && <Loading />}
-      { showSecurity && <ShowPassword/> }
       <Title>Meus Favoritos</Title>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
       
       <Table>
         <Thead>
           <Tr>
             <Th>Apelido</Th>
-            <Th>Chave</Th>
+            <Th>Identificador</Th>
             <Th>Tipo</Th>
             <Th>Ações</Th>
           </Tr>

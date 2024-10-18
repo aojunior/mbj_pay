@@ -1,3 +1,5 @@
+import { Loading } from './components/loading'
+import { Notification } from './components/notification'
 import { AccountWrapper } from './context/account.context'
 import { LoadingWrapper } from './context/loading.context'
 import { NotificationWrapper } from './context/notification.context'
@@ -14,6 +16,8 @@ function App(): JSX.Element {
         <NotificationWrapper>
           <SecurityWrapper>
             <UtilsProvider>
+              <Notification />
+              <Loading />
               <Root />
             </UtilsProvider>
           </SecurityWrapper>

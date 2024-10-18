@@ -14,9 +14,6 @@ const StandBy: React.FC = () => {
       break;
     }
   }
-    
-  // const win: any = window
-  // await win.api.logger({type: 'info', message: 'test successfull'})
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyButton)
@@ -24,7 +21,7 @@ const StandBy: React.FC = () => {
       window.removeEventListener('keydown', handleKeyButton)
     }
   }, [])
-  
+
   return (
     <Container style={{ alignItems: 'center', justifyContent: 'center', gap: 40 }}>
       <h2>Aguardando Arquivo</h2>

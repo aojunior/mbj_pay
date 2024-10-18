@@ -2,53 +2,45 @@ import { Button, ContentInRow, IconEye, IconEyeInvisible, Separator } from '@ren
 import { Input, Label, Title, WrapIpunt } from '../styles'
 import { formatCNPJandCPF } from '@shared/utils'
 import { useEffect, useState } from 'react'
-import { Notification } from '@renderer/components/notification'
-import { Loading } from '@renderer/components/loading'
-import { ShowPassword } from '@renderer/components/password'
 import { useSecurity } from '@renderer/context/security.context'
 import { useNotification } from '@renderer/context/notification.context'
 import { useAccount } from '@renderer/context/account.context'
+import { useLoading } from '@renderer/context/loading.context'
 
 const win: any = window
-
 export function MyAccount() {
-  const { setShowSecurity, showSecurity, security, setSecurity } = useSecurity()
-  const { accData, getAccount } = useAccount()
+  const { setShowSecurity, security, setSecurity } = useSecurity()
+  const { accData, setAccount, getAccount } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const [isLoad, setIsLoad] = useState(false)
+  const { setIsLoading } = useLoading()
   const [showTextPassword, setShowTextPassword] = useState(false)
   const [pass, setPass] = useState('')
 
   const handleVerifyAccount = async () => {
-    setIsLoad(true)
+    setIsLoading(true)
     const verify = await win.api.verifyAccount()
-    if (verify == 'UPDATED') {
-      getAccount()
+    if (verify.message == 'UPDATED') {
+      setAccount(verify.data)
+
       setContentNotification({
         ...contentNotification,
         title: 'Sua conta foi atualizada!',
         type: 'info'
-      })
-    } else if (verify == 'RELOADED') {
-      setContentNotification({
-        ...contentNotification,
-        title: 'Sua conta foi atualizada!',
-        type: 'info'
-      })
-    } else {
-      setContentNotification({
-        ...contentNotification,
-        title: 'Erro',
-        message: 'Houve um erro ao tentar verificar a conta, tente novamente!',
-        type: 'error'
       })
       setShowNotification(true)
+      getAccount()
+    } else {
+      setContentNotification({
+        title: 'Houve um Erro',
+        message: verify.message,
+        type: 'error'
+      })
     }
-    setIsLoad(false)
+    setIsLoading(false)
   }
 
   const handleDeleteAccount = async () => {
-    setIsLoad(true)
+    setIsLoading(true)
     const del = await win.api.deleteAccount()
     if (del == 'DELETED') {
       setContentNotification({
@@ -82,7 +74,7 @@ export function MyAccount() {
         type: 'error'
       })
     }
-    setIsLoad(false)
+    setIsLoading(false)
     setShowNotification(true)
   }
 
@@ -90,7 +82,7 @@ export function MyAccount() {
     if (pass.length < 4) {
       setContentNotification({
         ...contentNotification,
-        title: "Senha Inva'lida",
+        title: "Senha Inválida",
         message: 'Por favor, preencha o campo de senha com no mínimo 4 caracteres',
         type: 'error'
       })
@@ -113,6 +105,7 @@ export function MyAccount() {
       confirmed: false
     })
   } 
+
   function togglePassword() {
     setShowTextPassword(!showTextPassword)
   }
@@ -137,10 +130,7 @@ export function MyAccount() {
         gap: 15
       }}
     >
-      {isLoad && <Loading />}
       <Title> Informações da Conta</Title>
-
-      {showSecurity && <ShowPassword />}
       <ContentInRow>
         <WrapIpunt>
           <Label>Razão Social</Label>
@@ -207,15 +197,6 @@ export function MyAccount() {
       </ContentInRow>
 
       <ContentInRow style={{ width: '80%' }}>
-        {/* <WrapIpunt>
-          <Label>Data de Criação</Label>
-          <Input
-            type="text"
-            value={formatDate(accData?.createdAT)}
-            style={{ width: 120, textAlign: 'center' }}
-          />
-        </WrapIpunt> */}
-
         <WrapIpunt>
           <Label>Status da Conta</Label>
           <Input type="text" value={accData?.status} style={{ width: 120, textAlign: 'center' }} />
@@ -226,7 +207,6 @@ export function MyAccount() {
 
       <ContentInRow>
         <Button onClick={handleVerifyAccount}>Verificar</Button>
-
         <Button
         style={{ backgroundColor: accData?.status !== 'CLOSED' ? 'red' : '#777',  }} 
         onClick={handleDeleteAccount}
@@ -234,8 +214,6 @@ export function MyAccount() {
           Inativar Conta
         </Button>
       </ContentInRow>
-
-      <Notification />
     </div>
   )
 }

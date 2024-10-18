@@ -13,17 +13,11 @@ import {
 } from './lib'
 import {
   verifyInstantPayment,
-  verifyBalance,
-  extractBalanceToday,
-  extractBalanceFilter,
   refundInstantPayment,
   refundCodes,
-  deleteAliases,
   createInstantPayment,
   DeleteAccountAPI,
   verifyRecipientAlias,
-  decodeQRCodeAPI,
-  createAccountAPI,
 } from '../shared/api'
 import { shell } from 'electron/common'
 import AutoLaunch from 'auto-launch'
@@ -37,7 +31,6 @@ import {
   deleteFavoriteRecipientDB,
   getAliasesDB,
   getClientDB,
-  getClientDB2,
   getFavoriteRecipientDB,
   getFavoriteRecipientOnIdDB,
   getMediatorDB,
@@ -52,7 +45,7 @@ import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
 import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
 import { logger } from '@shared/logger';
-import { createAccountAPIV1, createInstantPaymentV1, deleteAliasesV1, getPspListAPIV1, tokenGeneratorAPIV1 } from '@shared/apiV1';
+import { consultingDestinationV1, createAccountAPIV1, decodePaymentV1, deleteAliasesV1, extractBalanceFilterV1, extractBalanceTodayV1, fakePaymentAPIV1, getPspListAPIV1, tokenGeneratorAPIV1, verifyBalanceV1 } from '@shared/apiV1';
 import { handleMessageError } from '@shared/handleErrors';
 
 let mainWindow: BrowserWindow
@@ -325,6 +318,9 @@ ipcMain.handle('reload-app', () => {
 
 ipcMain.handle('token_generator', async () => {
   let token = await tokenGeneratorAPIV1()
+  if(token?.message !== 'success') {
+    handleMessageError(token)
+  }
   return token
 })
 
@@ -351,7 +347,7 @@ ipcMain.handle('create_account', async (_, formData) => {
     formData.latitude = infos?.latitude
     formData.longitude = infos?.longitude
     formData.ip = infos?.ip
- 
+     
     let newAccount = await createAccountAPIV1(formData, token)
     
     if(newAccount?.message !== 'success') {
@@ -373,7 +369,7 @@ ipcMain.handle('create_account', async (_, formData) => {
         Pass: formData.password
       }
       infos.accountId = newAccount?.data.account.accountId
-      let saveClientInDb = await createClientDB(data).then(e => {
+      let result = await createClientDB(data).then(e => {
         logger.info('save new account on database')
         return {data: e, message: 'SUCCESS'}
       }).catch(err => {
@@ -381,7 +377,7 @@ ipcMain.handle('create_account', async (_, formData) => {
         return {data: null, message: 'ERROR on creating new account'}
       })
       await setDataToTermsOfServiceDB(infos)
-      return saveClientInDb
+      return result
     }
   } catch (error) {
     logger.error(error)
@@ -393,17 +389,23 @@ ipcMain.handle('get_account', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const db = await getClientDB(account.accountId)
-  return db
+  const result = await getClientDB(account.accountId)
+  return result
 })
 
-ipcMain.handle('verify_account', async (_, accountId) => {
+ipcMain.handle('verify_account', async () => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const data = await verify_account(token, accountId)
-  await create_alias(token, accountId)
-  return data
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const alias = await getAliasesDB(account.accountId)
+  const result = await verify_account(token, account.accountId)
+  if(alias.length = 0) {
+    await create_alias(token, account.accountId)
+  }
+  return result
 })
 
 ipcMain.handle('delete_account', async () => {
@@ -440,8 +442,8 @@ ipcMain.handle('create-alias', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const resp = await create_alias(token, account.accountId)
-  return resp
+  const result = await create_alias(token, account.accountId)
+  return result
 })
 
 ipcMain.handle('update-alias', async () => {
@@ -451,7 +453,8 @@ ipcMain.handle('update-alias', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  return await verifyAndUpdateAliases(token, account.accountId)
+  const result =  await verifyAndUpdateAliases(token, account.accountId)
+  return result
 })
 
 ipcMain.handle('get_alias', async () => {
@@ -459,8 +462,8 @@ ipcMain.handle('get_alias', async () => {
   .then((response) => response)
   let account = JSON.parse(parse)
   
-  const aliases = await getAliasesDB(account.accountId)
-  return aliases
+  const result = await getAliasesDB(account.accountId)
+  return result
 })
 
 ipcMain.handle('delete-alias', async (_, alias) => {
@@ -470,20 +473,20 @@ ipcMain.handle('delete-alias', async (_, alias) => {
   .then((response) => response)
   let account = JSON.parse(parse)
   
-  let deleteAlias = await deleteAliasesV1(token, account.accountId, alias)
-  if (deleteAlias?.data == 202) {
+  let result = await deleteAliasesV1(token, account.accountId, alias)
+  if (result?.data == 202) {
     await deleteAliasDB(alias, account.accountId)
     return {data: await getAliasesDB(account.accountId), message: 'deleted alias'}
   } else {
-    return handleMessageError(deleteAlias?.message)    
+    return handleMessageError(result?.message)    
   }
 })
 // ----------------------------------------------------------------
 
 // HANDLE INSTANT PAYMENT
 ipcMain.handle('create_payment_file', async (_, data) => {
-  const payment = await createReqFile(data)
-  return payment
+  const result = await createReqFile(data)
+  return result
 })
 
 ipcMain.handle('verify_instantpayment', async () => {
@@ -513,8 +516,8 @@ ipcMain.handle('cancel_instantpayment', async (_, data) => {
     message: 'OPERACAO CANCELADA PELO USUARIO',
     status: 'CANCELED',
   }
-  const update = await updateTransanctionDB(file)
-  return update
+  const result = await updateTransanctionDB(file)
+  return result
 })
 
 ipcMain.handle('finished_instantpayment', async(_, data) => {
@@ -532,17 +535,87 @@ ipcMain.handle('finished_instantpayment', async(_, data) => {
 })
 // ----------------------------------------------------------------
 
-
-// HANDLE DECODING
+// HANDLE TESTING PAYMENT
 ipcMain.handle('decoding', async (_, data) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-
   const {qrCode, datePayment} = data
 
-  const payment = await decodeQRCodeAPI(qrCode, datePayment, token)
-  return payment
+  const result = await decodePaymentV1(qrCode, datePayment, token)
+  return result
+})
+
+ipcMain.handle('verify_destination', async (_, accountDest) => {
+  let token = await mainWindow.webContents.executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  let data = {
+    accountId: account.accountId,
+    alias: accountDest.pixKey
+  }
+ 
+  // if(account.accountId == '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C') {
+  //   data['accountId'] = '86F5EBC4-8807-6034-171C-8D2BD9D0B674'
+  //   data['alias'] = '259fb239-34f4-4c17-8187-8efa3910351c'
+  // } else {
+  //   data['accountId'] = '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C'
+  //   data['alias'] = '3da3f68b-fb91-42e9-9f0c-da87aa8a7881'
+  // }
+
+  const result = await consultingDestinationV1(data, token)
+  return result
+})
+
+ipcMain.handle('fake_payment', async (_, data) => {
+  let token = await mainWindow.webContents
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  let acc = {}
+  if(account.accountId == '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C') {
+    acc['accountId']  = '86F5EBC4-8807-6034-171C-8D2BD9D0B674'
+    acc['accountRecipient'] = '316849'
+    acc['branch'] = '427'
+  } else {
+    acc['accountId']  = '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C'
+    acc['accountRecipient'] = '441414'
+    acc['branchRecipient'] = '427'
+  }
+
+  const result = await fakePaymentAPIV1(data, acc, token)
+  
+  return result
+})
+
+// ----------------------------------------------------------------
+
+// HANDLE CASH OUT
+ipcMain.handle('cash_out', async (_, data) => {
+  let token = await mainWindow.webContents
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  let acc = {}
+  if(account.accountId == '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C') {
+    acc['accountId']  = '86F5EBC4-8807-6034-171C-8D2BD9D0B674'
+    acc['accountRecipient'] = '316849'
+    acc['branch'] = '427'
+  } else {
+    acc['accountId']  = '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C'
+    acc['accountRecipient'] = '441414'
+    acc['branchRecipient'] = '427'
+  }
+
+  const result = await fakePaymentAPIV1(data, acc, token)
+  
+  return result
 })
 // ----------------------------------------------------------------
 
@@ -554,11 +627,11 @@ ipcMain.handle('verify_balance', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const response = await verifyBalance(token, account.accountId)
-  if(response.success !== 'success') {
-    return handleMessageError(response.message)
+  const result = await verifyBalanceV1(token, account.accountId)
+  if(result.message !== 'success') {
+    return handleMessageError(result.message)
   } else {
-    return response
+    return result
   }
 })
 
@@ -569,36 +642,39 @@ ipcMain.handle('extract_balance_today', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const response = await extractBalanceToday(token, String(account.accountId))
-  if(response.success !== 'success') {
-    return handleMessageError(response.message)
+  const result = await extractBalanceTodayV1(token, account.accountId)
+
+  if(result.message !== 'success') {
+    return handleMessageError(result.message)
   } else {
-    return response
+    return result
   }
 })
 
 ipcMain.handle('extract_balance_filter', async (_, args) => {
   let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-
-  const db = await getClientDB(account.accountId)
-  const response = await extractBalanceFilter(token, args[0], args[1], String(db?.accountId))
-  return response
+  const result = await extractBalanceFilterV1(token, args[0], args[1], account.accountId)
+  if(result.message == 'success') {
+    return result
+  } else {
+    return handleMessageError(result)
+  }
 })
 // ----------------------------------------------------------------
 
 // HANDLER REFUND
 ipcMain.handle('refund_codes', async () => {
   let token = await mainWindow.webContents
-    .executeJavaScript(`sessionStorage.getItem('token')`)
-    .then((response) => response)
-  const response = await refundCodes(token)
+  .executeJavaScript(`sessionStorage.getItem('token')`)
+  .then((response) => response)
+  const result = await refundCodes(token)
 
-  return response.data.returnCodes
+  return result.data.returnCodes
 })
 
 ipcMain.handle('refund', async (_, args) => {
@@ -609,53 +685,53 @@ ipcMain.handle('refund', async (_, args) => {
   .then((response) => response)
   let account = JSON.parse(parse)
   const mediator = await getMediatorDB(account.accountId)
-  const response = await refundInstantPayment(args[0], args[1], token, account.accountId, Number(mediator?.mediatorFee))
-  return response
+  const result = await refundInstantPayment(args[0], args[1], token, account.accountId, Number(mediator?.mediatorFee))
+  return result
 })
 // ----------------------------------------------------------------
 
 // HANDLER RECIPIENT ALIAS
 ipcMain.handle('create_favorite_recipient', async (_, data) => {
-  const create = await createfavoriteRecipientDB(data)
-  return create
+  const result = await createfavoriteRecipientDB(data)
+  return result
 })
 
 ipcMain.handle('update_favorite_recipient', async (_, data) => {
-  const create = await updatefavoriteRecipientDB(data)
-  return create
+  const result = await updatefavoriteRecipientDB(data)
+  return result
 })
 
 ipcMain.handle('verify_recipientAlias', async (_, data) => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const response = await verifyRecipientAlias(data, token)
+  const result = await verifyRecipientAlias(data, token)
 
-  return response
+  return result
 })
 
 ipcMain.handle('get_favorite_recipients', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const response = await getFavoriteRecipientDB(account.accountId)
-  return response
+  const result = await getFavoriteRecipientDB(account.accountId)
+  return result
 })
 
 ipcMain.handle('get_favorite_recipient_on_id', async (_, data) => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const response = await getFavoriteRecipientOnIdDB(data, account.accountId)
-  return response
+  const result = await getFavoriteRecipientOnIdDB(data, account.accountId)
+  return result
 })
 
 ipcMain.handle('delete_favorite_recipient', async (_, id) => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const del = await deleteFavoriteRecipientDB(id, account.accountId)
-  return del
+  const result = await deleteFavoriteRecipientDB(id, account.accountId)
+  return result
 })
 // ----------------------------------------------------------------
 
@@ -666,8 +742,8 @@ ipcMain.handle('security', async (_, password) => {
   .then((response) => response)
   let account = JSON.parse(parse)
   const response = await credentialsDB(account.accountId)
-  const checkPass = await HashComparator(password, response)
-  return checkPass
+  const result = await HashComparator(password, response)
+  return result
 })
 
 ipcMain.handle('alter_password', async (_, passData) => {
@@ -675,8 +751,8 @@ ipcMain.handle('alter_password', async (_, passData) => {
   .executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  const alterPassword = await alterPasswordDB(passData, account.accountId)
-  return alterPassword
+  const result = await alterPasswordDB(passData, account.accountId)
+  return result
 })
 
 ipcMain.handle('signIn', async (_, formData) => {
@@ -687,8 +763,8 @@ ipcMain.handle('signIn', async (_, formData) => {
       saltKey: data?.saltKey,
       hashPassword: data?.hashPassword
     }
-    const verifyP = await HashComparator(formData.password, passHash)
-    if(verifyP) {
+    const verifyPassword = await HashComparator(formData.password, passHash)
+    if(verifyPassword) {
       const client = await getClientDB(data?.accountId)
       logger.info('SignIn successfully')
       return {data: client, message: ''}
@@ -704,14 +780,14 @@ ipcMain.handle('psp_list', async () => {
   let token = await mainWindow.webContents
   .executeJavaScript(`sessionStorage.getItem('token')`)
   .then((response) => response)
-  const psp = await getPspListAPIV1(token)
-  return psp
+  const result = await getPspListAPIV1(token)
+  return result
 })
 
 ipcMain.on('logger', async (_, data) => {
-  data.type == 'info' && logger.info(data.message)
-  data.type == 'error' && logger.error(data.message)
-  data.type == 'warn' && logger.warn(data.message)
+  data.type == 'info' && logger.info(data.msg)
+  data.type == 'error' && logger.error(data.msg)
+  data.type == 'warn' && logger.warn(data.msg)
 })
 
 ipcMain.on('check-for-updates', async () => {

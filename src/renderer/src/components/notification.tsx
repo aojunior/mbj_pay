@@ -6,7 +6,6 @@ import { MdOutlineInfo } from 'react-icons/md'
 import { GiConfirmed } from 'react-icons/gi'
 import { useNotification } from '@renderer/context/notification.context'
 
-
 const fadeIn = keyframes`
   from {
     opacity: 0;

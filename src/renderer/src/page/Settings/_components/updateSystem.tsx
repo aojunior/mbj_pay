@@ -1,12 +1,12 @@
-import { Loading } from "@renderer/components/loading"
 import { Button } from "@renderer/styles/global"
 import { useState } from "react"
 import { useEffect } from "react";
 import { Title } from "../styles";
+import { useLoading } from "@renderer/context/loading.context";
 
 const win: any = window
 export function CheckUpdates() {
-    const [isLoad, setLoad] = useState(false)
+    const { setIsLoading } = useLoading()
     const [updateAvailable, setUpdateAvailable] = useState(false);
     const [updateDownloaded, setUpdateDownloaded] = useState(false);
   
@@ -28,13 +28,13 @@ export function CheckUpdates() {
     }, []);
     
     const handleUpdate = () => {
-    setLoad(true)
-    win.api.downloadUpdate();
-    setLoad(false)
+        setIsLoading(true)
+        win.api.downloadUpdate();
+        setIsLoading(false)
     };
 
     const handleRestart = () => {
-    win.api.sendRestartApp();
+        win.api.sendRestartApp();
     };
 
     return (
@@ -45,7 +45,6 @@ export function CheckUpdates() {
             gap: 15
             }}
         >
-            {isLoad && <Loading />}
             <Title> Verificar se há atualização </Title>
             <div style={{ marginTop: 120, justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 30}}>
                 {

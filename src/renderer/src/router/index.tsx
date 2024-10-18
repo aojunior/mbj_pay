@@ -25,18 +25,17 @@ export default function Root(): JSX.Element {
   //Refresh Token in 5 minutes and storage in SessionStorage
   const refreshAndStorageToken = useCallback(async () => {
     const newToken = await win.api.tokenGenerator()
-
-    if (newToken == undefined || newToken == null) {
+    if (!newToken.data) {
       setContentNotification({
         ...contentNotification,
         type: 'error',
-        title: 'Error Connecting to server',
-        message: 'Error when trying to connect to the server'
+        title: 'Houve um Erro',
+        message: newToken.message
       })
       setShowNotification(true)
-      await win.api.logger('error', `Access token not available`)
+    } else {
+      sessionStorage.setItem('token', newToken.data)
     }
-    sessionStorage.setItem('token', newToken)
   }, [])
 
   useEffect(() => {
@@ -47,7 +46,6 @@ export default function Root(): JSX.Element {
   useEffect(() => {
     const checkClient = async () => {
       const data = await getAccount()
-
       if (data?.accountId) {
         navigate('/home', { replace: true })
       } else {
@@ -62,7 +60,7 @@ export default function Root(): JSX.Element {
   if(isLoad) {
     return <Loading />
   }
-
+  
   return (
     <Routes>
       <Route element={<CreateAccount />} >

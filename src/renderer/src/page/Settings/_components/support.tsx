@@ -6,13 +6,14 @@ export function Support() {
 
     return (
         <div
-        style={{
-        paddingLeft: 40,
-        paddingRight: 40,
-        gap: 15,
-        display: "flex",
-        flexDirection: "column"
-        }}>
+            style={{
+                paddingLeft: 40,
+                paddingRight: 40,
+                gap: 15,
+                display: "flex",
+                flexDirection: "column"
+            }}
+        >
             <Title> Suporte Técnico </Title>
 
             <span>
@@ -25,9 +26,6 @@ export function Support() {
             >
                 Acessar Suporte
             </Button>
-
-
-
         </div>
     )
 }

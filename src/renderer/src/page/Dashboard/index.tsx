@@ -6,7 +6,6 @@ import { useLoading } from '@renderer/context/loading.context'
 import { handleMessageError } from '@shared/handleErrors'
 
 const win: any = window
-
 export default function Dashboard() {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { setIsLoading } = useLoading()
@@ -15,26 +14,35 @@ export default function Dashboard() {
 
   async function getBalance() {
     setIsLoading(true)
-    const balance = await win.api.verifyBalance()
-    const extractToday = await win.api.extractBalanceToday()
-    if(balance.data && extractToday.data) {
-      setBalance(balance.data)
-      setExtract(extractToday.data.statement as any[])
-    } else {
-      let msg
-      !balance.data ?
-      msg = handleMessageError(balance) : msg = handleMessageError(extractToday)
-      setBalance({})
-      setExtract([])
-      setContentNotification({
-        ...contentNotification,
-        type: 'error',
-        title: 'Houve um Erro',
-        message: msg.message
-      })
-    }
-    setShowNotification(true)
-    setIsLoading(false)
+    try{
+      const [verifyBalanceResult, extractBalanceResult] = await Promise.all([
+        win.api.verifyBalance(),
+        win.api.extractBalanceToday()
+      ])
+      if (verifyBalanceResult.message === 'success' && extractBalanceResult.message === 'success') {
+        const verifyBalanceData = verifyBalanceResult.data;
+        const extractBalanceData = extractBalanceResult.data;
+        setBalance(verifyBalanceData)
+        setExtract(extractBalanceData.statement as any[])
+      } else {
+        let msg
+        !verifyBalanceResult.data ?
+        msg = handleMessageError(verifyBalanceResult) : msg = handleMessageError(extractBalanceResult)
+        setBalance({})
+        setExtract([])
+        setContentNotification({
+          ...contentNotification,
+          type: 'error',
+          title: 'Houve um Erro',
+          message: msg.message
+        })
+        setShowNotification(true)
+      }    
+    } catch (error) {
+      await win.api.logger('error', error);
+    } finally {
+      setIsLoading(false)
+    }      
   }
 
   const handleKeyButton = async (event) => {

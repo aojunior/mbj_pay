@@ -11,6 +11,7 @@ import {
 import { DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
 import { useNotification } from '@renderer/context/notification.context'
 import { useLoading } from '@renderer/context/loading.context'
+import { today } from '@shared/utils'
 
 type dialogProps = {
   toggle: () => void
@@ -28,7 +29,7 @@ export function DialogExtract({ toggle }: dialogProps) {
     let format = date.split('T')
     let dateRaw = format[0].split('-')
     let hoursRaw = format[1].split('-')
-    let dateFormated = `${dateRaw[2]}-${dateRaw[1]}-${dateRaw[0]}`
+    let dateFormated = `${dateRaw[2]}/${dateRaw[1]}/${dateRaw[0]}`
     let hoursFormated = hoursRaw[0]
     return dateFormated + ' ' + hoursFormated
   }
@@ -43,41 +44,27 @@ export function DialogExtract({ toggle }: dialogProps) {
 
   async function filterExtract() {
     setIsLoading(true)
-    let date = new Date().toISOString()
-    let now = date.split('T')
     let filter;
-
     if (input == 'other') {
       filter = await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end)
     }
     if (input == '7day') {
-      filter = await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0])
+      filter = await win.api.extractBalanceFilter(subtractDaysFromDate(), today)
     }
     if (input == 'now') {
-      filter = await win.api.extractBalanceFilter(now[0], now[0])
+      filter = await win.api.extractBalanceToday()
     }
-    if(filter.message == 'SUCCESS') {
+    if(filter.message == 'success') {
       setExtract(filter.data.statement as any[])
-    } else {
-      if(filter.message == 'NETWORK_ERROR') {
-        setExtract([])
-        setContentNotification({
-          ...contentNotification,
-          type: 'error',
-          title: 'Erro na comunicação com o servidor',
-          message: 'Erro ao tentar se comunicar com o servidor, por favor tente novamente!'
-        })
-        setShowNotification(true)
-      }
-      if(filter.message === 'GENERIC_ERROR') {
-        setExtract([])
-        setContentNotification({
-          title: 'Houve um Erro',
-          message: 'Não foi possível carregar informações. Tente novamente mais tarde.',
-          type: 'error'
-        })
-        setShowNotification(true)
-      }
+    } else {    
+      setExtract([])
+      setContentNotification({
+        ...contentNotification,
+        type: 'error',
+        title: 'Houve um Erro',
+        message: filter.message
+      })
+      setShowNotification(true)
     }
     setIsLoading(false)
   }
@@ -150,11 +137,11 @@ export function DialogExtract({ toggle }: dialogProps) {
                   <input type="date" onChange={(e) => (dateFilter.end = e.currentTarget.value)} />
                 </div>
               )}
-              <Button onClick={() => handleKeyButton('F1')}>Buscar</Button>
+              <Button onClick={() => handleKeyButton('F1')} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-evenly'}}> <code>F1</code> Buscar</Button>
             </FilterPanel>
           </CardContent>
         </Card>
-        <Card style={{ width: '100%', height: '100%' }}>
+        <Card style={{ width: '100%', height: 320 }}>
           <CardContent
             style={{ overflowY: 'scroll', height: '100%', justifyContent: 'flex-start' }}
           >

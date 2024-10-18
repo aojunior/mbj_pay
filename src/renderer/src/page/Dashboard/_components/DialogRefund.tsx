@@ -15,6 +15,8 @@ import { Alert } from '@renderer/components/alert'
 import { useNotification } from '@renderer/context/notification.context'
 import { useLoading } from '@renderer/context/loading.context'
 import { useSecurity } from '@renderer/context/security.context'
+import { useUtils } from '@renderer/context/utils.context'
+import { today } from '@shared/utils'
 
 type dialogProps = {
   toggle: () => void
@@ -25,19 +27,22 @@ export function DialogRefund({ toggle }: dialogProps) {
   const { contentNotification, setContentNotification, setShowNotification  } = useNotification()
   const { security, callSecurityButton } = useSecurity()
   const { setIsLoading } = useLoading()
+  const { openModal, toggleModal } = useUtils()
+  
   const [arrCodes, setArrCodes] = useState<any>()
   const [reasonCodes, setReasonCodes] = useState('')
   const [input, setInput] = useState('now')  
   const dateFilter = { start: '', end: '' }
   const [extract, setExtract] = useState<any>([])
   const [openAlert, setOpenAlert] = useState(false)
+
   const [item, setItem] = useState<any>()
 
   const formatDate = (date: string) => {
     let format = date.split('T')
     let dateRaw = format[0].split('-')
     let hoursRaw = format[1].split('-')
-    let dateFormated = `${dateRaw[2]}-${dateRaw[1]}-${dateRaw[0]}`
+    let dateFormated = `${dateRaw[2]}/${dateRaw[1]}/${dateRaw[0]}`
     let hoursFormated = hoursRaw[0]
     return dateFormated + ' ' + hoursFormated
   }
@@ -52,44 +57,31 @@ export function DialogRefund({ toggle }: dialogProps) {
 
   async function filterExtract() {
     setIsLoading(true)
-    let date = new Date().toISOString()
-    let now = date.split('T')
     let filter;
-
     if (input == 'other') {
       filter = await win.api.extractBalanceFilter(dateFilter.start, dateFilter.end)
     }
     if (input == '7day') {
-      filter = await win.api.extractBalanceFilter(subtractDaysFromDate(), now[0])
+      filter = await win.api.extractBalanceFilter(subtractDaysFromDate(), today)
     }
     if (input == 'now') {
-      filter = await win.api.extractBalanceFilter(now[0], now[0])
+      filter = await win.api.extractBalanceToday()
     }
-    if(filter.message == 'SUCCESS') {
+    if(filter.message == 'success') {
       setExtract(filter.data.statement as any[])
-    } else {
-      if(filter.message == 'NETWORK_ERROR') {
-        setExtract([])
-        setContentNotification({
-          ...contentNotification,
-          type: 'error',
-          title: 'Erro na comunicação com o servidor',
-          message: 'Erro ao tentar se comunicar com o servidor, por favor tente novamente!'
-        })
-        setShowNotification(true)
-      }
-      if(filter.message === 'GENERIC_ERROR') {
-        setExtract([])
-        setContentNotification({
-          title: 'Houve um Erro',
-          message: 'Não foi possível carregar informações. Tente novamente mais tarde.',
-          type: 'error'
-        })
-        setShowNotification(true)
-      }
+    } else {    
+      setExtract([])
+      setContentNotification({
+        ...contentNotification,
+        type: 'error',
+        title: 'Houve um Erro',
+        message: filter.message
+      })
+      setShowNotification(true)
     }
     setIsLoading(false)
   }
+
 
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
@@ -204,12 +196,12 @@ export function DialogRefund({ toggle }: dialogProps) {
                   <input type="date" onChange={(e) => (dateFilter.end = e.currentTarget.value)} />
                 </div>
               )}
-              <Button onClick={() => handleKeyButton('F1')} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-evenly'}}> <code>F1</code> Buscar</Button>
+              <Button onClick={() => handleKeyButton('F1')} style={{display: 'flex',  alignItems: 'center', justifyContent: 'space-evenly'}}> <code>F1</code> Buscar</Button>
             </FilterPanel>
           </CardContent>
         </Card>
 
-        <Card style={{ width: '100%', height: '100%' }}>
+        <Card style={{ width: '100%', height: 280 }}>
           <CardContent
             style={{ overflowY: 'scroll', height: '100%', justifyContent: 'flex-start' }}
           >
@@ -232,14 +224,14 @@ export function DialogRefund({ toggle }: dialogProps) {
         <Button onClick={toggle}> Fechar </Button>
       </DialogContext>
 
-      {openAlert && (
+      {openModal.modalName == 'alertRefund' && openModal.open && (
         <Alert
           title="Confirmar Devolução?"
           message="Deseja confirmar a devolução deste pagamento?"
           messageAdd="Este tipo de ação é irreversível."
           nameButton="Devolver"
           typeButton="delete"
-          toggle={toggleAlert}
+          toggle={() => toggleModal('refund', !openModal.open)}
           actionButton={() => callSecurityButton('refund')}
         />
       )}

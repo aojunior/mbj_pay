@@ -61,7 +61,7 @@ export async function verify_account(token: string | null, accountId: string) {
       MedAccId: consulta?.data.mediatorId
     }
     let update = await updateClientDB(data)
-    return { data: await getClientDB(accountId), update: update}
+    return { data: await getClientDB(accountId), message: update}
   } else {
     return handleMessageError(consulta?.message)
   }
@@ -74,16 +74,6 @@ export async function create_alias(token: string, accountId: string) {
     const createAlias = await createAliasesAPIV1(token, accountId)
     if (createAlias.data.alias.status === 'CLEARING_REGISTRATION_PENDING') {
       aliases = await verifyAndUpdateAliases(token, accountId)
-      // Get all, filter and add new alias in the db
-      // const verify = await verifyAliasesAPIV1(token, accountId)
-      // const filteredArrayAdd = verify?.data.aliases.filter((aliasAPI) => {
-      //   const matchingItem = aliases.find((aliasDB) => aliasDB.alias === aliasAPI.name)
-      //   return !matchingItem
-      // })
-      // filteredArrayAdd.map(async (alias) => {
-      //   await createAliasDB(alias, String(accountId))
-      // })
-      // aliases = await getAliasesDB()
       return {aliases, message: 'CREATED'}
     } else {
       return handleMessageError(createAlias.message)

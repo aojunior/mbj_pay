@@ -371,12 +371,8 @@ export async function activeAliasDB(alias: string, accountId: string) {
 
 export async function getAliasesDB(accountId: string) {
   const aliasesAll = await prisma.aliases.findMany({
-    where: {
-      AND: [
-        {
-          accountId
-        }
-      ]
+    where: {  
+      accountId
     }
   })
   return aliasesAll
@@ -406,7 +402,6 @@ export async function createTransanctionDB(data) {
         identify: data.identify // nro pedido sistema
       }
     })
-    console.log(transaction)
     return transaction
   } catch (error) {
     console.error(error)

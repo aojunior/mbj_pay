@@ -1,7 +1,5 @@
 
 export function handleStatusError(status) {
-    console.log('Error:', status);
-    // Add your own status handling logic here
     if(status == 400) {
         return {data: null, message: 'Bad Request'}
     }

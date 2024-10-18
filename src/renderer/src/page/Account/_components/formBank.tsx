@@ -14,20 +14,21 @@ import {
   ContentInRow,
   Container,
   IconEyeInvisible,
-  IconEye
+  IconEye,
+  Button
 } from '../../../styles/global'
 import { useState } from 'react'
 import { useAccount } from '@renderer/context/account.context'
 
 export function FormBank() {
   const { bankData, setBankData } = useAccount()
-
   const { control, register, watch } = useForm<z.infer<typeof bankSchema>>({
     resolver: zodResolver(bankSchema),
     defaultValues: bankData
   })
   const [showPassword, setShowPassword] = useState(false)
-
+  const [selectDoc, setSelectDoc] = useState('RG')
+  const [pathContrato, setPathContrato] = useState('')
   watch((e) => setBankData({ ...bankData, password: e.password }))
 
   function getImg(e) {
@@ -44,6 +45,13 @@ export function FormBank() {
             break
           case 'imgRgBack':
             setBankData({ ...bankData, imgRgBack: lerImg.result })
+            break
+          case 'imgCnh':
+            setBankData({ ...bankData, imgCnh: lerImg.result })
+            break
+          case 'pdfContrato':
+            setPathContrato(e.files[0].name)
+            setBankData({ ...bankData, pdfContrato: lerImg.result })
             break
         }
       }
@@ -100,13 +108,16 @@ export function FormBank() {
                   <UploadImg>
                     <ImgPreview src={bankData.imgSelfie} />
                   </UploadImg>
-                  <PlaceholderImage>
+                  <PlaceholderImage 
+                  style={{backgroundColor: bankData.imgSelfie ? "#3178c6" : "#fff", 
+                  color: bankData.imgSelfie ? "#fff" : "#444" }}>
                     <InputImg
                       {...field}
                       name="imgSelfie"
                       id="imgSelfie"
                       type="file"
                       accept="image/x-png, image/jpeg, image/jpg"
+                      
                       onChange={(e) => {
                         getImg(e.target)
                       }}
@@ -117,35 +128,89 @@ export function FormBank() {
               )}
             />
 
-            <ContantImg>
-              <UploadImg>
-                <ImgPreview src={bankData.imgRgFront} />
-              </UploadImg>
-              <PlaceholderImage>
-                <InputImg
-                  name="imgRgFront"
-                  type="file"
-                  accept="image/x-png, image/jpeg, image/jpg"
-                  onChange={(e) => getImg(e.target)}
-                />
-                <span>Selecionar RG Frente</span>
-              </PlaceholderImage>
-            </ContantImg>
+            <Label style={{marginTop: 40}}>Selecione o Documento desejado para envio:</Label>
+            <ContentInRow style={{gap: 50}}>
+              <Button onClick={() => setSelectDoc('RG')} type='button' style={{background: selectDoc == 'RG'? '#3178c6' : '#0000', color: selectDoc == 'RG'? '#fff' : '#444'}}>RG</Button>
+              <Button onClick={() => setSelectDoc('CNH')} type='button' style={{background: selectDoc == 'CNH'? '#3178c6' : '#0000', color: selectDoc == 'CNH'? '#fff' : '#444'}}>CNH</Button>
+            </ContentInRow>
 
-            <ContantImg>
-              <UploadImg>
-                <ImgPreview src={bankData.imgRgBack} />
-              </UploadImg>
-              <PlaceholderImage>
+            {
+              selectDoc == 'RG' ?
+              <>
+                <ContantImg>
+                  <UploadImg>
+                    <ImgPreview src={bankData.imgRgFront} />
+                  </UploadImg>
+                  <PlaceholderImage
+                  style={{backgroundColor: bankData.imgRgFront ? "#3178c6" : "#fff", 
+                    color: bankData.imgRgFront ? "#fff" : "#444" }}
+                  >
+                    <InputImg
+                      name="imgRgFront"
+                      type="file"
+                      accept="image/x-png, image/jpeg, image/jpg"
+                      onChange={(e) => getImg(e.target)}
+                    />
+                    <span>Selecionar RG Frente</span>
+                  </PlaceholderImage>
+                </ContantImg>
+
+                <ContantImg>
+                  <UploadImg>
+                    <ImgPreview src={bankData.imgRgBack} />
+                  </UploadImg>
+                  <PlaceholderImage
+                    style={{backgroundColor: bankData.imgRgBack ? "#3178c6" : "#fff", 
+                      color: bankData.imgRgBack ? "#fff" : "#444" }}
+                  >
+                    <InputImg
+                      name="imgRgBack"
+                      type="file"
+                      accept="image/x-png, image/jpeg, image/jpg"
+                      onChange={(e) => getImg(e.target)}
+                    />
+                    <span>Selecionar RG Verso</span>
+                  </PlaceholderImage>
+                </ContantImg>
+              </>
+              :
+              <ContantImg>
+                <UploadImg>
+                  <ImgPreview src={bankData.imgCnh} />
+                </UploadImg>
+                <PlaceholderImage
+                style={{backgroundColor: bankData.imgCnh ? "#3178c6" : "#fff", 
+                  color: bankData.imgCnh ? "#fff" : "#444" }}
+                >
+                  <InputImg
+                    name="imgCnh"
+                    type="file"
+                    accept="image/x-png, image/jpeg, image/jpg"
+                    onChange={(e) => getImg(e.target)}
+                  />
+                  <span>Selecionar CNH</span>
+                </PlaceholderImage>
+              </ContantImg>
+            }
+
+            <ContantImg style={{marginTop: 40, flexDirection: 'column'}}>
+              <div style={{ borderWidth: 2, borderColor: '#c4c4c7', borderRadius: 5, padding: 2}}>
+                <p>{pathContrato}</p>
+              </div>
+              <PlaceholderImage
+                style={{backgroundColor: bankData.pdfContrato ? "#3178c6" : "#fff", 
+                  color: bankData.pdfContrato ? "#fff" : "#444" }}
+              >
                 <InputImg
-                  name="imgRgBack"
+                  name="pdfContrato"
                   type="file"
-                  accept="image/x-png, image/jpeg, image/jpg"
+                  accept="application/pdf"
                   onChange={(e) => getImg(e.target)}
                 />
-                <span>Selecionar RG Verso</span>
+                <span>Selecionar Contrato Social</span>
               </PlaceholderImage>
             </ContantImg>
+            
           </CardContent>
         </Card>
       </Container>

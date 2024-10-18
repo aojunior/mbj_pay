@@ -23,8 +23,8 @@ export const API = {
     const del = await ipcRenderer.invoke('delete_account')
     return del
   },
-  verifyAccount: async (accountId) => {
-    const verify = await ipcRenderer.invoke('verify_account', accountId)
+  verifyAccount: async () => {
+    const verify = await ipcRenderer.invoke('verify_account')
     return verify
   },
   getAccount: async () => {
@@ -127,7 +127,7 @@ export const API = {
     return psps
   },
 
-  logger: (data) => ipcRenderer.send('logger', data),
+  logger: (type, msg) => ipcRenderer.send('logger', {type, msg}),
 
   checkUpdates: () => ipcRenderer.send('check-for-updates'),
   onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update_available', callback),
@@ -136,10 +136,21 @@ export const API = {
   updateNotAvailable: () => ipcRenderer.on('update-not-available', (_, args) => args),
   updateError: () => ipcRenderer.on('error', (_, error) => error),
 
-
   // ---
   decodingQrCode: async (data) => {
     const result = await ipcRenderer.invoke('decoding', data)
+    return result
+  },
+  verifyDestination: (data) =>{
+    const result = ipcRenderer.invoke('verify_sender', data)
+    return result
+  },
+  fakePayment: async (data) => {
+    const result = ipcRenderer.invoke('fake_payment', data)
+    return result
+  },
+  cashOut: async (data) => {
+    const result = ipcRenderer.invoke('cash_out', data)
     return result
   }
 }

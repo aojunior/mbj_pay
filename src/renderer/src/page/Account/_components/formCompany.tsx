@@ -23,16 +23,10 @@ export function FormCompany() {
     resolver: zodResolver(companySchema),
     defaultValues: companyData
   })
+
   watch(register => setCompanyData(register))
 
-  const maskDateInput = (event) => {
-    let value = event.target.value.replace(/\D/g, '')
-    if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2')
-    if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
-    setValue('companyDateCreated', value, { shouldValidate: true })
-  }
-
-  function maskCNPJInput(event) {
+  const maskCNPJInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
 
     if (value.length <= 14) {
@@ -43,8 +37,13 @@ export function FormCompany() {
     }
     setValue('companyDocument', value, { shouldValidate: true })
   }
-
-  function maskPhoneInput(event) {
+  const maskDateInput = (event) => {
+    let value = event.target.value.replace(/\D/g, '')
+    if (value.length > 2) value = value.replace(/^(\d{2})(\d)/, '$1/$2')
+    if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
+    setValue('companyDateCreated', value, { shouldValidate: true })
+  }
+  const maskPhoneInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
     if (value.length <= 10) {
       value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
@@ -53,8 +52,7 @@ export function FormCompany() {
     }
     setValue('companyPhoneNumber', value, { shouldValidate: true })
   }
-
-  function maskZipCodeInput(event) {
+  const maskZipCodeInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
     if (value.length <= 8) {
       value = value.replace(/^(\d{5})(\d)/, '$1-$2')

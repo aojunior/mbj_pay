@@ -32,23 +32,6 @@ export function Progress() {
 
   return (
     <ProgressHeader >
-      {/* <ProgressBar>
-        <ProgressBarFill style={{ width: percent[data], display: 'flex', alignItems: 'center' }}>
-          <Div
-            style={{
-              left: data == 2 ? '96%' : '100%'
-            }}
-          >
-            {data == 0 ? (
-              <MdBusiness size={24} color="#fff" />
-            ) : data == 1 ? (
-              <MdPerson size={24} color="#fff" />
-            ) : (
-              <MdMonitor size={24} color="#fff" />
-            )}
-          </Div>
-        </ProgressBarFill>
-      </ProgressBar> */}
       <ProgressBar>
         <ProgressBarFill style={{ width: fillProgress, display: 'flex', alignItems: 'center' }}>
           <Div
@@ -56,8 +39,9 @@ export function Progress() {
               left: fillProgress == '100%'? '96%' : '100%'
             }}
           >
-           
-          { location.pathname == '/account/terms' ? (
+
+          { 
+            location.pathname == '/account/terms' ? (
               <MdInfo size={24} color="#fff" />
             ) : location.pathname == '/account/company' ? (
               <MdBusiness size={24} color="#fff" />
@@ -67,7 +51,8 @@ export function Progress() {
               <MdMonitor size={24} color="#fff" />
             ) : (
               <FiCheckCircle size={24} color="#fff" />
-          )}
+            )
+          }
           </Div>
         </ProgressBarFill>
       </ProgressBar>

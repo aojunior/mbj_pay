@@ -51,8 +51,10 @@ export const ownerSchema = z.object({
 
 export const bankSchema = z.object({
   imgSelfie: z.string(),
-  imgRgFront: z.string(),
-  imgRgBack: z.string(),
+  imgRgFront: z.string().optional(),
+  imgRgBack: z.string().optional(),
+  imgCnh: z.string().optional(),
+  pdfContrato: z.string(),
   password: z.string().min(4)
 })
 

@@ -3,10 +3,9 @@ import styled from 'styled-components';
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { FormInput, Input, Label } from '@renderer/styles/global';
+import { Button, FormInput, Input, Label, TextArea } from '@renderer/styles/global';
 import { maskCurrencyInput } from '@shared/utils'
 import { useUtils } from '@renderer/context/utils.context';
-import { useState } from 'react';
 
 const Container = styled.dialog`
   width: 100%;
@@ -49,35 +48,22 @@ const Footer = styled.div`
   justify-content: space-evenly;
   gap: 15px;
 `
-const Button = styled.button`
-  border: 1px solid #e4e4e7;
-  font-weight: 600;
-  background-color: #3178c6;
-  padding: 5px;
-  border-radius: 4px;
-  font-size: 16px;
-  color: #fff;
-  &:hover {
-    cursor: pointer;
-  }
+const ErrorMsg = styled.p`
+  font-size: 14px;
+  font-weight: 300;
+  color: red;  
 `
-// const ErrorMsg = styled.p`
-//   font-size: 14px;
-//   font-weight: 300;
-//   color: red;  
-// `
 
 const schemaCreatePaymet = z.object({
-  orderID: z.string().optional(),
-  totalAmount: z.number()
-  .min(1, 'O valor é obrigatório'),
+  orderID: z.string().min(1, 'Necessário o identificador do pedido'),
+  totalAmount: z.number(),
   recipientComment: z.string().optional(),
 })
 
 const win: any = window
 export function CreatePayment() {
   const { toggleModal } = useUtils()
-  const { register, getValues, setValue } = useForm<z.infer<typeof schemaCreatePaymet>>({
+  const { register, getValues, setValue, handleSubmit,  formState: {errors} } = useForm<z.infer<typeof schemaCreatePaymet>>({
     resolver: zodResolver(schemaCreatePaymet)
   })
 
@@ -85,11 +71,12 @@ export function CreatePayment() {
     toggleModal('', false)
   }
 
-  async function onSubmit(e) {
-    e.preventDefault()
-    let a = await win.api.createPaymentFile(getValues()) 
-    console.log(a)
-    onClose()
+  async function onSubmit() {
+
+    if(!errors.orderID?.message && !errors.totalAmount?.message) {
+      await win.api.createPaymentFile(getValues())
+      onClose()
+    }
   }
 
   const handleCurrencyChange = (event) => {
@@ -99,29 +86,39 @@ export function CreatePayment() {
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Container>
         <Section>
           <AiFillCloseSquare style={{ alignSelf: 'flex-end' }} color='#777' size={24} onClick={onClose} cursor='pointer'/>
           <Header>
             <Title>Novo Pagamento</Title>
           </Header>
-          <FormInput>
-            <Label>Número do Pedido</Label>
-            <Input autoFocus type="text" {...register('orderID')} />
-          </FormInput>
-          <FormInput>
-            <Label>Valor Pagamento</Label>
-            <Input type="text"
-            onChange={handleCurrencyChange}
-            placeholder="R$ 0.00"/>
-          </FormInput>
-          <FormInput>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+            <FormInput>
+              <Label>Número do Pedido</Label>
+              <Input autoFocus type="text" {...register('orderID')}  
+              style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}/>
+              {errors.orderID?.message && (
+              <ErrorMsg>{errors.orderID?.message}</ErrorMsg>
+              )}
+            </FormInput>
+            <FormInput>
+              <Label>Valor Pagamento</Label>
+              <Input style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
+                onChange={handleCurrencyChange}
+                placeholder="R$ 0.00"
+              />
+              {errors.totalAmount?.message && (
+              <ErrorMsg>{errors.totalAmount?.message}</ErrorMsg>
+              )}
+            </FormInput>
+            <FormInput>
               <Label>Descrição do Pagamento</Label>
-              <Input type="text" {...register('recipientComment')} />
-          </FormInput>
-          <Footer style={{marginTop: 20}}>
-            <Button type="submit">Gerar Pagamento</Button>
+              <TextArea {...register('recipientComment')} />
+            </FormInput>
+          </div>
+          <Footer style={{marginTop: 10}}>
+            <Button type="submit" style={{width: 'auto'}}>Gerar Pagamento</Button>
           </Footer>
         </Section>
       </Container>

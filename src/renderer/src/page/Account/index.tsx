@@ -1,9 +1,6 @@
-import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Progress } from './_components/Progress'
 import { Button, ContentInRow } from '../../styles/global'
-import { Notification } from '@renderer/components/notification'
-import { Loading } from '@renderer/components/loading'
 import { useNotification } from '@renderer/context/notification.context'
 import { useAccount } from '@renderer/context/account.context'
 import { Header } from '@renderer/components/header'
@@ -11,7 +8,6 @@ import { delay } from '@shared/utils'
 import { useLoading } from '@renderer/context/loading.context'
 
 const win: any = window
-
 export default function CreateAccount() {
   const { companyData, bankData, ownerData } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
@@ -47,7 +43,6 @@ export default function CreateAccount() {
       setShowNotification(true)
       return
     }
-
     setIsLoading(true)
     const formatDateForSubmission = (date) => {
       const [day, month, year] = date.split('/')
@@ -55,6 +50,8 @@ export default function CreateAccount() {
     }
 
     const concatAccount = { ...companyData, ...ownerData, ...bankData }
+
+    // Tratamento de dados para envio ao back-end
     concatAccount.companyDocument = companyData.companyDocument.replace(/\D/g, '')
     concatAccount.companyDateCreated = formatDateForSubmission(companyData.companyDateCreated)
     concatAccount.companyPhoneNumber = companyData.companyPhoneNumber.replace(/\D/g, '')
@@ -64,16 +61,22 @@ export default function CreateAccount() {
     concatAccount.ownerDocument = ownerData.ownerDocument.replace(/\D/g, '')
     concatAccount.ownerPhoneNumber = ownerData.ownerPhoneNumber.replace(/\D/g, '')
     concatAccount.ownerZipCode = ownerData.ownerZipCode.replace(/\D/g, '')
+    concatAccount.ownerPhoneNumber = concatAccount.ownerPhoneNumber.replace(/^(\d{7})(\d{4})$/, '$1-$2'); // Formato para 11 dígitos: 9999999-9999
     
-    // Formato para 11 dígitos: 9999999-9999
-    concatAccount.ownerPhoneNumber = concatAccount.ownerPhoneNumber.replace(/^(\d{7})(\d{4})$/, '$1-$2');
-    
-    concatAccount.imgSelfie =  String(concatAccount.imgSelfie).replace('data:image/jpeg;base64,', '')
-    concatAccount.imgRgFront =  String(concatAccount.imgRgFront).replace('data:image/jpeg;base64,', '')
-    concatAccount.imgRgBack =  String(concatAccount.imgRgBack).replace('data:image/jpeg;base64,', '')
+    concatAccount.imgSelfie = String(concatAccount.imgSelfie).replace('data:image/jpeg;base64,', '')
+
+    if(concatAccount.imgRgFront && concatAccount.imgRgBack) {
+      concatAccount.imgRgFront = String(concatAccount.imgRgFront).replace('data:image/jpeg;base64,', '')
+      concatAccount.imgRgBack = String(concatAccount.imgRgBack).replace('data:image/jpeg;base64,', '')
+      concatAccount.imgCnh = ''
+    } else {
+      concatAccount.imgCnh = String(concatAccount.imgCnh).replace('data:image/jpeg;base64,', '')
+      concatAccount.imgRgFront = ''
+      concatAccount.imgRgBack = ''
+    }
+    concatAccount.pdfContrato = String(concatAccount.pdfContrato).replace('data:application/pdf;base64,', '')
 
     let resp = await win.api.createAccount(concatAccount)
-    
     if (resp.message == 'SUCCESS') {
       setContentNotification({
         ...contentNotification,
@@ -83,7 +86,7 @@ export default function CreateAccount() {
       })
       setShowNotification(true)
       await localStorage.setItem('accID', resp.data.accountId)
-      await win.api.logger({type: 'info', message:'Request Account successfully'})
+      await win.api.logger('info', 'Request Account successfully')
       delay(2000)
       navigate('/account/complete', { replace: true })
     } else {
@@ -111,13 +114,13 @@ export default function CreateAccount() {
     >
       <Header />
       { location.pathname !== '/' && location.pathname !== '/account/signin' &&
-        <Progress />}
+        <Progress />
+      }
         <Outlet />
-      { location.pathname !== '/' && location.pathname !== '/account/signin' &&
-        <ContentInRow
-          style={
-            location.pathname === '/account/terms' ? { display: 'none' } : { width: '90%' }
-          }
+      {
+        location.pathname !== '/' && location.pathname !== '/account/signin' &&
+        <ContentInRow 
+          style={ location.pathname === '/account/terms' ? { display: 'none' } : { width: '90%' } }
         >
           <Button onClick={() => navigate(-1)}> Voltar </Button>
           
@@ -128,8 +131,6 @@ export default function CreateAccount() {
           )}
         </ContentInRow>
       }
-      <Loading />
-      <Notification />
     </div>
   )
 }

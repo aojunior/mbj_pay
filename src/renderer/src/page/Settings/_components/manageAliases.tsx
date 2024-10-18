@@ -1,22 +1,20 @@
 import { Button } from '@renderer/styles/global'
 import { DeleteIcon, Table, TableWrapper, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import { useEffect, useState } from 'react'
-import { Loading } from '@renderer/components/loading'
-import { Notification } from '@renderer/components/notification'
 import { useAccount } from '@renderer/context/account.context'
-import { ShowPassword } from '@renderer/components/password'
 import { useNotification } from '@renderer/context/notification.context'
 import { useSecurity } from '@renderer/context/security.context'
 import { delay } from '@shared/utils'
+import { useLoading } from '@renderer/context/loading.context'
 
 const win: any = window
 
 export function ManageAlias() {
   const { accData } = useAccount()
-  const { showSecurity, security, setSecurity, callSecurityButton } = useSecurity()
+  const { security, setSecurity, callSecurityButton } = useSecurity()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const [aliasData, setAliasData] = useState<any>([])
-  const [isLoad, setIsLoad] = useState(false)
+  const { setIsLoading } = useLoading()
   const [selectedAlias, setSelectedAlias] = useState('')
 
   const handleCreateAlias = async () => {
@@ -30,7 +28,7 @@ export function ManageAlias() {
       setShowNotification(true)
       return
     }
-    setIsLoad(true)
+    setIsLoading(true)
     let create = await win.api.createAlias()
     if (create.message === 'CREATED' ) {
       console.log(create)
@@ -57,11 +55,11 @@ export function ManageAlias() {
       context: '',
       confirmed: false
     })
-    setIsLoad(false)
+    setIsLoading(false)
   }
 
   const handleDeleteAlias = async () => {
-    setIsLoad(true)
+    setIsLoading(true)
     const del = await win.api.deleteAlias(selectedAlias)
     if(del.message === 'deleted alias') {
       setAliasData(del.data)
@@ -84,13 +82,13 @@ export function ManageAlias() {
       context: '',
       confirmed: false
     })
-    setIsLoad(false)
+    setIsLoading(false)
   }
 
   const handleKeyButton = async (event) => {
     switch (event.key || event) {
       case 'F5':
-        setIsLoad(true)
+        setIsLoading(true)
         if (accData?.status == 'REGULAR') {
           let resp = await win.api.updateAlias()
           if(resp.message == 'SUCCESS') {
@@ -112,7 +110,7 @@ export function ManageAlias() {
           }
         }
         setShowNotification(true)
-        setIsLoad(false)
+        setIsLoading(false)
         break
     }
   }
@@ -123,10 +121,10 @@ export function ManageAlias() {
 
   useEffect(() => {
     (async () => {
-      setIsLoad(true)
+      setIsLoading(true)
       let resp = await win.api.updateAlias()
       setAliasData(resp.data)
-      setIsLoad(false)
+      setIsLoading(false)
     })()
     setSecurity({
       context: '',
@@ -157,8 +155,6 @@ export function ManageAlias() {
         gap: 15
       }}
     >
-      {isLoad && <Loading />}
-      {showSecurity && <ShowPassword />}
       <Button
         style={{ position: 'absolute', right: 40, top: 130 }}
         onClick={() => handleKeyButton('F5')}
@@ -205,7 +201,6 @@ export function ManageAlias() {
         Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de usá-la, para que o
         banco central possa registrar a nova chave corretamente.
       </span>
-      <Notification />
     </div>
   )
 }

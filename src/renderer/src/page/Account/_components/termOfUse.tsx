@@ -7,7 +7,7 @@ export const TermsOfUse = () => {
   const navigate = useNavigate()
   const [accepted, setAccepted] = useState(false)
 
-  const handleCheckboxChange = () => {
+  const toggleAcceptTerms = () => {
     setAccepted(!accepted)
   }
 
@@ -18,7 +18,7 @@ export const TermsOfUse = () => {
         sessionStorage.setItem('informations', JSON.stringify(data))
         navigate('/account/company')
       } catch (error) {
-        console.log(error)
+        await win.api.logger('error', error)
       }
     } 
   }
@@ -57,7 +57,7 @@ export const TermsOfUse = () => {
           id="checkbox"
           type="checkbox"
           checked={accepted}
-          onChange={handleCheckboxChange}
+          onChange={toggleAcceptTerms}
         />
         <label htmlFor="checkbox">Eu aceito os Termos de Uso</label>
       </CheckboxContainer>

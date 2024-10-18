@@ -1,8 +1,6 @@
 import { createHmac } from 'crypto'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
-import { getClientDB } from './database/actions'
-import { today } from './utils'
 import { logger } from './logger'
 import { handleStatusError } from './handleErrors'
 
@@ -33,12 +31,13 @@ const api = axios.create({ baseURL: 'http://localhost:3000/api/v1' })
 export async function tokenGeneratorAPIV1() {
   let token = await api.post('/auth/token').then((response) => {
     logger.info('CREATED TOKEN')
-    return response.data.access_token
+    return {data: response.data.access_token, message: 'success'}
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
     else if(error.response.data) logger.error(error.response.data)
-    else logger.error(error.message)
-    return null
+    else if(error.message) logger.error(error.message)
+    else logger.error(JSON.stringify(error))
+    return handleStatusError(error.response.status)
   })
   return token
 }
@@ -68,10 +67,10 @@ export async function getPspListAPIV1(token) {
 // ======  Account
 export async function createAccountAPIV1(accountData, token) {
   let response = await api.post('/accounts', {
-    data: {
-      accountData: accountData,
-      token: token
-    }
+  data: {
+    accountData: accountData,
+    token: token
+  }
   }).then((res) => {
     if (res.status == 200) return {data: res.data, message: 'success'}
   }).catch((error) => {
@@ -102,13 +101,14 @@ export async function SignInAPIV1({taxId, password}) {
 return response
 }
 
-export async function VerifyAccountAPIV1(token, AccId) {
+export async function VerifyAccountAPIV1(token, accountId) {
   let response = await api.get(`/accounts`, {
     data:{
-      accountId: AccId,
-      token: token
+      accountId,
+      token
     }
   }).then((res: any) => {
+    console.log('verifyAccountAPIV1')
     if (res.status === 200) return {data: res.data, message: 'success'}
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
@@ -268,14 +268,50 @@ export async function verifyInstantPayment(transactionid: string, token: string,
   return response.data
 }
 
-// ======  Balance
-export async function verifyBalanceV1(token: string, accountId: string) {
+// ======  Decoding Payment
+export async function decodePaymentV1(qrCode, datePayment, token) {
   let data = {
-    token,
-    accountId
+    qrCode,
+    datePayment,
+    token
   }
-  let response = await api.get(`/balance`, {data}).then((res): any => {
-    if (res.status == 200) return {data: res.data, message: 'success'}
+
+  let response = await api.post(`/qrcode/decoding`, data).then((res) => {
+    if (res.status == 200 || res.status == 202) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
+}
+
+export async function consultingDestinationV1(file, token) {
+  let data = {
+    alias: file.alias,
+    accountId: file.accountId,
+    token
+  }
+  let response = await api.get(`/destination`, { data }).then((res) => {
+    if (res.status == 200 || res.status == 202) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
+}
+
+export async function fakePaymentAPIV1(file, acc, token) {
+  let data = {
+    file,
+    account: acc,
+    token
+  }
+  let response = await api.post(`/payment/fake`, data).then((res) => {
+    if (res.status == 200 || res.status == 202) return {data: res.data, message: 'success'}
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
     else if(error.response.data) logger.error(error.response.data)
@@ -286,68 +322,57 @@ export async function verifyBalanceV1(token: string, accountId: string) {
   return response
 }
 
-export async function extractBalanceToday(token: string, AccId: string) {
-  let response
-  const sha_signature = await encrypt_string(AccId)
-  response = await api.get(`/v1/accounts/${AccId}/statement?ending=${today}&start=${today}`, {
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Transaction-Hash': sha_signature
-    },
-    
+// ======  Balance
+export async function verifyBalanceV1(token: string, accountId: string) {
+  let data = {
+    token,
+    accountId
+  }
+  let response = await api.get(`/balance`, {
+    data
   }).then((res): any => {
-    if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
+    if (res.status == 200) return {data: res.data, message: 'success'}
   }).catch((error) => {
-    if (error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error: ', error.message)
-    }
-    if(error.response.status == 503) {
-      return {data: null, message: 'NETWORK_ERROR'}
-    } else {
-      return {data: null, message: 'GENERIC_ERROR'}
-    }
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
   })
   return response
 }
 
-export async function extractBalanceFilter(
-  token: string,
-  dateStart: string,
-  dateEnd: string,
-  AccId: string
-) {
-  let response
-  const sha_signature = await encrypt_string(AccId)
-  response = await api
-    .get(`/v1/accounts/${AccId}/statement?ending=${dateEnd}&start=${dateStart}`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Transaction-Hash': sha_signature
-      },
-      
-    })
-    .then((res): any => {
-      if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
-    })
-    .catch((error) => {
-      if (error.response) {
-        console.error(error.response.data)
-      } else {
-        console.error('Error: ', error.message)
-      }
-      if(error.response.status == 503) {
-        return {data: null, message: 'NETWORK_ERROR'}
-      } else {
-        return {data: null, message: 'GENERIC_ERROR'}
-      }
-    })
+export async function extractBalanceTodayV1(token: string, accountId: string) {
+  let data = {
+    token,
+    accountId
+  }
+  let response = await api.get(`/extract`, {
+    data
+  }).then((res): any => {
+    if (res.status == 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
+}
 
+export async function extractBalanceFilterV1(token: string, dateStart: string, dateEnd: string, accountId: string) {
+  let response = await api.get(`/extract/filter?dateEnd=${dateEnd}&dateStart=${dateStart}`, {
+    data: {
+    token,
+    accountId
+    }
+  }).then((res): any => {
+    if (res.status == 200 || res.status == 202) return {data: res.data, message: 'success'};
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
   return response
 }
 
@@ -418,29 +443,4 @@ export async function refundInstantPayment(
     })
 
   return response.data
-}
-
-// ======  Cash Out
-
-export async function verifyRecipientAlias(params: {accID: string, pixKey: string}, token: string) {
-  let response
-
-  response = await api
-  .get(`v2/accounts/${params.accID}/aliases/BRA/${params.pixKey}`, {
-    headers:{
-      ...headers,
-      Authorization: `Bearer ${token}`
-    },
-  }).then((res) => {
-    return res.data
-  }).catch((error) => {
-    if (error.response) {
-      console.error(error.response.data)
-    } else {
-      console.error('Error: ', error.message)
-      console.error('Error: ', error)
-    }
-  })
-
-  return response
 }

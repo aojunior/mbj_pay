@@ -6,11 +6,11 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ContentInRow, FormInput, Input, Label } from '@renderer/styles/global';
 import { useSecurity } from '@renderer/context/security.context';
-import { Loading } from '@renderer/components/loading';
 import { useNotification } from '@renderer/context/notification.context';
 import { useAccount } from '@renderer/context/account.context';
 import Select from 'react-select';
 import { delay } from '@shared/utils';
+import { useLoading } from '@renderer/context/loading.context';
 
 const Container = styled.dialog`
   width: 100%;
@@ -70,6 +70,13 @@ const ErrorMsg = styled.p`
   font-weight: 300;
   color: red;  
 `
+const customStyles = {
+  container: (provided) => ({
+    ...provided,
+    width: '400px',
+    marginBottom: '10px',
+  }),
+};
 
 const schemaFavoriteRecipient = z.object({
   id: z.string().optional().or(z.literal('')),
@@ -103,12 +110,11 @@ const win: any = window
 function NewFavorite (props: {id: string,}) {
   const { setSecurity } = useSecurity()
   const { accData } = useAccount()
+  const { setIsLoading } = useLoading()
   const { setContentNotification, setShowNotification } = useNotification()
   const [inputValue, setInputValue] = useState('1')
-  const [isLoad, setIsLoad] = useState(false)
   const [pspList, setPspList] = useState<any>([])
   const [selectedOption, setSelectedOption] = useState(null);
-
   const [error, setError] = useState({
     message: '',
     borderColor: '#c4c4c7'
@@ -119,13 +125,7 @@ function NewFavorite (props: {id: string,}) {
 
   })
 
-  const customStyles = {
-    container: (provided) => ({
-      ...provided,
-      width: '400px',
-      marginBottom: '10px',
-    }),
-  };
+
 
   watch(register => {
     if(register.pixKey && register.pixKey.length >= 11 ) {
@@ -203,7 +203,7 @@ function NewFavorite (props: {id: string,}) {
       setValue('pixKey', '', {shouldValidate: true})
     }
     setValue('accountId', accData?.accountId, {shouldValidate: true})
-    setIsLoad(true)
+    setIsLoading(true)
     if(getValues().id) {
       await win.api.updateFavoriteRecipient(getValues())
       setContentNotification({
@@ -219,7 +219,7 @@ function NewFavorite (props: {id: string,}) {
         type:'success'
       })
     }
-    setIsLoad(false)
+    setIsLoading(false)
     setShowNotification(true)
     onClose()
   }
@@ -227,7 +227,6 @@ function NewFavorite (props: {id: string,}) {
   async function loadFavInfo() {
     let dat = await loadPspList()
     setPspList(dat)
-    setIsLoad(true)
     if(props.id) {
       let data = await win.api.getFavoriteRecipientOnId(props.id)
       setInputValue(data.type)
@@ -245,31 +244,33 @@ function NewFavorite (props: {id: string,}) {
       console.log(preselectedItem)
       setSelectedOption(preselectedItem); // Define o item pré-selecionado
     }
-    setIsLoad(false)
   }
   
   async function loadPspList() {
-    setIsLoad(true)
     let data = await win.api.getAllPsps()
     const formattedOptions = data.map((item) => ({
       value: item.id,
       label: item.name,
     }))
-    
-    setIsLoad(false)
     return formattedOptions
   }
 
   useEffect(() => {
     (async() => {
-      await loadFavInfo()
+      setIsLoading(true)
+      if(props.id) {
+        await loadFavInfo()
+      } else {
+        setValue('type', '1', {shouldValidate: true})
+      }
+      loadPspList()
+      setIsLoading(false)
     })()
   }, [])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Container>
-        {isLoad && <Loading />}
         <Section>
           <AiFillCloseSquare style={{ alignSelf: 'flex-end' }} color='#777' size={24} onClick={onClose} cursor='pointer'/>
           <Header>
@@ -277,12 +278,12 @@ function NewFavorite (props: {id: string,}) {
           </Header>
           <ContentInRow style={{width: 300, alignSelf: 'center'}}>
             <div>
-              <input type="radio" id="html" value="1"  {...register('type')} name='type' onChange={(e) => setInputValue(e.target.value)} />
-              <label htmlFor="html"> Chave PIX </label>
+              <input type="radio" id="pix" value="1"  {...register('type')} onChange={(e) => setInputValue(e.target.value)} />
+              <label htmlFor="pix"> Chave PIX </label>
             </div>
             <div>
-              <input type="radio" id="css" value="2" {...register('type')}  name='type' onChange={(e) => setInputValue(e.target.value)} />
-              <label htmlFor="css"> TED em Conta </label> 
+              <input type="radio" id="ted" value="2" {...register('type')} onChange={(e) => setInputValue(e.target.value)} />
+              <label htmlFor="ted"> TED em Conta </label> 
             </div>
           </ContentInRow>
 

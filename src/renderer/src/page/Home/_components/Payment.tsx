@@ -19,6 +19,7 @@ import { useNotification } from '@renderer/context/notification.context'
 import {FaCheckCircle} from 'react-icons/fa'
 import { RiErrorWarningFill } from 'react-icons/ri'
 import { GiCancel } from 'react-icons/gi'
+import { verify } from 'node:crypto'
 
 const win: any = window
 
@@ -242,14 +243,17 @@ function PaymentScreen({ file }) {
   }
 
   const decoding =  async () => {
-    setIsLoad(true)
     let d = {
       qrCode: file.instantPayment.textContent,
       datePayment: file.transactionDate.split('T')[0]
     }
     const qr = await win.api.decodingQrCode(d)
+    const verify = await win.api.verifyDestination()
     console.log(qr)
-    setIsLoad(false)
+    console.log(verify)
+    const concat = {...qr.data, ...verify.data}
+    const pay = await win.api.fakePayment(concat)
+    console.log(pay)
   }
 
   useEffect(() => {
@@ -326,10 +330,10 @@ function PaymentScreen({ file }) {
           <code>F3</code> - Consultar Pagamento
         </Button>
       </Footer>
-     <Footer style={{marginTop: 10}}>
-      <Button onClick={decoding}>
-        Decodificar QR Code
-      </Button>
+      <Footer style={{marginTop: 10}}>
+        <Button onClick={decoding}>
+          Decodificar QR Code
+        </Button>
      </Footer>
     </Container>
   )

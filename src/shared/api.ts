@@ -437,8 +437,7 @@ export async function verifyInstantPayment(transactionid: string, token: string,
   const valorHash = `get:/v2/accounts/${AccId}/transactions/${transactionid}`
   const sha_signature = await encrypt_string(valorHash)
 
-  response = await api
-    .get(`/v2/accounts/${AccId}/transactions/${transactionid}`, {
+  response = await api.get(`/v2/accounts/${AccId}/transactions/${transactionid}`, {
       headers: {
         ...headers,
         Authorization: `Bearer ${token}`,
@@ -446,8 +445,7 @@ export async function verifyInstantPayment(transactionid: string, token: string,
         'Transaction-Hash': sha_signature
       },
       httpsAgent
-    })
-    .then((res): any => {
+    }).then((res): any => {
       if (res.status == 200 || res.status == 202) return res.data
     })
     .catch((error) => {
@@ -458,7 +456,7 @@ export async function verifyInstantPayment(transactionid: string, token: string,
         console.error('Error: ', error.message)
       }
     })
-
+    console.log(response.data)
   return response.data
 }
 

@@ -15,6 +15,7 @@ import {
   Label,
   Separator
 } from '../../../styles/global'
+import Select from 'react-select';
 import { DialogExtract } from './DialogExtract'
 import { DetailContent, RowDetails } from '../styles'
 import { DialogRefund } from './DialogRefund'
@@ -26,6 +27,12 @@ type BalanceProps = {
   balance: any
   extract: any[]
 }
+const customStyles = {
+  container: (provided) => ({
+    ...provided,    
+    marginBottom: '10px',
+  }),
+};
 
 const win: any = window
 export function FormTransf({ balance, extract }: BalanceProps) {
@@ -35,6 +42,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
   const [favorites, setFavorites] = useState<any>([])
+  const [selectedOption, setSelectedOption] = useState(null);
 
   const handleCurrencyChange = (event) => {
     maskCurrencyInput(event)
@@ -44,18 +52,25 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   function toggleExtractDialog() {
     setDialogExtractOpen(!dialogExtractOpen)
   }
-
   function toggleRefundDialog() {
     setDialogRefundOpen(!dialogRefundOpen)
   }
 
   async function handleFavoritesRecipients() {
-    setFavorites(await win.api.getFavoriteRecipients())
+    let data = await win.api.getFavoriteRecipients()
+    const formattedOptions = data.map((item) => ({
+      value: item.pixKey,
+      label: item.nickname,
+    }))
+    setFavorites(formattedOptions)
   }
+  const handleChange = (selected) => {
+    setSelectedOption(selected);
+  };
 
   function handleTransactionToOwnAccount() {
     if (handleAvalibleTransaction()) {
-      // win.api.verifyAccount()
+
       setContentNotification({
         ...contentNotification,
         type: 'success',
@@ -132,14 +147,15 @@ export function FormTransf({ balance, extract }: BalanceProps) {
             <CardContent>
               <FormInput>
                 <Label>Selecione a Conta:</Label>
-                <select>
-                  <option value="">- SELECIONE -</option>
-                  {
-                    favorites.map(d => (
-                      <option key={d.id} value={d.id}> {d.nickname} </option>
-                    ))
-                  }
-                </select>
+                <Select
+                value={selectedOption}
+                onChange={handleChange}
+                options={favorites}
+                placeholder="Escolha uma conta"
+                isClearable
+                isSearchable
+                styles={customStyles}
+                />
               </FormInput>
 
               <FormInput>
@@ -147,7 +163,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 <Input
                   style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
                   onChange={handleCurrencyChange}
-                  placeholder="R$ 0,00"
+                  placeholder="R$ 0.00"
                 />
               </FormInput>
 
@@ -180,7 +196,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
           <CardContent style={{ justifyContent: 'flex-start', height: '80%' }}>
             <Label>Extrato</Label>
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', overflowY: 'scroll'}}>
               {extract.map(
                 (data: any, i) =>
                   i < 10 && (
@@ -196,7 +212,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
             </div>
           </CardContent>
 
-          <CardFooter style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+          <CardFooter style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
             <Button onClick={toggleExtractDialog}> Extrato </Button>
             <Button style={{ backgroundColor: 'red' }} onClick={toggleRefundDialog}>
               Devolução

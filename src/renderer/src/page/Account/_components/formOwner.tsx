@@ -33,8 +33,7 @@ export function FormOwner() {
     if (value.length > 5) value = value.replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
     setValue('ownerBirthday', value, { shouldValidate: true })
   }
-
-  function maskCPFInput(event) {
+  const maskCPFInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
     if (value.length <= 11) {
       value = value.replace(/^(\d{3})(\d)/, '$1.$2')
@@ -43,14 +42,12 @@ export function FormOwner() {
     }
     setValue('ownerDocument', value, { shouldValidate: true })
   }
-
-  function maskPhoneInput(event) {
+  const maskPhoneInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
     value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
     setValue('ownerPhoneNumber', value, { shouldValidate: true })
   }
-
-  function maskZipCodeInput(event) {
+  const maskZipCodeInput = (event) => {
     let value = event.target.value.replace(/\D/g, '')
     if (value.length <= 8) {
       value = value.replace(/^(\d{5})(\d)/, '$1-$2')

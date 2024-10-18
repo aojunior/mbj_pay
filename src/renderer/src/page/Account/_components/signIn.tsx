@@ -21,7 +21,6 @@ import {
 } from '../../../styles/global'
 import { useNavigate } from 'react-router-dom'
 import { useAccount } from '@renderer/context/account.context'
-import { Notification } from '@renderer/components/notification'
 import { useNotification } from '@renderer/context/notification.context'
 import { useLoading } from '@renderer/context/loading.context'
 
@@ -29,19 +28,13 @@ const win: any = window
 export function SignIn() {
   const { setAccount } = useAccount()
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
-  const [signInData, setSignInData] = useState<any>()
   const { setIsLoading } = useLoading()
   const [showTextPassword, setShowTextPassword] = useState(false)
 
-  const { register, watch, setValue, getValues } = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: signInData
+  const { register, setValue, getValues } = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema)
   })
   const navigate = useNavigate()
-
-  watch((a) => {
-    setSignInData(a)
-  })
   
   function maskCNPJInput(event) {
     let value = event.target.value.replace(/\D/g, '')
@@ -81,65 +74,64 @@ export function SignIn() {
 
   return (
     <form>
-        <Card style={{marginTop: '25%'}}>
-          <CardHeader>
-            <CardTitle> Entra na Conta MBJ PAY </CardTitle>
-            <Separator />
-          </CardHeader>
-          
-          <CardContent style={{padding: 30}} >
-              <FormInput style={{ width: 300 }}>
-                <Label>CNPJ</Label>
-                <Input 
-                autoFocus
-                {...register('taxId')} 
-                type="text"
-                placeholder="Digite o CNPJ"
-                onChange={maskCNPJInput}
+      <Card style={{marginTop: '25%'}}>
+        <CardHeader>
+          <CardTitle> Entra na Conta MBJ PAY </CardTitle>
+          <Separator />
+        </CardHeader>
+        
+        <CardContent style={{padding: 30}} >
+          <FormInput style={{ width: 300 }}>
+            <Label>CNPJ</Label>
+            <Input 
+            autoFocus
+            {...register('taxId')} 
+            type="text"
+            placeholder="Digite o CNPJ"
+            onChange={maskCNPJInput}
+            />
+          </FormInput>
+
+          <FormInput style={{ width: 300}}>
+            <Label>Senha</Label>
+            <ContentInRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+              <Input
+                style={{ width: '100%', boxSizing: 'border-box'}}
+                {...register('password')}
+                placeholder="Digite a Senha"
+                type={showTextPassword ? 'text' : 'password'}
+
+                
+              />
+              {showTextPassword ? (
+                <IconEyeInvisible
+                  size={24}
+                  onClick={togglePassword}
                 />
-              </FormInput>
+              ) : (
+                <IconEye
+                  size={24}
+                  onClick={togglePassword}
+                />
+              )}
+            </ContentInRow>
+          </FormInput>
+        </CardContent>
 
-              <FormInput style={{ width: 300}}>
-                <Label>Senha</Label>
-                <ContentInRow style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
-                  <Input
-                    style={{ width: '100%', boxSizing: 'border-box'}}
-                    {...register('password')}
-                    placeholder="Digite a Senha"
-                    type={showTextPassword ? 'text' : 'password'}
-
-                    
-                  />
-                  {showTextPassword ? (
-                    <IconEyeInvisible
-                      size={24}
-                      onClick={togglePassword}
-                    />
-                  ) : (
-                    <IconEye
-                      size={24}
-                      onClick={togglePassword}
-                    />
-                  )}
-                </ContentInRow>
-              </FormInput>
-          </CardContent>
-
-          <CardFooter style={{marginTop: 10, alignItems: 'center'}}>
-            <Button onClick={handleSubmitForm} >
-              Entrar
-            </Button>
-            <br />
-            
-            <hr style={{borderTop: '1px dashed #c7c7c4', width: '100%'}}/>
-            <p style={{color:'#c4c4c7'}}>ou</p>
-            
-            <Button style={{marginTop: 0}} onClick={() => navigate('/account/terms')} type='button'>
-              Criar Conta
-            </Button>
-          </CardFooter>
-        </Card>
-      <Notification />
+        <CardFooter style={{marginTop: 10, alignItems: 'center'}}>
+          <Button onClick={handleSubmitForm} >
+            Entrar
+          </Button>
+          <br />
+          
+          <hr style={{borderTop: '1px dashed #c7c7c4', width: '100%'}}/>
+          <p style={{color:'#c4c4c7'}}>ou</p>
+          
+          <Button style={{marginTop: 0}} onClick={() => navigate('/account/terms')} type='button'>
+            Criar Conta
+          </Button>
+        </CardFooter>
+      </Card>
     </form>
   )
 }
