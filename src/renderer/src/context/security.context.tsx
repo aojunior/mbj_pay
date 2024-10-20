@@ -24,6 +24,7 @@ export const SecurityWrapper = ({ children }) => {
   const [showSecurity, setShowSecurity] = useState(false)
 
   const callSecurityButton = (context) => {
+    setSecurity({ context: '', confirmed: false })
     setShowSecurity(true)
     setSecurity({ ...security, context: context })
   }

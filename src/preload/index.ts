@@ -142,7 +142,7 @@ export const API = {
     return result
   },
   verifyDestination: (data) =>{
-    const result = ipcRenderer.invoke('verify_sender', data)
+    const result = ipcRenderer.invoke('verify_destination', data)
     return result
   },
   fakePayment: async (data) => {

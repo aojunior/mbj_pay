@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DeleteIcon, EditIcon, Table, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import NewFavorite from './_addNewFavorite';
 import { useSecurity } from '@renderer/context/security.context';
-import { Button } from '@renderer/styles/global';
+import { Blur, Button } from '@renderer/styles/global';
 import { useLoading } from '@renderer/context/loading.context';
 
 const win: any = window

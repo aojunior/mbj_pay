@@ -25,13 +25,12 @@ files:
 asarUnpack:
   - resources/**
 extraResources:
-  - from: prisma/dev.db
-    to: prisma/dev.db
   - from: dist/renderer
     to: renderer
   - node_modules/.prisma/**/*
   - from: node_modules/@prisma/client
     to: node_modules/@prisma/client
+  - logger.txt
 win:
   target: nsis
   icon: build/icons/icon.ico
@@ -48,3 +47,7 @@ linux:
     - AppImage
     - deb
   icon: build/icons
+publish:
+  provider: github
+  owner: aojunior
+  repo: mbj_pay

@@ -72,6 +72,7 @@ const CloseButton = styled.button`
 
 const Notification = () => {
   const { contentNotification, setShowNotification, showNotification, setContentNotification } = useNotification()
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowNotification(false)
@@ -129,8 +130,8 @@ const Notification = () => {
       <CloseButton onClick={() => setShowNotification(false)}>×</CloseButton>
     </NotificationContainer>
   ) : (
-    showNotification &&
-    contentNotification.type === 'custom' && (
+    showNotification && 
+    contentNotification.type === 'custom' && contentNotification.message && (
       <NotificationContainer show={showNotification}>
         <NotificationContent>
           {contentNotification.icon}

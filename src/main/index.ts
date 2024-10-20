@@ -45,7 +45,7 @@ import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
 import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
 import { logger } from '@shared/logger';
-import { consultingDestinationV1, createAccountAPIV1, decodePaymentV1, deleteAliasesV1, extractBalanceFilterV1, extractBalanceTodayV1, fakePaymentAPIV1, getPspListAPIV1, tokenGeneratorAPIV1, verifyBalanceV1 } from '@shared/apiV1';
+import { cashOutAPIV1, consultingDestinationV1, createAccountAPIV1, createInstantPaymentAPIV1, decodePaymentV1, DeleteAccountAPIV1, deleteAliasesAPIV1, extractBalanceFilterV1, extractBalanceTodayV1, fakePaymentAPIV1, getPspListAPIV1, tokenGeneratorAPIV1, verifyBalanceV1 } from '@shared/apiV1'
 import { handleMessageError } from '@shared/handleErrors';
 
 let mainWindow: BrowserWindow
@@ -127,8 +127,6 @@ app.whenReady().then(() => {
   createPath()
   removeReqFile()
   removeResFile()
-  // Usado apenas para criar arquivo de conta com status Regular
-  // encriptoTest({Cnpj:'14787479000162', Pass:'12345', Account:"27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C"})
 
   // Configuração do auto launch (iniciar com windows)
   let electronAutoLauncher = new AutoLaunch({
@@ -205,7 +203,7 @@ app.whenReady().then(() => {
         const db = await getAliasesDB(account.accountId)
         const client = await getClientDB(account.accountId)
         const mediator = await getMediatorDB(account.accountId)
-        let response = await createInstantPayment(
+        let result = await createInstantPaymentAPIV1(
           formatData,
           token,
           String(client?.accountId),
@@ -214,21 +212,21 @@ app.whenReady().then(() => {
         )
         mainWindow.show()
 
-        if(response.message === 'SUCCESS') {
+        if(result.message === 'success') {
           const file = {
             accId: client?.accountId,
-            status: response.data.financialStatement.status,
-            transactionId: response.data.transactionId,
-            transactionType: response.data.transactionType,
-            totalAmount: response.data.totalAmount,
+            status: result.data.financialStatement.status,
+            transactionId: result.data.transactionId,
+            transactionType: result.data.transactionType,
+            totalAmount: result.data.totalAmount,
             description: formatData.recipientComment,
             identify: formatData.orderID
           }
           await createTransanctionDB(file)
         } else {
-          handleMessageError(response.message)
+          return handleMessageError(result.message)
         }
-        mainWindow.webContents.send('watch_file', response.data);
+        mainWindow.webContents.send('watch_file', result.data);
       }
     } catch (error) {
       console.log(error)
@@ -418,18 +416,15 @@ ipcMain.handle('delete_account', async () => {
   const alias = await getAliasesDB(account.accountId)
 
   if (alias.length == 0) {
-    let consulta = await DeleteAccountAPI(token, account.accountId)
-    if (consulta.error.code === '97') {
-      return 'balance_error'
-    }
-
-    if(consulta == 200) {
+    let consulta = await DeleteAccountAPIV1(token, account.accountId)
+    if(consulta?.message == 'success') {
+      logger.info('Deleting account successfully')
       return await verify_account(token, account.accountId)
     } else {
-      return consulta.error.message
+      return handleMessageError(consulta)
     }
   } else {
-    return 'alias_registered'
+    return {message: 'alias_registered', data: null}
   }
 })
 // ----------------------------------------------------------------
@@ -461,7 +456,6 @@ ipcMain.handle('get_alias', async () => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  
   const result = await getAliasesDB(account.accountId)
   return result
 })
@@ -472,8 +466,7 @@ ipcMain.handle('delete-alias', async (_, alias) => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  
-  let result = await deleteAliasesV1(token, account.accountId, alias)
+  let result = await deleteAliasesAPIV1(token, account.accountId, alias)
   if (result?.data == 202) {
     await deleteAliasDB(alias, account.accountId)
     return {data: await getAliasesDB(account.accountId), message: 'deleted alias'}
@@ -554,7 +547,7 @@ ipcMain.handle('verify_destination', async (_, accountDest) => {
   let account = JSON.parse(parse)
   let data = {
     accountId: account.accountId,
-    alias: accountDest.pixKey
+    alias: accountDest.value
   }
  
   // if(account.accountId == '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C') {
@@ -566,6 +559,9 @@ ipcMain.handle('verify_destination', async (_, accountDest) => {
   // }
 
   const result = await consultingDestinationV1(data, token)
+  if(result?.message !== 'success') {
+    return handleMessageError(result)
+  }
   return result
 })
 
@@ -602,19 +598,27 @@ ipcMain.handle('cash_out', async (_, data) => {
   let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
   .then((response) => response)
   let account = JSON.parse(parse)
-  let acc = {}
-  if(account.accountId == '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C') {
-    acc['accountId']  = '86F5EBC4-8807-6034-171C-8D2BD9D0B674'
-    acc['accountRecipient'] = '316849'
-    acc['branch'] = '427'
-  } else {
-    acc['accountId']  = '27773DE5-E17D-4C8B-9EF4-AD4741BF9E0C'
-    acc['accountRecipient'] = '441414'
-    acc['branchRecipient'] = '427'
-  }
+  let mediator = await getMediatorDB(account.accountId)
 
-  const result = await fakePaymentAPIV1(data, acc, token)
-  
+  let file = {
+    medFee: mediator?.mediatorFee,
+    accountId: account.accountId,
+    data,
+    token
+  }
+  const result = await cashOutAPIV1(file, token)
+  if(result?.message !== 'success') {
+    return handleMessageError(result)
+  }
+  let dataTransaction = {
+    accId: account.accountId,
+    transactionId: result.data.transactionId,
+    transactionType: 'CASH_OUT',
+    amount: data.totalAmount,
+    transactionDescription: data.msgInfo,
+    status: result.data.status
+  }
+  await createTransanctionDB(dataTransaction)
   return result
 })
 // ----------------------------------------------------------------

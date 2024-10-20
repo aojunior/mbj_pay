@@ -19,7 +19,6 @@ import { useNotification } from '@renderer/context/notification.context'
 import {FaCheckCircle} from 'react-icons/fa'
 import { RiErrorWarningFill } from 'react-icons/ri'
 import { GiCancel } from 'react-icons/gi'
-import { verify } from 'node:crypto'
 
 const win: any = window
 

@@ -13,7 +13,11 @@ import {
   FormInput,
   Input,
   Label,
-  Separator
+  Separator,
+  IconEyeInvisible,
+  IconEye,
+  Text,
+  Blur
 } from '../../../styles/global'
 import Select from 'react-select';
 import { DialogExtract } from './DialogExtract'
@@ -22,6 +26,8 @@ import { DialogRefund } from './DialogRefund'
 import { maskCurrencyInput } from '@shared/utils'
 import { useSecurity } from '@renderer/context/security.context'
 import { useNotification } from '@renderer/context/notification.context'
+import { useLoading } from '@renderer/context/loading.context';
+
 
 type BalanceProps = {
   balance: any
@@ -29,8 +35,7 @@ type BalanceProps = {
 }
 const customStyles = {
   container: (provided) => ({
-    ...provided,    
-    marginBottom: '10px',
+    ...provided,
   }),
 };
 
@@ -38,11 +43,14 @@ const win: any = window
 export function FormTransf({ balance, extract }: BalanceProps) {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { security, setSecurity, callSecurityButton } = useSecurity()
+  const { setIsLoading } = useLoading()
   const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
   const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
+  const [msgInfo, setMsgInfo] = useState<String>('')
   const [favorites, setFavorites] = useState<any>([])
   const [selectedOption, setSelectedOption] = useState(null);
+  const [showValueBalance, setShowValueBalance] = useState (false);
 
   const handleCurrencyChange = (event) => {
     maskCurrencyInput(event)
@@ -68,16 +76,59 @@ export function FormTransf({ balance, extract }: BalanceProps) {
     setSelectedOption(selected);
   };
 
-  function handleTransactionToOwnAccount() {
-    if (handleAvalibleTransaction()) {
-
+  async function handleTransactionToOwnAccount() {
+    if(!selectedOption) {
       setContentNotification({
-        ...contentNotification,
-        type: 'success',
-        title: 'Transferência Realizada com Sucesso',
-        message: 'Sua transferência foi realizada'
+        type: 'error',
+        title: 'Houve um Error',
+        message: 'Selecione um destinatário'
       })
       setShowNotification(true)
+      return
+    }
+    if (handleAvalibleTransaction()) {
+      setIsLoading(true)
+      let verifyDestination = await win.api.verifyDestination(selectedOption)
+      if(verifyDestination.message === 'success') {
+        let formatData = {
+          totalAmount: amount,
+          msg: msgInfo,
+          ...verifyDestination?.data
+        }
+        let cashOut = await win.api.cashOut(formatData)
+        setSelectedOption(null)
+        setMsgInfo('')
+        if(cashOut.message == 'success') {
+          setContentNotification({
+            ...contentNotification,
+            type: 'success',
+            title: 'Transferência Realizada com Sucesso',
+            message: 'Sua transferência foi realizada'
+          })
+        } else {
+          setContentNotification({
+            ...contentNotification,
+            type: 'success',
+            title: 'Houve um Erro',
+            message: cashOut.message
+          })
+        }
+        setShowNotification(true)
+        
+      } else {
+        setContentNotification({
+          ...contentNotification,
+          type: 'error',
+          title: 'Houve um Error',
+          message: verifyDestination.message
+        })
+        setShowNotification(true)
+      }
+      setSecurity({
+        context: '',
+        confirmed: false
+      })
+      setIsLoading(false)
     }
   }
 
@@ -93,13 +144,6 @@ export function FormTransf({ balance, extract }: BalanceProps) {
         setShowNotification(true)
         return false
       } else {
-        setContentNotification({
-          ...contentNotification,
-          type: 'success',
-          title: 'Transferêcia efetuada com sucesso',
-          message: 'Sua Transferêcia foi processada com sucesso!'
-        })
-        setShowNotification(true)
         return true
       }
     } else {
@@ -116,8 +160,12 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
   function showBalance() {
     return balance?.available
-      ? `R$  ${Number(balance?.available).toFixed(2) || 0}`
-      : ' - '
+      ? `${Number(balance?.available).toFixed(2) || 0}`
+      : '-'
+  }
+
+  function toggleBalance() {
+    setShowValueBalance(!showValueBalance)
   }
 
   useEffect(() => {
@@ -129,7 +177,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   }, [])
 
   useEffect(() => {
-    if (security.confirmed && security.context == 'transaction') {
+    if (security.confirmed && security.context === 'cashout') {
       handleTransactionToOwnAccount()
     }
   }, [security.confirmed])
@@ -144,7 +192,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
               <Separator />
             </CardHeader>
 
-            <CardContent>
+            <CardContent style={{gap: 10}}>
               <FormInput>
                 <Label>Selecione a Conta:</Label>
                 <Select
@@ -168,22 +216,47 @@ export function FormTransf({ balance, extract }: BalanceProps) {
               </FormInput>
 
               <FormInput>
-                <Label>Informações para o Recebedor (opcional)</Label>
-                <TextArea />
+                <Label>Informações do pagamento (opcional)</Label>
+                <TextArea onChange={e => setMsgInfo(e.target.value)}/>
               </FormInput>
 
-              <Button onClick={() => callSecurityButton('transaction')}> Confirmar </Button>
+              <Button 
+                disabled={(!selectedOption || amount == 0)} 
+                style={{background: (!selectedOption || amount == 0) && '#c4c4c7'}} 
+                onClick={() => callSecurityButton('cashout')}
+              >
+                Confirmar 
+              </Button>
             </CardContent>
           </Card>
 
           <Card style={{ width: '100%' }}>
             <FormInput style={{ width: '100%' }}>
               <Label>Saldo Disponível </Label>
-              <Input
-                style={{ textAlign: 'end', fontWeight: '900' }}
-                readOnly
-                value={showBalance()}
-              />
+              <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+                <Text style={{ width: '100%', textAlign: 'end', fontWeight: '900', paddingRight: 40 }}>
+                  R$
+                  {showBalance()}
+                </Text>
+
+                {showValueBalance ? (
+                  <IconEyeInvisible
+                    size={24}
+                    style={{position: 'relative', right: 30}}
+                    onClick={toggleBalance}
+                  />
+                  ) : (
+                  <IconEye
+                    size={24}
+                    style={{position: 'relative', right: 30}}
+                    onClick={toggleBalance}
+                  />
+                )}
+                {!showValueBalance &&
+                  <Blur style={{  width: 325 }}/>
+                }
+              </ContentInRow>
             </FormInput>
           </Card>
         </div>
@@ -196,10 +269,10 @@ export function FormTransf({ balance, extract }: BalanceProps) {
 
           <CardContent style={{ justifyContent: 'flex-start', height: '80%' }}>
             <Label>Extrato</Label>
-            <div style={{ width: '100%', overflowY: 'scroll'}}>
+            <div style={{ width: '100%', overflowY: 'auto' }}>
               {extract.map(
                 (data: any, i) =>
-                  i < 10 && (
+                  i < 10 && data.description !== 'DEBITO TARIFA PIX INCUBADORA' && (
                     <RowDetails>
                       <p>{data.description}</p>
                       <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green' }}>

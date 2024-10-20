@@ -147,6 +147,7 @@ export function DialogExtract({ toggle }: dialogProps) {
           >
             {extract.map((item, i) => {
               return (
+                item.description !== 'DEBITO TARIFA PIX INCUBADORA' &&
                 <div
                   key={i}
                   style={{

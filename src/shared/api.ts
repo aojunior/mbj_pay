@@ -416,8 +416,7 @@ export async function createInstantPayment(
     })
     .then((res): any => {
       if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
-    })
-    .catch((error) => {
+    }).catch((error) => {
       if (error.response) {
         console.error(error.response.data)
       } else {

@@ -24,8 +24,10 @@ async function encrypt_string(hash_string: string) {
   const sha_signature = hmac.digest('hex')
   return sha_signature
 }
+const URL = process.env.NODE_ENV === 'production' ? import.meta.env.MAIN_VITE_URL : 'http://localhost'
+const PORT = process.env.NODE_ENV === 'production' ? import.meta.env.MAIN_VITE_API_PORT : 3000
 
-const api = axios.create({ baseURL: 'http://localhost:3000/api/v1' })
+const api = axios.create({ baseURL: `${URL}:${PORT}/api/v1`})
 
 // ======  Services
 export async function tokenGeneratorAPIV1() {
@@ -108,7 +110,6 @@ export async function VerifyAccountAPIV1(token, accountId) {
       token
     }
   }).then((res: any) => {
-    console.log('verifyAccountAPIV1')
     if (res.status === 200) return {data: res.data, message: 'success'}
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
@@ -120,33 +121,21 @@ export async function VerifyAccountAPIV1(token, accountId) {
   return response
 }
 
-export async function DeleteAccountAPI(token, AccId) {
-  let response
-  const sha_signature = await encrypt_string(AccId)
-  response = await api
-    .delete(`/v1/accounts/${AccId}`, {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Transaction-Hash': sha_signature
-      },
-    })
-    .then((res: any) => {
-      if (res.status === 200 || res.status === 202) return res.status
-    })
-    .catch((error) => {
-      // if (error.response) {
-      //   console.log(error.response.data)
-      //   console.log(error.response)
-      //   console.log('Error', error.message)
-      // } else {
-      //   console.log(error.response.data)
-
-      //   console.log('Error', error.message)
-      // }
-      return error.response.data
-    })
+export async function DeleteAccountAPIV1(token, accountId) {
+  let data = {
+    token, 
+    accountId
+  }
+  let response = await api.delete(`/accounts`, {
+    data,
+  }).then((res: any) => {
+    if (res.status === 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
   return response
 }
 
@@ -168,7 +157,7 @@ export async function createAliasesAPIV1(token: string, AccId: string) {
   return response
 }
 
-export async function deleteAliasesV1(token: string, AccId: string, alias: string) {
+export async function deleteAliasesAPIV1(token: string, AccId: string, alias: string) {
   let data = {
     token: token,
     accountId: AccId,
@@ -209,12 +198,11 @@ export async function verifyAliasesAPIV1(token: string, AccId: string) {
 }
 
 // ======  Instant Payment
-export async function createInstantPaymentV1(
+export async function createInstantPaymentAPIV1(
   paymentFile: any,
   token: string,
   AccId: string,
   Alias: string,
-  MedId: string,
   MedFee: number,
 ) {
   const data = {
@@ -222,12 +210,11 @@ export async function createInstantPaymentV1(
     token,
     accountId: AccId,
     alias: Alias,
-    mediatorId: MedId,
     mediatorFee: MedFee
   }
 
   let response = await api.post(`/payments`, data).then((res): any => {
-    if (res.status == 200 || res.status == 202) return {data: res.data.data, message: 'SUCCESS'}
+    if (res.status == 200 || res.status == 202) return {data: res.data, message: 'success'};
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
     else if(error.response.data) logger.error(error.response.data)
@@ -318,9 +305,27 @@ export async function fakePaymentAPIV1(file, acc, token) {
     else logger.error(error.message)
     return handleStatusError(error.response.status)
   })
-
   return response
 }
+
+// ======  Cash Out
+export async function cashOutAPIV1(file, token) {
+  let response = await api.post(`/cashout`, {
+    data: {
+      file,
+      token
+    }
+  }).then((res) => {
+    if (res.status == 200 || res.status == 202) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
+}
+
 
 // ======  Balance
 export async function verifyBalanceV1(token: string, accountId: string) {

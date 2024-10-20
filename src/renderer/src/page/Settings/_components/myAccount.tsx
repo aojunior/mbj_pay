@@ -42,37 +42,28 @@ export function MyAccount() {
   const handleDeleteAccount = async () => {
     setIsLoading(true)
     const del = await win.api.deleteAccount()
-    if (del == 'DELETED') {
+    if(del.message === 'success') {
       setContentNotification({
         ...contentNotification,
         title: 'Conta desativada',
         message: 'Sua conta foi inativada com sucesso!',
         type: 'info'
       })
-    }
-    if (del == 'alias_registered') {
-      setContentNotification({
-        ...contentNotification,
-        title: 'Conta ainda possui alias registrado ',
-        message: "É necessário excluir todos os alias antes de inativar a conta!",
-        type: 'error'
-      })
-    }
-    if(del == 'balance_error') {
-      setContentNotification({
-        ...contentNotification,
-        title: 'Impossível desativar',
-        message: 'Você ainda possui saldo em conta!',
-        type: 'error'
-      })
     } else {
-      console.log(del)
-      setContentNotification({
-        ...contentNotification,
-        title: 'Erro',
-        message: 'Houve um erro ao tentar inativar a conta, tente novamente!',
-        type: 'error'
-      })
+      if (del.messgage == 'alias_registered') {
+        setContentNotification({
+          ...contentNotification,
+          title: 'Conta ainda possui alias registrado ',
+          message: "É necessário excluir todos os alias antes de inativar a conta!",
+          type: 'error'
+        })
+      } else {
+        setContentNotification({
+          title: 'Houve um Erro',
+          message: del.message,
+          type: 'error'
+        })
+      }
     }
     setIsLoading(false)
     setShowNotification(true)
@@ -104,7 +95,7 @@ export function MyAccount() {
       context: '',
       confirmed: false
     })
-  } 
+  }
 
   function togglePassword() {
     setShowTextPassword(!showTextPassword)

@@ -1,4 +1,4 @@
-import { appDirectoryName, fileEncoding } from '@shared/constants'
+import { appDirectoryFile, fileEncoding } from '@shared/constants'
 import { HashComparator, HashConstructor } from '@shared/utils'
 import { readFile, unwatchFile, watchFile, writeFile, unlink } from 'fs'
 import { ensureDir, existsSync, mkdir } from 'fs-extra'
@@ -8,7 +8,7 @@ import { join } from 'path'
 
 // UTILS FUNCTIONS
 export const getRootDirectory = () => {
-  return `${appDirectoryName}`
+  return `${appDirectoryFile}`
 }
 export const createPath = () => {
   const rootDir = getRootDirectory()

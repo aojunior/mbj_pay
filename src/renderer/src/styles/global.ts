@@ -104,6 +104,19 @@ export const Input = styled.input`
   }
 `
 
+export const Text = styled.p`
+  padding: 10px;
+  border: 1px solid #c4c4c7;
+  border-radius: 8px;
+  &&::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  &:focus {
+    outline: none;
+  }
+`;
+
 export const Button = styled.button`
   padding: 10px;
   border: 1px solid #e4e4e7;
@@ -137,4 +150,13 @@ export const IconEyeInvisible = styled(AiFillEyeInvisible)`
   position: absolute;
   margin-right: 5px;
   cursor: pointer;
+`
+
+export const Blur = styled.div`
+  width: 80px;
+  /* background-color: rgba(255, 255, 255, 0.1); */
+  
+  backdrop-filter: blur(4px);
+  position: absolute;
+  height: 20px;
 `
