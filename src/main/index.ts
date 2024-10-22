@@ -15,8 +15,6 @@ import {
   verifyInstantPayment,
   refundInstantPayment,
   refundCodes,
-  createInstantPayment,
-  DeleteAccountAPI,
   verifyRecipientAlias,
 } from '../shared/api'
 import { shell } from 'electron/common'
@@ -34,7 +32,9 @@ import {
   getFavoriteRecipientDB,
   getFavoriteRecipientOnIdDB,
   getMediatorDB,
+  getSecureDeviceDB,
   getTransanctionDB,
+  registerDeviceDB,
   setDataToTermsOfServiceDB,
   signInDB,
   updatefavoriteRecipientDB,
@@ -43,9 +43,25 @@ import {
 import { HashComparator } from '@shared/utils'
 import { prisma } from '@shared/database/databaseConnect'
 import url from 'node:url'
-import { create_alias, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
+import { create_alias, registerSecureDevice, getInformationsFromMachine, verify_account, verifyAndUpdateAliases } from './lib/IPC_actions'
 import { logger } from '@shared/logger';
-import { cashOutAPIV1, consultingDestinationV1, createAccountAPIV1, createInstantPaymentAPIV1, decodePaymentV1, DeleteAccountAPIV1, deleteAliasesAPIV1, extractBalanceFilterV1, extractBalanceTodayV1, fakePaymentAPIV1, getPspListAPIV1, tokenGeneratorAPIV1, verifyBalanceV1 } from '@shared/apiV1'
+import { 
+  cashOutAPIV1,
+  consultingDestinationV1,
+  createAccountAPIV1,
+  createInstantPaymentAPIV1,
+  decodePaymentV1,
+  DeleteAccountAPIV1,
+  deleteAliasesAPIV1,
+  extractBalanceFilterV1,
+  extractBalanceTodayV1,
+  fakePaymentAPIV1,
+  getPspListAPIV1,
+  sendEmailAPIV1,
+  tokenGeneratorAPIV1,
+  verifyBalanceV1,
+  verifyCodeAPIV1
+} from '@shared/apiV1'
 import { handleMessageError } from '@shared/handleErrors';
 
 let mainWindow: BrowserWindow
@@ -778,6 +794,46 @@ ipcMain.handle('signIn', async (_, formData) => {
   } catch(error) {
     logger.error(error)
   }
+})
+
+ipcMain.handle('send_email', async () => {
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const result = await sendEmailAPIV1(account.accountId, account.email)
+  return result
+})
+
+ipcMain.handle('verify_token', async (_, code) => {
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const result = await verifyCodeAPIV1(account.accountId, code)
+  return result
+})
+
+ipcMain.handle('register_device', async() => {
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const device = await registerSecureDevice()
+  const data = {
+    accountId: account.accountId,
+    type: device.type,
+    deviceId: device.deviceId,
+    deviceName: device.deviceName,
+  }
+  const result = await registerDeviceDB(data)
+  return result
+})
+
+ipcMain.handle('get_register_device', async() => {
+  let parse = await mainWindow.webContents.executeJavaScript(`localStorage.getItem('account')`)
+  .then((response) => response)
+  let account = JSON.parse(parse)
+  const device = await registerSecureDevice()
+  const result = await getSecureDeviceDB(account.accountId)
+  return {device, result}
 })
 
 ipcMain.handle('psp_list', async () => {

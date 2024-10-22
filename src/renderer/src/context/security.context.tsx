@@ -11,6 +11,7 @@ type securityProps = {
   showSecurity: boolean
   setShowSecurity: (a: boolean) => void
   callSecurityButton: (a: string) => void
+  cleanUpSecurity: () => void
 }
 
 const SecurityContext = createContext<securityProps>({} as securityProps)
@@ -24,9 +25,15 @@ export const SecurityWrapper = ({ children }) => {
   const [showSecurity, setShowSecurity] = useState(false)
 
   const callSecurityButton = (context) => {
-    setSecurity({ context: '', confirmed: false })
+    setTextPassword('')
     setShowSecurity(true)
     setSecurity({ ...security, context: context })
+  }
+
+  const cleanUpSecurity = () => {
+    setTextPassword('')
+    setShowSecurity(false)
+    setSecurity({ confirmed: false, context: '' })
   }
 
   return (
@@ -38,7 +45,8 @@ export const SecurityWrapper = ({ children }) => {
         setSecurity,
         showSecurity,
         setShowSecurity,
-        callSecurityButton
+        callSecurityButton,
+        cleanUpSecurity
       }}
     >
       {children}

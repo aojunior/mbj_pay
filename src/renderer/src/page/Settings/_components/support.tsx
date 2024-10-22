@@ -1,19 +1,11 @@
-import { Button } from "@renderer/styles/global"
+import { Button, Container } from "@renderer/styles/global"
 import { Title } from "../styles";
 
 const win: any = window
 export function Support() {
 
     return (
-        <div
-            style={{
-                paddingLeft: 40,
-                paddingRight: 40,
-                gap: 15,
-                display: "flex",
-                flexDirection: "column"
-            }}
-        >
+        <Container>
             <Title> Suporte Técnico </Title>
 
             <span>
@@ -26,6 +18,6 @@ export function Support() {
             >
                 Acessar Suporte
             </Button>
-        </div>
+        </Container>
     )
 }

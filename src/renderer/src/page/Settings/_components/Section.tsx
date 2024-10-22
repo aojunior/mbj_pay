@@ -1,7 +1,9 @@
 import { styled } from 'styled-components'
 
 export function Section({ children }) {
-  return <Container>{children}</Container>
+  return <Container>
+    {children}
+    </Container>
 }
 
 export const Container = styled.div`

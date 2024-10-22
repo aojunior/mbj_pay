@@ -1,6 +1,6 @@
-import { Button, ContentInRow, IconEye, IconEyeInvisible, Separator } from '@renderer/styles/global'
+import { Button, Container, ContentInRow, IconEye, IconEyeInvisible, Separator } from '@renderer/styles/global'
 import { Input, Label, Title, WrapIpunt } from '../styles'
-import { formatCNPJandCPF } from '@shared/utils'
+import { formatCNPJandCPF, formatPhoneInput } from '@shared/utils'
 import { useEffect, useState } from 'react'
 import { useSecurity } from '@renderer/context/security.context'
 import { useNotification } from '@renderer/context/notification.context'
@@ -111,21 +111,15 @@ export function MyAccount() {
     })
   }, [])
 
+
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        paddingLeft: 40,
-        paddingRight: 40,
-        gap: 15
-      }}
-    >
+    <Container style={{overflowY: 'auto'}}>
       <Title> Informações da Conta</Title>
       <ContentInRow>
         <WrapIpunt>
           <Label>Razão Social</Label>
-          <Input type="text" value={accData?.companyName} />
+          <Input readOnly type="text" value={accData?.companyName} />
         </WrapIpunt>
 
         <WrapIpunt>
@@ -164,6 +158,7 @@ export function MyAccount() {
       <WrapIpunt>
         <Label>CNPJ</Label>
         <Input
+          readOnly
           type="text"
           value={formatCNPJandCPF(accData?.taxId as string)}
           style={{ width: 140 }}
@@ -172,25 +167,37 @@ export function MyAccount() {
 
       <WrapIpunt>
         <Label>ID da Conta</Label>
-        <Input type="text" value={accData?.accountId} />
+        <Input readOnly type="text" value={accData?.accountId} />
       </WrapIpunt>
+
+      <ContentInRow style={{ width: '70%' }}>
+        <WrapIpunt>
+          <Label>Email</Label>
+          <Input readOnly type="text" value={accData?.email} />
+        </WrapIpunt>
+        <WrapIpunt>
+          <Label>Contato Tel.</Label>
+          <Input readOnly type="text" value={formatPhoneInput(accData?.phoneNumber)} style={{width: 180}} />
+        </WrapIpunt>
+      </ContentInRow>
+
 
       <Label style={{ color: '#444', marginTop: 15 }}>Detalhes Bancário</Label>
       <ContentInRow style={{ width: '50%' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Conta</Label>
-          <Input type="text" value={String(accData?.accountBank)} style={{ width: 120 }} />
+          <Input readOnly type="text" value={String(accData?.accountBank)} style={{ width: 120 }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Label>Agência (Branch)</Label>
-          <Input type="text" value={String(accData?.branchBank)} style={{ width: 120 }} />
+          <Input readOnly type="text" value={String(accData?.branchBank)} style={{ width: 120 }} />
         </div>
       </ContentInRow>
 
       <ContentInRow style={{ width: '80%' }}>
         <WrapIpunt>
           <Label>Status da Conta</Label>
-          <Input type="text" value={accData?.status} style={{ width: 120, textAlign: 'center' }} />
+          <Input readOnly type="text" value={accData?.status} style={{ width: 120, textAlign: 'center' }} />
         </WrapIpunt>
       </ContentInRow>
 
@@ -205,6 +212,6 @@ export function MyAccount() {
           Inativar Conta
         </Button>
       </ContentInRow>
-    </div>
+    </Container>
   )
 }

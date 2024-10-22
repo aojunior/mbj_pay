@@ -125,6 +125,7 @@ export const Button = styled.button`
   color: #fff;
   width: 120px;
   font-weight: 700;
+  transition: 300ms;
   &:hover {
     background-color: #2b67aa;
     cursor: pointer;
@@ -159,4 +160,15 @@ export const Blur = styled.div`
   backdrop-filter: blur(4px);
   position: absolute;
   height: 20px;
+`
+
+export const LinkText = styled.span`
+  text-decoration: underline;
+  cursor: pointer;
+  color: #3178c6;
+  font-size: 12px;
+  transition: 200ms;
+  &:hover {
+    color: #204b7b;
+  }
 `

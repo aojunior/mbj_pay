@@ -35,6 +35,16 @@ export const formatCNPJandCPF = (data: string) => {
   }
 }
 
+export const formatPhoneInput = (event) => {
+  let value = event.replace(/\D/g, '')
+  if (value.length <= 10) {
+    value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3')
+  } else {
+    value = value.replace(/^(\d{2})(\d{5})(\d)/, '($1) $2-$3')
+  }
+  return value
+}
+
 export const maskCurrencyInput = (event) => {
   let value = event.target.value
   value = value.replace(/\D/g, '')

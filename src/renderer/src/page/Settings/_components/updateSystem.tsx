@@ -1,4 +1,4 @@
-import { Button } from "@renderer/styles/global"
+import { Button, Container } from "@renderer/styles/global"
 import { useState } from "react"
 import { useEffect } from "react";
 import { Title } from "../styles";
@@ -38,13 +38,7 @@ export function CheckUpdates() {
     };
 
     return (
-        <div
-            style={{
-            paddingLeft: 40,
-            paddingRight: 40,
-            gap: 15
-            }}
-        >
+        <Container style={{overflowY: 'auto'}} >
             <Title> Verificar se há atualização </Title>
             <div style={{ marginTop: 120, justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 30}}>
                 {
@@ -64,6 +58,6 @@ export function CheckUpdates() {
                 
                 <p>Versão atual: {version}</p>
             </div>
-      </div>
+      </Container>
     )
 }

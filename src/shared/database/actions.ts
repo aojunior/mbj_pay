@@ -4,16 +4,16 @@ import { HashConstructor } from '@shared/utils'
 // ACTION TO ACCEPT TERMS OF SERVICES
 export async function setDataToTermsOfServiceDB(data) {
   try {
-    const info = await prisma.information.findFirst()
+    const info = await prisma.informations.findFirst()
     if(info) {
-      await prisma.information.delete({
+      await prisma.informations.delete({
         where: {
-          idDevice: info.idDevice
+          deviceId: info.deviceId
         }
       })
     }
 
-    const save = await prisma.information.create({
+    const save = await prisma.informations.create({
       data
     })
     return save
@@ -25,7 +25,7 @@ export async function setDataToTermsOfServiceDB(data) {
 
 export async function getInformationsDB() {
   try {
-    const info = await prisma.information.findFirst()
+    const info = await prisma.informations.findFirst()
     return info
   } catch (error) {
     console.log(error)
@@ -524,4 +524,30 @@ export async function getMediatorDB(accountId) {
     }
   })
   return mediator
+}
+
+// ACTION TO Secure Device
+export async function registerDeviceDB(data) {
+  const secureDevice = await prisma.secureDevice.create({
+    data: {
+      accountId: data.accountId,
+      deviceName: data.deviceName,
+      deviceId: data.deviceId,
+      active: 'true',
+      type: data.type
+    }
+  })
+  return secureDevice
+}
+
+export async function getSecureDeviceDB(accountId) {
+  const secureDevice = await prisma.secureDevice.findMany({
+    where: {
+      AND: [
+        { active: 'true' },
+        { accountId }
+      ]
+    }
+  })
+  return secureDevice
 }

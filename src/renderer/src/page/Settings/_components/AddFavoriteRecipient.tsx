@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DeleteIcon, EditIcon, Table, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import NewFavorite from './_addNewFavorite';
 import { useSecurity } from '@renderer/context/security.context';
-import { Blur, Button } from '@renderer/styles/global';
+import { Blur, Button, Container } from '@renderer/styles/global';
 import { useLoading } from '@renderer/context/loading.context';
 
 const win: any = window
@@ -47,15 +47,7 @@ export function AddFavoriteRecipient() {
   }, [])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        paddingLeft: 40,
-        paddingRight: 40,
-        gap: 15
-      }}
-    >
+    <Container >
       <Title>Meus Favoritos</Title>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
       
       <Table>
@@ -108,6 +100,6 @@ export function AddFavoriteRecipient() {
       (security.confirmed && security.context === 'editFav') &&
         <NewFavorite id={idFav}/>
       }
-    </div>
+    </Container>
   )
 }

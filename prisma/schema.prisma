@@ -32,10 +32,10 @@ model Client {
   transactions    Transactions[]
   mediator        Mediator[]
   recipients      FavoritesRecipients[]
-  information     Information[]
+  information     Informations[]
 }
 
-model Information {
+model Informations {
   latitude    Float
   longitude   Float
   city        String
@@ -45,8 +45,9 @@ model Information {
   createdAT   DateTime @default(now())
   time        String
   ip          String
-  accountId   String  @unique
-  idDevice    String  @unique
+  accountId   String
+  deviceId    String  @unique
+  deviceName  String
   client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
@@ -90,10 +91,31 @@ model FavoritesRecipients {
   client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
+model SecureDevice {
+  id          String @id @default(cuid())
+  accountId   String
+  deviceId    String @unique
+  deviceName  String?
+  type        String?
+  active      String
+  createdAT   DateTime  @default(now())
+  updatedAT   DateTime?
+}
+
 model Mediator {
   id                String @id @default(cuid())
   accountId         String
   mediatorAccountId String
   mediatorFee       Float
   client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+}
+
+model settings {
+  email String  @id
+  host  String
+  port  String
+  password String
+  sms   String?
+  push  String?
+  createdAt DateTime @default(now())
 }

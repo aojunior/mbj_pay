@@ -83,7 +83,6 @@ export const API = {
     const credentials = await ipcRenderer.invoke('security', password)
     return credentials
   },
-
   createPaymentFile: (data) => ipcRenderer.invoke('create_payment_file', data),
   createInstantPayment: (data) => ipcRenderer.send('create_instantpayment', data),
   cancelInstantPayment: async (data) => {
@@ -98,7 +97,6 @@ export const API = {
     const finish = await ipcRenderer.invoke('finished_instantpayment', data)
     return finish
   },
-
   refundCodes: async () => {
     const codes = await ipcRenderer.invoke('refund_codes')
     return codes
@@ -125,6 +123,22 @@ export const API = {
   getAllPsps: async () => {
     const psps = await ipcRenderer.invoke('psp_list')
     return psps
+  },
+  getRegisterDevice: async () => {
+    const result = await ipcRenderer.invoke('get_register_device')
+    return result
+  }, 
+  registerDevice: async () => {
+    const result = await ipcRenderer.invoke('register_device')
+    return result
+  },
+  sendEmail: async () => {
+    const result = await ipcRenderer.invoke('send_email')
+    return result
+  },
+  verifyCode: async (code) => {
+    const result = await ipcRenderer.invoke('verify_token', code)
+    return result
   },
 
   logger: (type, msg) => ipcRenderer.send('logger', {type, msg}),

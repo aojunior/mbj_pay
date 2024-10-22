@@ -7,6 +7,7 @@ import { MyAccount } from './_components/myAccount'
 import { Section } from './_components/Section'
 import { CheckUpdates } from './_components/updateSystem'
 import { Support } from './_components/support'
+import { SecureDevice } from './_components/secureDevice'
 
 export default function Settings() {
   const [selectedSection, setSelectedSection] = useState('')
@@ -21,8 +22,10 @@ export default function Settings() {
         return <ManageAlias />
       case 'CheckUpdates':
         return <CheckUpdates />
-        case 'Support':
-          return <Support />
+      case 'Support':
+        return <Support />
+      case 'SecurityDevice':
+        return <SecureDevice />  
     }
   }
 

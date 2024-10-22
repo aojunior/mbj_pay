@@ -1,4 +1,4 @@
-import { Button } from '@renderer/styles/global'
+import { Button, Container } from '@renderer/styles/global'
 import { DeleteIcon, Table, TableWrapper, Tbody, Td, Th, Thead, Title, Tr } from '../styles'
 import { useEffect, useState } from 'react'
 import { useAccount } from '@renderer/context/account.context'
@@ -146,15 +146,7 @@ export function ManageAlias() {
   }, [security.confirmed])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        paddingLeft: 40,
-        paddingRight: 40,
-        gap: 15
-      }}
-    >
+    <Container style={{overflowY: 'auto'}}>
       <Button
         style={{ position: 'absolute', right: 40, top: 130 }}
         onClick={() => handleKeyButton('F5')}
@@ -201,6 +193,6 @@ export function ManageAlias() {
         Ao criar uma nova chave pix, deverá aguarda alguns minutos antes de usá-la, para que o
         banco central possa registrar a nova chave corretamente.
       </span>
-    </div>
+    </Container>
   )
 }

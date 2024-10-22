@@ -449,3 +449,37 @@ export async function refundInstantPayment(
 
   return response.data
 }
+
+// ====== Email
+export async function sendEmailAPIV1(accountId: string, email: string) {
+  let response = await api.get(`/email/?accountId=${accountId}`,{
+    data: {
+      email
+    }}
+  ).then((res) => {
+    if (res.status == 200) return {data: res.data, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
+}
+
+export async function verifyCodeAPIV1(accountId: string, token: string) {
+  let response = await api.get(`/email/verify-token`, {
+    data: {
+      accountId,
+      token
+    }}
+  ).then((res) => {
+    if (res.status == 200) return {data: true, message: 'success'}
+  }).catch((error) => {
+    if(error.response.data.Message) logger.error(error.response.data.Message)
+    else if(error.response.data) logger.error(error.response.data)
+    else logger.error(error.message)
+    return handleStatusError(error.response.status)
+  })
+  return response
+}

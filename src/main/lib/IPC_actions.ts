@@ -31,8 +31,9 @@ export async function getInformationsFromMachine() {
     })
     return ipAdresse.IP
   }
-  let ipNet = getIPs()
-  let idDevice = machineIdSync(true)
+  const ipNet = getIPs()
+  const idDevice = machineIdSync(true)
+  const computerName = os.hostname()
 
   const infos = {
     time: currentTime,
@@ -45,9 +46,21 @@ export async function getInformationsFromMachine() {
     country: fetch.country_name,
     // ipv6: fetch.ip,
     ip: ipNet,
-    idDevice: idDevice
+    deviceId: idDevice,
+    deviceName: computerName
   }
   return infos
+}
+
+export async function registerSecureDevice() {
+  const idDevice = machineIdSync(true)
+  const DeviceName = os.hostname()
+  const type = os.type()
+  return {
+    deviceId: idDevice,
+    deviceName: DeviceName,
+    type
+  }
 }
 
 export async function verify_account(token: string | null, accountId: string) {
