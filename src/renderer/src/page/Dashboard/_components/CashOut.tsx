@@ -32,6 +32,7 @@ import { useLoading } from '@renderer/context/loading.context';
 type BalanceProps = {
   balance: any
   extract: any[]
+  getBalance: () => void
 }
 const customStyles = {
   container: (provided) => ({
@@ -40,7 +41,7 @@ const customStyles = {
 };
 
 const win: any = window
-export function FormTransf({ balance, extract }: BalanceProps) {
+export function FormTransf({ balance, extract, getBalance }: BalanceProps) {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { security, setSecurity, callSecurityButton } = useSecurity()
   const { setIsLoading } = useLoading()
@@ -51,6 +52,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
   const [favorites, setFavorites] = useState<any>([])
   const [selectedOption, setSelectedOption] = useState(null);
   const [showValueBalance, setShowValueBalance] = useState (false);
+  const [deviceRegistered, setDeviceRegistered] = useState(false)
 
   const handleCurrencyChange = (event) => {
     maskCurrencyInput(event)
@@ -105,6 +107,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
             title: 'Transferência Realizada com Sucesso',
             message: 'Sua transferência foi realizada'
           })
+          await getBalance()
         } else {
           setContentNotification({
             ...contentNotification,
@@ -168,8 +171,18 @@ export function FormTransf({ balance, extract }: BalanceProps) {
     setShowValueBalance(!showValueBalance)
   }
 
+  async function onLoad() {
+    const infos = await win.api.getRegisterDevice()
+    if(infos.result.find(d => d.deviceId === infos.device.deviceId)) {
+      setDeviceRegistered(true)
+    } else {
+      setDeviceRegistered(false)
+    }       
+  }
+
   useEffect(() => {
     handleFavoritesRecipients()
+    onLoad()
     setSecurity({
       context: '',
       confirmed: false
@@ -202,6 +215,7 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 placeholder="Escolha uma conta"
                 isClearable
                 isSearchable
+                isDisabled={!deviceRegistered}
                 styles={customStyles}
                 />
               </FormInput>
@@ -211,22 +225,27 @@ export function FormTransf({ balance, extract }: BalanceProps) {
                 <Input
                   style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
                   onChange={handleCurrencyChange}
+                  value={String(amount)}
                   placeholder="R$ 0.00"
+                  readOnly={!deviceRegistered}
                 />
               </FormInput>
 
               <FormInput>
                 <Label>Informações do pagamento (opcional)</Label>
-                <TextArea onChange={e => setMsgInfo(e.target.value)}/>
+                <TextArea onChange={e => setMsgInfo(e.target.value)} readOnly={!deviceRegistered}/>
               </FormInput>
 
-              <Button 
-                disabled={(!selectedOption || amount == 0)} 
-                style={{background: (!selectedOption || amount == 0) && '#c4c4c7'}} 
-                onClick={() => callSecurityButton('cashout')}
-              >
-                Confirmar 
-              </Button>
+              {
+                deviceRegistered &&
+                <Button 
+                  disabled={(!selectedOption || amount == 0)} 
+                  style={{background: (!selectedOption || amount == 0) && '#c4c4c7'}} 
+                  onClick={() => callSecurityButton('cashout')}
+                >
+                  Confirmar 
+                </Button>
+              }
             </CardContent>
           </Card>
 

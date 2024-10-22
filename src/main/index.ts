@@ -249,15 +249,7 @@ app.whenReady().then(() => {
     }
   })
 
-  autoUpdater.checkForUpdatesAndNotify();
 
-  autoUpdater.on('update-available', () => {
-    mainWindow?.webContents.send('update_available');
-  });
-
-  autoUpdater.on('update-downloaded', () => {
-    mainWindow?.webContents.send('update_downloaded');
-  });
 })
 
 app.on('window-all-closed', async () => {
@@ -851,16 +843,24 @@ ipcMain.on('logger', async (_, data) => {
 })
 
 ipcMain.on('check-for-updates', async () => {
-  autoUpdater.checkForUpdates();
+  // autoUpdater.checkForUpdates();
+  autoUpdater.checkForUpdatesAndNotify();
+
+});
+
+autoUpdater.on('update-available', () => {
+  mainWindow.webContents.send('update_available');
+});
+
+autoUpdater.on('update-downloaded', () => {
+  mainWindow.webContents.send('update_downloaded');
 });
 
 autoUpdater.on('update-not-available', async () => {
-
   mainWindow.webContents.send('update-not-available');
 });
 
 autoUpdater.on('error', async (error) => {
-
   mainWindow.webContents.send('error', error.message);
 });
 

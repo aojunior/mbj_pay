@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
+import process from 'process';
 import { formatDateTime, today } from './utils';
 
 export const logger = (() => {
-  const nameFile = `../../logs ${today}.txt`
-  const logFilePath = path.join(__dirname, nameFile);
+  const nameFile = `logs ${today}.txt`
+  const logFilePath = path.join(process.cwd(), nameFile);
+  console.log(logFilePath)
 
   const logToFile = (level, message) => {
     const timestamp = formatDateTime(new Date());

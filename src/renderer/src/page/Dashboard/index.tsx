@@ -67,7 +67,7 @@ export default function Dashboard() {
       >
         <code>F5</code> - Atualizar
       </Button>
-      <FormTransf balance={balance} extract={extract} />
+      <FormTransf balance={balance} extract={extract} getBalance={getBalance} />
     </>
   )
 }

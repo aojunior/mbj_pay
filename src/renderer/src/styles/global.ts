@@ -155,9 +155,9 @@ export const IconEyeInvisible = styled(AiFillEyeInvisible)`
 
 export const Blur = styled.div`
   width: 80px;
-  /* background-color: rgba(255, 255, 255, 0.1); */
+  background-color: rgba(255, 255, 255, 0.5);
   
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   position: absolute;
   height: 20px;
 `

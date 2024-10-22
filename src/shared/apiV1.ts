@@ -24,9 +24,8 @@ async function encrypt_string(hash_string: string) {
   const sha_signature = hmac.digest('hex')
   return sha_signature
 }
-const URL = process.env.NODE_ENV === 'production' ? import.meta.env.MAIN_VITE_URL : 'http://localhost'
+const URL = process.env.NODE_ENV === 'production' || process.platform === 'linux' ? import.meta.env.MAIN_VITE_URL : 'http://localhost'
 const PORT = process.env.NODE_ENV === 'production' ? import.meta.env.MAIN_VITE_API_PORT : 3000
-
 const api = axios.create({ baseURL: `${URL}:${PORT}/api/v1`})
 
 // ======  Services
@@ -36,7 +35,7 @@ export async function tokenGeneratorAPIV1() {
     return {data: response.data.access_token, message: 'success'}
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
-    else if(error.response.data) logger.error(error.response.data)
+    else if(error.response.data) logger.error(JSON.stringify  (error.response.data))
     else if(error.message) logger.error(error.message)
     else logger.error(JSON.stringify(error))
     return handleStatusError(error.response.status)
@@ -150,7 +149,7 @@ export async function createAliasesAPIV1(token: string, AccId: string) {
     if (res.status == 202) return res.data
   }).catch((error) => {
     if(error.response.data.Message) logger.error(error.response.data.Message)
-    else if(error.response.data) logger.error(error.response.data)
+    else if(error.response.data) logger.error(JSON.stringify(error.response.data))
     else logger.error(error.message)
     return handleStatusError(error.response.status)
   })

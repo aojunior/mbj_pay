@@ -31,7 +31,6 @@ export function ManageAlias() {
     setIsLoading(true)
     let create = await win.api.createAlias()
     if (create.message === 'CREATED' ) {
-      console.log(create)
       await delay(1000)
       let resp = create.aliases.data
       setAliasData(resp)

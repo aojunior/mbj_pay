@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Checkbox, CheckboxContainer, Container, TermsText, Title } from '../styles'
 import { useNavigate } from 'react-router-dom'
-import pdf from '../../../assets/Flagship-Contrato-de-Parceria.pdf'
+
 const win: any = window
 export const TermsOfUse = () => {
   const navigate = useNavigate()

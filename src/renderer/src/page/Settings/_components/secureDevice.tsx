@@ -12,7 +12,7 @@ export function SecureDevice() {
     const { setIsLoading } = useLoading()
     const { confirm, setConfirm } = useUtils()
     const [deviceList, setDeviceList] = useState<any>([])
-    const [deviceRegistered, setDeviceRegistered] = useState(false)    
+    const [deviceRegistered, setDeviceRegistered] = useState(false)
 
     async function onUnregister() {
         alert('deleted')

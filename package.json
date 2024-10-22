@@ -22,7 +22,7 @@
     "postinstall": "electron-builder install-app-deps",
     "build:renderer": "electron-vite build",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:release": " set GH_TOKEN= && npm run build && electron-builder --win -p onTagOrDraft",
+    "build:release": "set GH_TOKEN= && npm run build && electron-builder --win -p onTagOrDraft",
     "build:win": "npm run prisma:generate && npx prisma migrate deploy && npm run build && electron-builder --win",
     "build:prisma": "npm run prisma:generate && electron-vite build",
     "build:mac": "electron-vite build && electron-builder --mac",

@@ -45,7 +45,6 @@ export default function Root(): JSX.Element {
   
   useEffect(() => {
     const checkClient = async () => {
-      console.log(process.env.NODE_ENV)
       const data = await getAccount()
       if (data?.accountId) {
         navigate('/home', { replace: true })

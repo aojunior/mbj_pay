@@ -1,13 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-  engineType = "binary"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "windows"]
+  engineType    = "binary"
 }
 
 datasource db {
@@ -16,7 +10,7 @@ datasource db {
 }
 
 model Client {
-  accountId       String @unique
+  accountId       String                @unique
   accountHolderId String
   accountBank     Int?
   branchBank      Int?
@@ -27,57 +21,57 @@ model Client {
   saltKey         String
   hashPassword    String
   status          String
-  createdAT       DateTime  @default(now())
+  createdAT       DateTime              @default(now())
   aliases         Aliases[]
-  transactions    Transactions[]
-  mediator        Mediator[]
   recipients      FavoritesRecipients[]
   information     Informations[]
+  mediator        Mediator[]
+  transactions    Transactions[]
 }
 
 model Informations {
-  latitude    Float
-  longitude   Float
-  city        String
-  state       String
-  country      String
-  zipCode     String
-  createdAT   DateTime @default(now())
-  time        String
-  ip          String
-  accountId   String
-  deviceId    String  @unique
-  deviceName  String
-  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  latitude   Float
+  longitude  Float
+  city       String
+  state      String
+  country    String
+  zipCode    String
+  createdAT  DateTime @default(now())
+  time       String
+  ip         String
+  accountId  String
+  deviceId   String   @unique
+  deviceName String
+  client     Client   @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model Aliases {
-  alias       String @unique
-  accountId   String
-  type        String
-  status      String
-  active      String
-  createdAT   DateTime  @default(now())
-  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  alias     String   @unique
+  accountId String
+  type      String
+  status    String
+  active    String
+  createdAT DateTime @default(now())
+  client    Client   @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model Transactions {
-  id                      String @id @default(cuid())
-  transactionId           String
-  accountId               String
-  transactionType         String
-  amount                  Float
-  status                  String
-  identify                String? 
-  transactionDescription  String?
-  message                 String?
-  createdAT               DateTime  @default(now())
-  updatedAT               DateTime?
-  client        Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  id                     String    @id @default(cuid())
+  transactionId          String
+  accountId              String
+  transactionType        String
+  amount                 Float
+  status                 String
+  identify               String?
+  transactionDescription String?
+  message                String?
+  createdAT              DateTime  @default(now())
+  updatedAT              DateTime?
+  client                 Client    @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model FavoritesRecipients {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   accountId   String
   nickname    String
   type        String
@@ -88,18 +82,18 @@ model FavoritesRecipients {
   bankBranch  String?
   bankCode    String?
   createdAT   DateTime @default(now())
-  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  client      Client   @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model SecureDevice {
-  id          String @id @default(cuid())
-  accountId   String
-  deviceId    String @unique
-  deviceName  String?
-  type        String?
-  active      String
-  createdAT   DateTime  @default(now())
-  updatedAT   DateTime?
+  id         String    @id @default(cuid())
+  accountId  String
+  deviceId   String    @unique
+  deviceName String?
+  type       String?
+  active     String
+  createdAT  DateTime  @default(now())
+  updatedAT  DateTime?
 }
 
 model Mediator {
@@ -107,15 +101,15 @@ model Mediator {
   accountId         String
   mediatorAccountId String
   mediatorFee       Float
-  client      Client  @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  client            Client @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
 }
 
 model settings {
-  email String  @id
-  host  String
-  port  String
-  password String
-  sms   String?
-  push  String?
+  email     String   @id
+  host      String
+  port      String
+  password  String
+  sms       String?
+  push      String?
   createdAt DateTime @default(now())
 }
