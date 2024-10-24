@@ -1,3 +1,4 @@
+const dotenv = require('dotenv');
 import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
 import { autoUpdater } from 'electron-updater';
 import  path, { join } from 'path'
@@ -67,6 +68,8 @@ import { handleMessageError } from '@shared/handleErrors';
 let mainWindow: BrowserWindow
 let tray: Tray
 let isQuiting: boolean = false
+
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 autoUpdater.setFeedURL({
   provider: 'github',
@@ -622,7 +625,7 @@ ipcMain.handle('cash_out', async (_, data) => {
     accId: account.accountId,
     transactionId: result.data.transactionId,
     transactionType: 'CASH_OUT',
-    amount: data.totalAmount,
+    totalAmount: data.totalAmount,
     transactionDescription: data.msgInfo,
     status: result.data.status
   }

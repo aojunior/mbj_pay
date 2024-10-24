@@ -75,7 +75,7 @@ export default function CreateAccount() {
       concatAccount.imgRgBack = ''
     }
     concatAccount.pdfContrato = String(concatAccount.pdfContrato).replace('data:application/pdf;base64,', '')
-
+    
     let resp = await win.api.createAccount(concatAccount)
     if (resp.message == 'SUCCESS') {
       setContentNotification({

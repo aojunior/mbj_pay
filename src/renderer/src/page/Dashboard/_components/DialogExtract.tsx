@@ -8,7 +8,7 @@ import {
   Label,
   Separator
 } from '../../../styles/global'
-import { DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
+import { ContentSelect, DetailContent, Dialog, DialogContext, FilterPanel } from '../styles'
 import { useNotification } from '@renderer/context/notification.context'
 import { useLoading } from '@renderer/context/loading.context'
 import { today } from '@shared/utils'
@@ -148,15 +148,7 @@ export function DialogExtract({ toggle }: dialogProps) {
             {extract.map((item, i) => {
               return (
                 item.description !== 'DEBITO TARIFA PIX INCUBADORA' &&
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    width: '90%',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
+                <ContentSelect key={i}>
                   <Label style={{ fontSize: 16 }}>{formatDate(item.entryDate)}</Label> <br />
                   <Label style={{ fontSize: 16 }}>{item.description}</Label>
                   <br />
@@ -164,7 +156,7 @@ export function DialogExtract({ toggle }: dialogProps) {
                     <p>{item.type !== 'C' ? '-' : ''}</p>
                     <p style={{ fontWeight: '700', fontSize: 18 }}>R$ {item.amount.toFixed(2)}</p>
                   </DetailContent>
-                </div>
+                </ContentSelect>
               )
             })}
           </CardContent>

@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://mbj:1b26800A@@207.180.223.222:5432/mbjpay?schema=public"
 }
 
 model Client {

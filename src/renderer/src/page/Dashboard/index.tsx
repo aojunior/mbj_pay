@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { FormTransf } from './_components/CashOut'
-import { Button } from '@renderer/styles/global'
+import { CashOut } from './_components/CashOut'
+import { Button, Container, ContentInRow } from '@renderer/styles/global'
 import { useNotification } from '@renderer/context/notification.context'
 import { useLoading } from '@renderer/context/loading.context'
 import { handleMessageError } from '@shared/handleErrors'
+import { MovimentsToday } from './_components/Moviments'
 
 const win: any = window
 export default function Dashboard() {
@@ -67,7 +68,13 @@ export default function Dashboard() {
       >
         <code>F5</code> - Atualizar
       </Button>
-      <FormTransf balance={balance} extract={extract} getBalance={getBalance} />
+      <Container >
+        <ContentInRow>
+          <CashOut balance={balance} getBalance={getBalance} />
+          <MovimentsToday extract={extract} />
+        </ContentInRow>
+      </Container>
+
     </>
   )
 }

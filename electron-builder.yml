@@ -6,6 +6,8 @@ directories:
 files:
   - dist/
   - out/
+  - .env
+  - .env.*
   - "!**/*.ts"
   - "!**/*.map"
   - "!**/*.tsx" 

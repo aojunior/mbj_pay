@@ -1,3 +1,4 @@
+
 import { createHmac } from 'crypto'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
@@ -5,7 +6,7 @@ import { logger } from './logger'
 import { handleStatusError } from './handleErrors'
 
 const now = new Date().toISOString()
-const SecretKey = import.meta.env.MAIN_VITE_SECRETKEY
+const SecretKey = process.env.MAIN_VITE_SECRETKEY
 
 const headers = {
   'Accept-Encoding': 'gzip, deflate, br',
@@ -19,13 +20,13 @@ const headers = {
 async function encrypt_string(hash_string: string) {
   const msg = hash_string
   const key = SecretKey
-  const hmac = createHmac('sha256', key)
+  const hmac = createHmac('sha256', String(key))
   hmac.update(msg)
   const sha_signature = hmac.digest('hex')
   return sha_signature
 }
-const URL = process.env.NODE_ENV === 'production' || process.platform === 'linux' ? import.meta.env.MAIN_VITE_URL : 'http://localhost'
-const PORT = process.env.NODE_ENV === 'production' ? import.meta.env.MAIN_VITE_API_PORT : 3000
+const URL = process.env.NODE_ENV === 'production' || process.platform === 'linux' ? 'http://207.180.223.222' : 'http://localhost'
+const PORT = 3000
 const api = axios.create({ baseURL: `${URL}:${PORT}/api/v1`})
 
 // ======  Services

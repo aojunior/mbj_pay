@@ -5,10 +5,8 @@ import {
   TextArea,
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
-  Container,
   ContentInRow,
   FormInput,
   Input,
@@ -20,9 +18,6 @@ import {
   Blur
 } from '../../../styles/global'
 import Select from 'react-select';
-import { DialogExtract } from './DialogExtract'
-import { DetailContent, RowDetails } from '../styles'
-import { DialogRefund } from './DialogRefund'
 import { maskCurrencyInput } from '@shared/utils'
 import { useSecurity } from '@renderer/context/security.context'
 import { useNotification } from '@renderer/context/notification.context'
@@ -30,9 +25,8 @@ import { useLoading } from '@renderer/context/loading.context';
 
 
 type BalanceProps = {
-  balance: any
-  extract: any[]
-  getBalance: () => void
+  balance: any,
+  getBalance: () => void,
 }
 const customStyles = {
   container: (provided) => ({
@@ -41,12 +35,10 @@ const customStyles = {
 };
 
 const win: any = window
-export function FormTransf({ balance, extract, getBalance }: BalanceProps) {
+export function CashOut({ balance, getBalance }: BalanceProps) {
   const { contentNotification, setContentNotification, setShowNotification } = useNotification()
   const { security, setSecurity, callSecurityButton } = useSecurity()
   const { setIsLoading } = useLoading()
-  const [dialogExtractOpen, setDialogExtractOpen] = useState(false)
-  const [dialogRefundOpen, setDialogRefundOpen] = useState(false)
   const [amount, setAmount] = useState<Number>(0)
   const [msgInfo, setMsgInfo] = useState<String>('')
   const [favorites, setFavorites] = useState<any>([])
@@ -57,13 +49,6 @@ export function FormTransf({ balance, extract, getBalance }: BalanceProps) {
   const handleCurrencyChange = (event) => {
     maskCurrencyInput(event)
     setAmount(event.target.value.replace(/\D/g, '') / 100)
-  }
-
-  function toggleExtractDialog() {
-    setDialogExtractOpen(!dialogExtractOpen)
-  }
-  function toggleRefundDialog() {
-    setDialogRefundOpen(!dialogRefundOpen)
   }
 
   async function handleFavoritesRecipients() {
@@ -107,6 +92,12 @@ export function FormTransf({ balance, extract, getBalance }: BalanceProps) {
             title: 'Transferência Realizada com Sucesso',
             message: 'Sua transferência foi realizada'
           })
+          let e = {
+            target: {
+              value: ''
+            }
+          }
+          handleCurrencyChange(e)
           await getBalance()
         } else {
           setContentNotification({
@@ -196,124 +187,85 @@ export function FormTransf({ balance, extract, getBalance }: BalanceProps) {
   }, [security.confirmed])
 
   return (
-    <Container style={{ paddingLeft: 15, paddingRight: 15 }}>
-      <ContentInRow>
-        <div style={{ display: 'flex', flexDirection: 'column', width: '50%', gap: 25 }}>
-          <Card style={{ width: '100%', height: 430 }}>
-            <CardHeader>
-              <CardTitle> Transferência via PIX </CardTitle>
-              <Separator />
-            </CardHeader>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '50%', gap: 15 }}>
+      <Card style={{ width: '100%', height: 430 }}>
+        <CardHeader>
+          <CardTitle> Transferência via PIX </CardTitle>
+          <Separator />
+        </CardHeader>
 
-            <CardContent style={{gap: 10}}>
-              <FormInput>
-                <Label>Selecione a Conta:</Label>
-                <Select
-                value={selectedOption}
-                onChange={handleChange}
-                options={favorites}
-                placeholder="Escolha uma conta"
-                isClearable
-                isSearchable
-                isDisabled={!deviceRegistered}
-                styles={customStyles}
-                />
-              </FormInput>
+        <CardContent style={{gap: 10}}>
+          <FormInput>
+            <Label>Selecione a Conta:</Label>
+            <Select
+            value={selectedOption}
+            onChange={handleChange}
+            options={favorites}
+            placeholder="Escolha uma conta"
+            isClearable
+            isSearchable
+            isDisabled={!deviceRegistered}
+            styles={customStyles}
+            />
+          </FormInput>
 
-              <FormInput>
-                <Label>Informe o Valor:</Label>
-                <Input
-                  style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
-                  onChange={handleCurrencyChange}
-                  value={String(amount)}
-                  placeholder="R$ 0.00"
-                  readOnly={!deviceRegistered}
-                />
-              </FormInput>
+          <FormInput>
+            <Label>Informe o Valor:</Label>
+            <Input
+              style={{ textAlign: 'end', paddingRight: 20, fontSize: 20 }}
+              onChange={handleCurrencyChange}
+              placeholder="R$ 0.00"
+              readOnly={!deviceRegistered}
+            />
+          </FormInput>
 
-              <FormInput>
-                <Label>Informações do pagamento (opcional)</Label>
-                <TextArea onChange={e => setMsgInfo(e.target.value)} readOnly={!deviceRegistered}/>
-              </FormInput>
+          <FormInput>
+            <Label>Informações do pagamento (opcional)</Label>
+            <TextArea onChange={e => setMsgInfo(e.target.value)} readOnly={!deviceRegistered}/>
+          </FormInput>
 
-              {
-                deviceRegistered &&
-                <Button 
-                  disabled={(!selectedOption || amount == 0)} 
-                  style={{background: (!selectedOption || amount == 0) && '#c4c4c7'}} 
-                  onClick={() => callSecurityButton('cashout')}
-                >
-                  Confirmar 
-                </Button>
-              }
-            </CardContent>
-          </Card>
-
-          <Card style={{ width: '100%' }}>
-            <FormInput style={{ width: '100%' }}>
-              <Label>Saldo Disponível </Label>
-              <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
-
-                <Text style={{ width: '100%', textAlign: 'end', fontWeight: '900', paddingRight: 40 }}>
-                  R$
-                  {showBalance()}
-                </Text>
-
-                {showValueBalance ? (
-                  <IconEyeInvisible
-                    size={24}
-                    style={{position: 'relative', right: 30}}
-                    onClick={toggleBalance}
-                  />
-                  ) : (
-                  <IconEye
-                    size={24}
-                    style={{position: 'relative', right: 30}}
-                    onClick={toggleBalance}
-                  />
-                )}
-                {!showValueBalance &&
-                  <Blur style={{  width: 325 }}/>
-                }
-              </ContentInRow>
-            </FormInput>
-          </Card>
-        </div>
-
-        <Card style={{ width: '45%', height: 560 }}>
-          <CardHeader>
-            <CardTitle> Movimentações Recentes </CardTitle>
-            <Separator />
-          </CardHeader>
-
-          <CardContent style={{ justifyContent: 'flex-start', height: '80%' }}>
-            <Label>Extrato</Label>
-            <div style={{ width: '100%', overflowY: 'auto' }}>
-              {extract.map(
-                (data: any, i) =>
-                  i < 10 && data.description !== 'DEBITO TARIFA PIX INCUBADORA' && (
-                    <RowDetails>
-                      <p>{data.description}</p>
-                      <DetailContent style={{ color: data.type !== 'C' ? 'red' : 'green' }}>
-                        <p>{data.type !== 'C' ? '-' : ''}</p>
-                        <p style={{ fontWeight: '700' }}>R$ {data.amount.toFixed(2)}</p>
-                      </DetailContent>
-                    </RowDetails>
-                  )
-              )}
-            </div>
-          </CardContent>
-
-          <CardFooter style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
-            <Button onClick={toggleExtractDialog}> Extrato </Button>
-            <Button style={{ backgroundColor: 'red' }} onClick={toggleRefundDialog}>
-              Devolução
+          {
+            deviceRegistered &&
+            <Button 
+              disabled={(!selectedOption || amount == 0)} 
+              style={{background: (!selectedOption || amount == 0) && '#c4c4c7'}} 
+              onClick={() => callSecurityButton('cashout')}
+            >
+              Confirmar 
             </Button>
-          </CardFooter>
-        </Card>
-      </ContentInRow>
-      {dialogExtractOpen && <DialogExtract toggle={toggleExtractDialog} />}
-      {dialogRefundOpen && <DialogRefund toggle={toggleRefundDialog} />}
-    </Container>
+          }
+        </CardContent>
+      </Card>
+
+      <Card style={{ width: '100%' }}>
+        <FormInput style={{ width: '100%' }}>
+          <Label>Saldo Disponível </Label>
+          <ContentInRow style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+            <Text style={{ width: '100%', textAlign: 'end', fontWeight: '900', paddingRight: 40 }}>
+              R$
+              {showBalance()}
+            </Text>
+
+            {showValueBalance ? (
+              <IconEyeInvisible
+                size={24}
+                style={{position: 'relative', right: 30}}
+                onClick={toggleBalance}
+              />
+              ) : (
+              <IconEye
+                size={24}
+                style={{position: 'relative', right: 30}}
+                onClick={toggleBalance}
+              />
+            )}
+            {!showValueBalance &&
+              <Blur style={{  width: 325 }}/>
+            }
+          </ContentInRow>
+        </FormInput>
+      </Card>
+    </div>
   )
 }

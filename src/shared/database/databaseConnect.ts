@@ -1,9 +1,5 @@
+require('dotenv').config();
 import { PrismaClient } from '@prisma/client';
-// import path from 'node:path';
-// import fs from 'fs';
-
-
-// const isDev = process.env.NODE_ENV === 'development'
 
 // const dbPath = isDev
 //   ? path.join(__dirname, '../../prisma/dev.db')

@@ -49,15 +49,51 @@ export function FormBank() {
           case 'imgCnh':
             setBankData({ ...bankData, imgCnh: lerImg.result })
             break
-          case 'pdfContrato':
-            setPathContrato(e.files[0].name)
-            setBankData({ ...bankData, pdfContrato: lerImg.result })
-            break
         }
       }
     }
   }
 
+
+  const convertPDFToBase64 = (file) => {
+    setPathContrato(file.name)
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onloadend = () => {
+        const result = reader.result;
+        if (typeof result === "string") {
+          const base64String = result.split(',')[1];
+          resolve(base64String);
+        } else {
+          reject(new Error("Erro ao processar o arquivo."));
+        }
+      };
+  
+      reader.onerror = (error) => {
+        reject(error);
+      };
+  
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]; // Pega o primeiro arquivo selecionado
+  
+    if (file && file.type === "application/pdf") {
+      convertPDFToBase64(file)
+        .then((base64) => {
+          setBankData({ ...bankData, pdfContrato: base64 })
+        })
+        .catch((error) => {
+          console.error("Erro ao converter PDF:", error);
+        });
+    } else {
+      console.error("Por favor, selecione um arquivo PDF.");
+    }
+  };  
+  
   function togglePassword() {
     setShowPassword(!showPassword)
   }
@@ -205,7 +241,7 @@ export function FormBank() {
                   name="pdfContrato"
                   type="file"
                   accept="application/pdf"
-                  onChange={(e) => getImg(e.target)}
+                  onChange={handleFileUpload}
                 />
                 <span>Selecionar Contrato Social</span>
               </PlaceholderImage>
